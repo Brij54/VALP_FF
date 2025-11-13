@@ -1,0 +1,47 @@
+{
+
+"student": {
+
+  "cluster" : "rasp_db",
+  "ui" : false,
+  "api" : true,
+  "fields" : {
+    "id": {
+
+     "name" : "id",
+     "required" : "true",
+     "type" : "String"
+     },
+    "roll_no": {
+
+     "name" : "roll_no",
+     "required" : "true",
+     "type" : "String"
+     },
+    "name": {
+
+     "name" : "name",
+     "required" : "true",
+     "type" : "String"
+     },
+    "batch": {
+
+     "name" : "batch",
+     "required" : "true",
+     "foreign" : {
+      "resource" : "Batch" 
+      },
+     "type" : "String"
+     },
+    "email": {
+
+     "name" : "email",
+     "required" : "true",
+     "type" : "String"
+      }
+   
+  }
+ }
+
+}
+
