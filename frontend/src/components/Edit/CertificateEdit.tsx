@@ -174,6 +174,9 @@ const Edit = () => {
       console.error(`Error fetching foreign data for ${fieldName}:`, err);
     }
   };
+  useEffect(() => {
+    console.log("my data", editedRecord);
+  }, [editedRecord]);
 
   const handleEdit = (id: any, field: string, value: any) => {
     setEditedRecord((prevData: any) => ({
@@ -182,6 +185,13 @@ const Edit = () => {
     }));
   };
 
+  const handleStatusChange = (value: string) => {
+    setEditedRecord((prev: any) => ({
+      ...prev,
+      "status": value,
+    }));
+    console.log("HANDLEEDITsTATUS", editedRecord);
+  };
   const handleSearchChange = (fieldName: string, value: string) => {
     setSearchQueries((prev) => ({ ...prev, [fieldName]: value }));
   };
@@ -241,6 +251,26 @@ const Edit = () => {
     }
   };
 
+  const getStatusBadge = (status: string) => {
+    if (status === "true")
+      return (
+        <span className="ms-2 badge bg-success d-flex align-items-center gap-1">
+          ✅ <span>Approved</span>
+        </span>
+      );
+    if (status === "false")
+      return (
+        <span className="ms-2 badge bg-danger d-flex align-items-center gap-1">
+          ❌ <span>Rejected</span>
+        </span>
+      );
+    return (
+      <span className="ms-2 badge bg-secondary d-flex align-items-center gap-1">
+        ⏳ <span>Pending</span>
+      </span>
+    );
+  };
+
   return (
     <>
       {!loadingEditComp && (
@@ -261,7 +291,7 @@ const Edit = () => {
                 className="form-control"
                 name="course_name"
                 required={true}
-                value={editedRecord[id]?.["course_name"] || ""}
+                value={editedRecord["course_name"] || ""}
                 onChange={(e) => handleEdit(id, "course_name", e.target.value)}
               />
               <div className="border-0 fw-bold" id="id-D">
@@ -272,28 +302,41 @@ const Edit = () => {
                 className="form-control"
                 name="course_duration"
                 required={true}
-                value={editedRecord[id]?.["course_duration"] || ""}
-                onChange={(e) =>
-                  handleEdit(id, "course_duration", e.target.value)
-                }
+                value={editedRecord["course_duration"] || ""}
+                onChange={(e) => {
+                  handleEdit(id, "course_duration", e.target.value);
+                  console.log(editedRecord);
+                }}
               />
-              <div className="border-0 fw-bold" id="id-J">
+              {/* <div className="border-0 fw-bold" id="id-J">
                 course_mode *
               </div>
               <select
                 className="form-select"
                 name="course_mode"
                 required={true}
-                value={editedRecord[id]?.["course_mode"] || ""}
+                value={editedRecord["course_mode"] || ""}
                 onChange={(e) => handleEdit(id, "course_mode", e.target.value)}
               >
                 <option value="">Select course_mode</option>{" "}
-                {enums?.["Course_mode"]?.map((val, idx) => (
+                {enums["Course_mode"]?.map((val, idx) => (
                   <option key={idx} value={val}>
                     {val}
                   </option>
                 ))}
-              </select>
+              </select> */}
+
+              <div className="border-0 w-100 bg-light" id="id-J">
+                <div className="border-0 fw-bold">course_mode *</div>
+                <input
+                  className="form-control"
+                  name="course_mode"
+                  value={editedRecord.course_mode || ""}
+                  onChange={(e) =>
+                    handleEdit(id, e.target.name, e.target.value)
+                  }
+                />
+              </div>
               <div className="border-0 fw-bold" id="id-P">
                 platform *
               </div>
@@ -302,23 +345,21 @@ const Edit = () => {
                 className="form-control"
                 name="platform"
                 required={true}
-                value={editedRecord[id]?.["platform"] || ""}
+                value={editedRecord["platform"] || ""}
                 onChange={(e) => handleEdit(id, "platform", e.target.value)}
               />
               <div className="border-0 fw-bold" id="id-V">
                 course_completion_date *
               </div>
               <input
-                type="date"
+                // type="date"
                 className="form-control"
                 name="course_completion_date"
                 required={true}
-                value={editedRecord[id]?.["course_completion_date"] || ""}
-                onChange={(e) =>
-                  handleEdit(id, "course_completion_date", e.target.value)
-                }
+                value={editedRecord["course_completion_date"] || ""}
+                onChange={(e) => handleEdit(id, e.target.value, e.target.value)}
               />
-              <div className="border-0 fw-bold" id="id-11">
+              {/* <div className="border-0 fw-bold" id="id-11">
                 upload_certificate *
               </div>
               <div className="mb-3" id="id-13">
@@ -338,7 +379,7 @@ const Edit = () => {
                     )
                   }
                 />
-              </div>
+              </div> */}
               <div className="border-0 fw-bold" id="id-19">
                 student_id *
               </div>
@@ -360,9 +401,9 @@ const Edit = () => {
                       aria-expanded="false"
                     >
                       {" "}
-                      {editedRecord[id]?.["student_id"]
+                      {editedRecord["student_id"]
                         ? options.find(
-                            (item) => item.id === editedRecord[id]["student_id"]
+                            (item) => item.id === editedRecord["student_id"]
                           )?.["id"] || "Select"
                         : `Select student_id`}{" "}
                     </button>
@@ -402,15 +443,36 @@ const Edit = () => {
                   </>
                 );
               })()}
+
+              <div className="border-0 w-100 bg-light">
+                <div className="border-0 fw-bold mb-1">status *</div>
+                <div className="d-flex align-items-center">
+                  <select
+                    className="form-select w-auto"
+                    name="status"
+                    value={editedRecord.status==="true"?"Approved":editedRecord.status==="false"?"Rejected":"Pending"}
+                    onChange={(e) => {
+                      handleStatusChange(e.target.value);
+                      console.log("status", e.target.value);
+                    }}
+                  >
+                    <option value="Pending">Pending</option>
+                    <option value='true'>Approved</option>
+                    <option value="false">Rejected</option>
+                  </select>
+                  {getStatusBadge(editedRecord.status)}
+                </div>
+              </div>
               <div className="border-0 fw-bold" id="id-1F">
                 course_url
               </div>
+
               <input
                 type="text"
                 className="form-control"
                 name="course_url"
                 required={false}
-                value={editedRecord[id]?.["course_url"] || ""}
+                value={editedRecord["course_url"] || ""}
                 onChange={(e) => handleEdit(id, "course_url", e.target.value)}
               />
               <button
