@@ -185,13 +185,19 @@ const Edit = () => {
     }));
   };
 
+  // const handleStatusChange = (value: string) => {
+  //   setEditedRecord((prev: any) => ({
+  //     ...prev,
+  //     "status": value,
+  //   }));
+  //   console.log("HANDLEEDITsTATUS", editedRecord);
+  // };
   const handleStatusChange = (value: string) => {
-    setEditedRecord((prev: any) => ({
-      ...prev,
-      "status": value,
-    }));
-    console.log("HANDLEEDITsTATUS", editedRecord);
-  };
+  setEditedRecord((prev : any) => ({
+    ...prev,
+    status: value   // value = "true", "false", "Pending"
+  }));
+};
   const handleSearchChange = (fieldName: string, value: string) => {
     setSearchQueries((prev) => ({ ...prev, [fieldName]: value }));
   };
@@ -447,10 +453,16 @@ const Edit = () => {
               <div className="border-0 w-100 bg-light">
                 <div className="border-0 fw-bold mb-1">status *</div>
                 <div className="d-flex align-items-center">
-                  <select
+                  {/* <select
                     className="form-select w-auto"
                     name="status"
-                    value={editedRecord.status==="true"?"Approved":editedRecord.status==="false"?"Rejected":"Pending"}
+                    value={
+                      editedRecord.status === "true"
+                        ? "true"
+                        : editedRecord.status === "false"
+                        ? "false"
+                        : "Pending"
+                    }
                     onChange={(e) => {
                       handleStatusChange(e.target.value);
                       console.log("status", e.target.value);
@@ -459,7 +471,24 @@ const Edit = () => {
                     <option value="Pending">Pending</option>
                     <option value='true'>Approved</option>
                     <option value="false">Rejected</option>
+                  </select> */}
+                                    <select
+                    className="form-select w-auto"
+                    name="status"
+                    value={
+                      editedRecord.status === "true"
+                        ? "true"
+                        : editedRecord.status === "false"
+                        ? "false"
+                        : "Pending"
+                    }
+                    onChange={(e) => handleStatusChange(e.target.value)}
+                  >
+                    <option value="Pending">Pending</option>
+                    <option value="true">Approved</option>
+                    <option value="false">Rejected</option>
                   </select>
+
                   {getStatusBadge(editedRecord.status)}
                 </div>
               </div>
