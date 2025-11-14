@@ -8,6 +8,7 @@ import {
 import { AgGridReact } from "ag-grid-react";
 import { useQuery } from "@tanstack/react-query";
 import CertificateModel from "../../models/CertificateModel";
+import { jwtDecode } from "jwt-decode";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -148,26 +149,114 @@ const ReadCertificate = () => {
     const flds = requiredFields.filter((field: any) => field !== "id") || [];
 
     const columns: ColDef[] = flds.map((field: any) => {
-      const baseCol: ColDef = {
-        field: field,
-        headerName: field,
-        editable: false,
-        resizable: true,
-        sortable: true,
-        filter: true,
-      };
+  const baseCol: ColDef = {
+    field: field,
+    headerName: field,
+    editable: false,
+    resizable: true,
+    sortable: true,
+    filter: true,
+  };
 
-      // STATUS COLUMN – USE BADGE RENDERER LIKE UpdateCertificate/Edit
-      if (String(field).toLowerCase() === "status") {
-        return {
-          ...baseCol,
-          headerName: "Status",
-          cellRenderer: (params: any) => getStatusBadge(params.value),
+  // ------------------ STATUS COLUMN ------------------
+  if (String(field).toLowerCase() === "status") {
+    return {
+      ...baseCol,
+      headerName: "Status",
+      cellRenderer: (params: any) => getStatusBadge(params.value),
+    };
+  }
+
+const getUserIdFromToken = () => {
+  const token = getCookie("access_token");
+  if (!token) return null;
+
+  try {
+    const decoded: any = jwtDecode(token);
+    return decoded?.sub || null;
+  } catch (e) {
+    console.error("Token decode failed:", e);
+    return null;
+  }
+};
+
+console.log(getUserIdFromToken());
+
+
+
+  // ------------------ UPLOAD CERTIFICATE (DOWNLOAD BUTTON) ------------------
+  if (field === "upload_certificate") {
+    return {
+      ...baseCol,
+      headerName: "Certificate",
+      cellRenderer: (params: any) => {
+        const documentId = params.value;
+        const userId = getUserIdFromToken(); // used internally
+
+        const handleDownload = async (e: any) => {
+          e.stopPropagation();
+          const accessToken = getCookie("access_token");
+
+          try {
+            const url =
+              `${apiConfig.API_BASE_URL}/certificate` +
+              `?document_id=${documentId}&queryId=GET_DOCUMENT` +
+              `&dmsRole=admin&user_id=${userId}`;
+
+            const response = await fetch(url, {
+              method: "GET",
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+                "Content-Type": "application/json",
+              },
+              credentials: "include",
+            });
+
+            if (!response.ok) throw new Error("Download failed " + response.status);
+
+            const blob = await response.blob();
+            const downloadUrl = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = downloadUrl;
+
+            const filename =
+              response.headers
+                .get("Content-Disposition")
+                ?.split("filename=")[1]
+                ?.replace(/['"]/g, "") || "certificate.pdf";
+
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(downloadUrl);
+          } catch (err) {
+            console.error("Download error:", err);
+          }
         };
-      }
 
-      return baseCol;
-    });
+        return (
+          <button
+            onClick={handleDownload}
+            style={{
+              backgroundColor: "#1976d2",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              padding: "4px 8px",
+              cursor: "pointer",
+            }}
+          >
+            Download
+          </button>
+        );
+      },
+    };
+  }
+
+  // ---------- Default fields ----------
+  return baseCol;
+});
 
     setColDef1(columns);
   }, [fetchData, requiredFields]);
