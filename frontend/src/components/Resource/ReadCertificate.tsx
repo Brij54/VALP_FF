@@ -1,17 +1,16 @@
-import React, { useState } from "react";
-import { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import apiConfig from "../../config/apiConfig";
 import {
   AllCommunityModule,
   ModuleRegistry,
-  themeAlpine,
-  themeBalham,
+  ColDef,
 } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
 import { useQuery } from "@tanstack/react-query";
-// ADDED: Import your generated model file dynamically
 import CertificateModel from "../../models/CertificateModel";
+
 ModuleRegistry.registerModules([AllCommunityModule]);
+
 export type ResourceMetaData = {
   resource: string;
   fieldValues: any[];
@@ -24,9 +23,31 @@ const getCookie = (name: string): string | null => {
   return null;
 };
 
+// ---- SAME BADGE LOGIC AS UpdateCertificate / Edit ----
+const getStatusBadge = (status: any) => {
+  const s = String(status).toLowerCase();
+
+  if (s === "true") {
+    return (
+      <span className="badge bg-success text-white">✅ Approved</span>
+    );
+  }
+
+  if (s === "false") {
+    return (
+      <span className="badge bg-danger text-white">❌ Rejected</span>
+    );
+  }
+
+  // Pending
+  return (
+    <span className="badge bg-warning text-dark">⏳ Pending</span>
+  );
+};
+
 const ReadCertificate = () => {
   const [rowData, setRowData] = useState<any[]>([]);
-  const [colDef1, setColDef1] = useState<any[]>([]);
+  const [colDef1, setColDef1] = useState<ColDef[]>([]);
   const [resMetaData, setResMetaData] = useState<ResourceMetaData[]>([]);
   const [fields, setFields] = useState<any[]>([]);
   const [dataToSave, setDataToSave] = useState<any>({});
@@ -35,11 +56,8 @@ const ReadCertificate = () => {
   const [showToast, setShowToast] = useState<any>(false);
 
   const regex = /^(g_|archived|extra_data)/;
-  const apiUrl = `${apiConfig.getResourceUrl("certificate")}?`;
-  const metadataUrl = `${apiConfig.getResourceMetaDataUrl("Certificate")}?`;
-  const BaseUrl = "${apiConfig.API_BASE_URL}";
-  // Fetch resource data
 
+  // ------------------- FETCH RESOURCE DATA -------------------
   const {
     data: dataRes,
     isLoading: isLoadingDataRes,
@@ -48,12 +66,10 @@ const ReadCertificate = () => {
     queryKey: ["resourceData", "certificate"],
     queryFn: async () => {
       const params = new URLSearchParams();
-
       const queryId: any = "GET_ALL";
       params.append("queryId", queryId);
 
       const accessToken = getCookie("access_token");
-
       if (!accessToken) {
         throw new Error("Access token not found");
       }
@@ -64,9 +80,9 @@ const ReadCertificate = () => {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`, // Add token here
+            Authorization: `Bearer ${accessToken}`,
           },
-          credentials: "include", // include cookies if needed
+          credentials: "include",
         }
       );
 
@@ -76,10 +92,11 @@ const ReadCertificate = () => {
 
       const data = await response.json();
       setFetchedData(data.resource || []);
-      // return data;
+      return data;
     },
   });
 
+  // ------------------- FETCH METADATA -------------------
   const {
     data: dataResMeta,
     isLoading: isLoadingDataResMeta,
@@ -102,47 +119,60 @@ const ReadCertificate = () => {
       const data = await response.json();
       setResMetaData(data);
       setFields(data[0]?.fieldValues || []);
+
       const required = data[0]?.fieldValues
         .filter((field: any) => !regex.test(field.name))
         .map((field: any) => field.name);
+
       setRequiredFields(required || []);
       return data;
     },
   });
 
-  // --- Transform API data into model objects and then JSON ---
+  // ----------------- CONVERT API DATA -> MODEL -> JSON -----------------
   useEffect(() => {
     if (fetchData && fetchData.length > 0) {
-      //ADDED: Convert array of plain objects → array of model instances
       const modelObjects = fetchData.map((obj: any) =>
         CertificateModel.fromJson(obj)
       );
-
-      // ADDED: Convert array of model instances → array of JSON objects (for ag-grid)
       const jsonObjects = modelObjects.map((model: any) => model.toJson());
-
-      // ADDED: Set final array for AgGrid
       setRowData(jsonObjects);
+    } else {
+      setRowData([]);
     }
   }, [fetchData]);
 
+  // ----------------- BUILD COLUMN DEFS WITH STATUS BADGE -----------------
   useEffect(() => {
     const data = fetchData || [];
-    const fields = requiredFields.filter((field: any) => field !== "id") || [];
+    const flds = requiredFields.filter((field: any) => field !== "id") || [];
 
-    const columns = fields.map((field: any) => ({
-      field: field,
-      headerName: field,
-      editable: false,
-      resizable: true,
-      sortable: true,
-      filter: true,
-    }));
+    const columns: ColDef[] = flds.map((field: any) => {
+      const baseCol: ColDef = {
+        field: field,
+        headerName: field,
+        editable: false,
+        resizable: true,
+        sortable: true,
+        filter: true,
+      };
+
+      // STATUS COLUMN – USE BADGE RENDERER LIKE UpdateCertificate/Edit
+      if (String(field).toLowerCase() === "status") {
+        return {
+          ...baseCol,
+          headerName: "Status",
+          cellRenderer: (params: any) => getStatusBadge(params.value),
+        };
+      }
+
+      return baseCol;
+    });
 
     setColDef1(columns);
   }, [fetchData, requiredFields]);
 
-  const defaultColDef = {
+  const defaultColDef: ColDef = {
     flex: 1,
     minWidth: 100,
     editable: false,
@@ -170,6 +200,7 @@ const ReadCertificate = () => {
           </div>
         )}
       </div>
+
       {showToast && (
         <div
           className="toast-container position-fixed top-20 start-50 translate-middle p-3"
