@@ -28,6 +28,12 @@ public class IamController {
         return iamService.addUser(userResource);
 
     }
+    @PostMapping("/adding_user")
+    public ResponseEntity<?> registerUserInternal(@RequestBody UserResource userResource) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException, ApplicationException {
+
+        return iamService.addUser(userResource);
+
+    }
 
 //    @PostMapping("/user_resource_role")
 //    public ResponseEntity<?> userResourceRole(@RequestParam String role,@RequestParam String userName,@RequestParam String resourceType,@RequestParam String resourceId){
@@ -37,6 +43,10 @@ public class IamController {
 public ResponseEntity<?> userResourceRole(@RequestBody Map<String, String> map){
     return iamService.addUserResourceRole(map);
 }
+    @PostMapping("/user_resource_role_mapping")
+    public ResponseEntity<?> userRoleMappingInternal(@RequestBody Map<String,Object> map){
+        return iamService.addUserRoleMapping(map);
+    }
 //    @PostMapping("/user_role_mapping")
 //    public ResponseEntity<?> userRoleMapping(@RequestParam String role,@RequestParam String userName){
 //        return iamService.addUserRoleMapping(role,userName);

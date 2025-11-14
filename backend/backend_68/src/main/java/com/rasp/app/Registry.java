@@ -1,4 +1,6 @@
 package com.rasp.app;
+import com.rasp.app.decorator.StudentDecorator;
+import platform.decorator.DecoratorManager;
 import platform.helper.HelperManager;
 import platform.webservice.ServiceManager;
 import com.rasp.app.helper.*;
@@ -21,5 +23,6 @@ public class Registry {
 				 ServiceManager.getInstance().register(new StudentService());
 				 ServiceManager.getInstance().register(new TestService());
 				 ServiceManager.getInstance().register(new UsersService());
+            DecoratorManager.getInstance().register(new StudentDecorator());
 		}
 }

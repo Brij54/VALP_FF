@@ -316,7 +316,9 @@ public class KeycloakTokenFilter extends OncePerRequestFilter {
                         path.startsWith("/api/auth/users-with-roles") ||
                         path.startsWith("/api/auth/update-user") ||
                         path.equals("/api/auth/addUser")||
-                        path.startsWith("/api/generate_app_zip")
+                        path.startsWith("/api/generate_app_zip") ||
+                        path.startsWith("/api/auth/adding_user") ||
+                        path.startsWith("/api/auth/user_resource_role_mapping")
 
         );
     }
