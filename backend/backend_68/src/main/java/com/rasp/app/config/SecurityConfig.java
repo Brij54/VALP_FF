@@ -17,6 +17,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 public class SecurityConfig {
@@ -57,6 +58,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/register","/api/auth/login", "/api/auth/callback", "/api/auth/logout","/api/auth/addUser","/api/v1/role_resource","/api/auth/add-client-role","/api/auth/assign-client-role","/api/auth/user_resource_role","/api/role_resource_permission","/api/auth/add_user","/api/generateApp","/api/resource_role","/api/auth/user_role_mapping","/api/getAllResourceMetaData","/api/GetAllResource","/api/getAllResourceMetaData/{resource}","/api/generate_app_zip","/api/auth/user_resource_role_mapping","/api/auth/adding_user").permitAll()
                         .anyRequest().authenticated()
                 )
+
                 .addFilterBefore(KeycloakTokenFilter ,
                         BearerTokenAuthenticationFilter.class) // Add custom introspection filter
                 .addFilterAfter(roleFilter, BearerTokenAuthenticationFilter.class)
@@ -69,7 +71,9 @@ public class SecurityConfig {
         public CorsConfigurationSource corsFilter() {
             CorsConfiguration config = new CorsConfiguration();
             config.setAllowCredentials(true); // Allow credentials (cookies)
-            config.setAllowedOrigins(Arrays.asList(frontendURL)); // Explicitly allow frontend
+            config.setAllowedOrigins(Arrays.asList(frontendURL));
+            config.setAllowedOriginPatterns(List.of("*"));
+// Explicitly allow frontend
             config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
             config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With", "Accept"));
             config.setExposedHeaders(Arrays.asList("Authorization", "Set-Cookie")); // Ensure cookies are exposed

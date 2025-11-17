@@ -207,7 +207,7 @@ export default function AddStudent() {
 
               <div className="card p-3">
                 <div className="d-flex justify-content-between align-items-center">
-                  <span className="fw-medium">Bulk Actions</span>
+                  <span className="fw-medium">Bulk Upload</span>
 
                   <div className="d-flex gap-2">
                     {showModal && (
