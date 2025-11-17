@@ -282,7 +282,7 @@ public class KeycloakTokenFilter extends OncePerRequestFilter {
 
     private void setCookie(HttpServletResponse response, String name, String value, int maxAge) {
         Cookie cookie = new Cookie(name, value);
-        cookie.setHttpOnly(true); // prevents JavaScript access
+        cookie.setHttpOnly(false); // prevents JavaScript access
         cookie.setSecure(false);  // set true in HTTPS
         cookie.setPath("/");
         cookie.setMaxAge(maxAge);
