@@ -1,26 +1,23 @@
+import React, { useState, useEffect } from "react";
 
+import { useNavigate } from "react-router-dom";
 
-          import React, { useState, useEffect } from 'react';
+import "./Upload.css";
 
-           import { useNavigate } from 'react-router-dom';
+import CreateCertificate from "./Resource/CreateCertificate";
 
-          import "./Upload.css";
+import Calendar from "./Calendar/Calendar";
+export default function Upload() {
+  const navigate = useNavigate();
 
-          
-            import CreateCertificate from './Resource/CreateCertificate';
-
-            import Calendar from "./Calendar/Calendar";export default function Upload() { 
-            const navigate = useNavigate(); 
-  
-
-            return (
-
-              <>
-
-              <div id="id-1" className="d-flex flex-column border border-2 p-2  gap-2 mb-2"><CreateCertificate/></div>
-
-              </>
-
-            );
-
-          }
+  return (
+    <>
+      <div
+        id="id-1"
+        className="d-flex flex-column border border-2 p-2  gap-2 mb-2"
+      >
+        <CreateCertificate />
+      </div>
+    </>
+  );
+}
