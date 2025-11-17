@@ -11,13 +11,6 @@ export type resourceMetaData = {
   fieldValues: any[];
 };
 
-// const getCookie = (name: string): string | null => {
-//   const value = `; ${document.cookie}`;
-//   console.log("access token value",value)
-//   const parts = value.split(`; ${name}=`);
-//   if (parts.length === 2) return parts.pop()?.split(";").shift() || null;
-//   return null;
-// };
 export const getCookie = (name: string): string | null => {
   const cookies = document.cookie.split(";");
 
@@ -39,13 +32,14 @@ const CreateCertificate = () => {
   const [resMetaData, setResMetaData] = useState<resourceMetaData[]>([]);
   const [fields, setFields] = useState<any[]>([]);
   const [dataToSave, setDataToSave] = useState<any>({});
-  const [showToast, setShowToast] = useState<any>(false);
-  const [foreignKeyData, setForeignKeyData] = useState<
-    Record<string, any[]>
-  >({});
+  const [showToast, setShowToast] = useState<boolean>(false);
+  const [foreignKeyData, setForeignKeyData] = useState<Record<string, any[]>>(
+    {}
+  );
   const [enums, setEnums] = useState<Record<string, any[]>>({});
 
-  const regex = /^(g_|archived|extra_data)/;
+  const regex = /^(g_|archived|extra_data)/; // currently unused, but kept
+
   const apiUrl = apiConfig.getResourceUrl("Certificate");
   const metadataUrl = apiConfig.getResourceMetaDataUrl("Certificate");
 
@@ -84,7 +78,11 @@ const CreateCertificate = () => {
   };
 
   // ---- Metadata & foreign/enum bootstrap ----
-  const { data: metaData, isLoading, error } = useQuery({
+  const {
+    data: metaData,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["resMetaData"],
     queryFn: async () => {
       const res = await fetch(metadataUrl, {
@@ -99,37 +97,45 @@ const CreateCertificate = () => {
       const data = await res.json();
 
       setResMetaData(data);
-      setFields(data[0].fieldValues);
 
-      const foreignFields = data[0].fieldValues.filter(
-        (field: any) => field.foreign
-      );
-      for (const field of foreignFields) {
-        if (!fetchedResources.current.has(field.foreign)) {
-          fetchedResources.current.add(field.foreign);
+      if (Array.isArray(data) && data.length > 0) {
+        setFields(data[0].fieldValues);
 
-          queryClient.prefetchQuery({
-            queryKey: ["foreignData", field.foreign],
-            queryFn: () => fetchForeignResource(field.foreign),
-          });
+        // foreign fields
+        const foreignFields = data[0].fieldValues.filter(
+          (field: any) => field.foreign
+        );
 
-          await fetchForeignData(field.foreign, field.name, field.foreign_field);
+        for (const field of foreignFields) {
+          if (!fetchedResources.current.has(field.foreign)) {
+            fetchedResources.current.add(field.foreign);
+
+            // prefetch for cache
+            queryClient.prefetchQuery({
+              queryKey: ["foreignData", field.foreign],
+              queryFn: () => fetchForeignResource(field.foreign),
+            });
+
+            await fetchForeignData(field.foreign, field.name, field.foreign_field);
+          }
         }
-      }
 
-      const enumFields = data[0].fieldValues.filter(
-        (field: any) => field.isEnum === true
-      );
-      for (const field of enumFields) {
-        if (!fetchedEnum.current.has(field.possible_value)) {
-          fetchedEnum.current.add(field.possible_value);
+        // enum fields
+        const enumFields = data[0].fieldValues.filter(
+          (field: any) => field.isEnum === true
+        );
 
-          queryClient.prefetchQuery({
-            queryKey: ["enum", field.possible_value],
-            queryFn: () => fetchEnum(field.possible_value),
-          });
+        for (const field of enumFields) {
+          if (!fetchedEnum.current.has(field.possible_value)) {
+            fetchedEnum.current.add(field.possible_value);
 
-          await fetchEnumData(field.possible_value);
+            queryClient.prefetchQuery({
+              queryKey: ["enum", field.possible_value],
+              queryFn: () => fetchEnum(field.possible_value),
+            });
+
+            await fetchEnumData(field.possible_value);
+          }
         }
       }
 
@@ -141,7 +147,7 @@ const CreateCertificate = () => {
   useEffect(() => {
     if (!user || user.role !== "student") return;
     const students = foreignKeyData["Student"] || [];
-    console.log("all student data",students,user)
+    console.log("all student data", students, user);
     if (!students.length) return;
 
     const match = students.find(
@@ -168,9 +174,11 @@ const CreateCertificate = () => {
 
   const handleCreate = async () => {
     const accessToken = getCookie("access_token");
+    console.log("access_token from cookie:", accessToken);
 
     if (!accessToken) {
-      throw new Error("Access token not found");
+      alert("Access token not found. Please login again.");
+      return;
     }
 
     // Optional guard: avoid backend error if mapping failed
@@ -181,15 +189,20 @@ const CreateCertificate = () => {
 
     const params = new FormData();
 
-    const fileFieldKeys = Object.keys(dataToSave).filter(
-      (key) => dataToSave[key] instanceof File
+    // clone dataToSave so we don't mutate React state directly
+    const payload: any = { ...dataToSave };
+
+    const fileFieldKeys = Object.keys(payload).filter(
+      (key) => payload[key] instanceof File
     );
 
     if (fileFieldKeys.length > 0) {
       const fileKey = fileFieldKeys[0];
-      params.append("file", dataToSave[fileKey]);
-      dataToSave[fileKey] = "";
+      params.append("file", payload[fileKey]);
+      // backend expects field empty in resource JSON
+      payload[fileKey] = "";
 
+      // DMS-related fixed values
       params.append("description", "my description");
       params.append("appId", "hostel_management_system");
       params.append("dmsRole", "admin");
@@ -197,7 +210,7 @@ const CreateCertificate = () => {
       params.append("tags", "t1,t2,attend");
     }
 
-    const jsonString = JSON.stringify(dataToSave);
+    const jsonString = JSON.stringify(payload);
     const base64Encoded = btoa(jsonString);
     params.append("resource", base64Encoded);
 
@@ -214,12 +227,23 @@ const CreateCertificate = () => {
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
       setDataToSave({});
+    } else {
+      console.error("Failed to create certificate", await response.text());
+      alert("Failed to create certificate. Please try again.");
     }
   };
 
-  useEffect(()=>{
-    console.log("all data to save", dataToSave,user)
-  },[dataToSave])
+  useEffect(() => {
+    console.log("all data to save", dataToSave, user);
+  }, [dataToSave, user]);
+
+  if (isLoading) {
+    return <div>Loading certificate metadata...</div>;
+  }
+
+  if (error) {
+    return <div>Error loading metadata.</div>;
+  }
 
   return (
     <div>
