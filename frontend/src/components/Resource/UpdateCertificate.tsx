@@ -1,201 +1,468 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import apiConfig from "../../config/apiConfig";
+// import React, { useState, useEffect } from "react";
+// import { useNavigate } from "react-router-dom";
+// import apiConfig from "../../config/apiConfig";
 
-import {
-  AllCommunityModule,
-  ModuleRegistry,
-  ColDef          // <-- IMPORTANT
-} from "ag-grid-community";
+// import {
+//   AllCommunityModule,
+//   ModuleRegistry,
+//   ColDef          // <-- IMPORTANT
+// } from "ag-grid-community";
 
-import { AgGridReact } from "ag-grid-react";
-import { useQuery } from "@tanstack/react-query";
+// import { AgGridReact } from "ag-grid-react";
+// import { useQuery } from "@tanstack/react-query";
 
-ModuleRegistry.registerModules([AllCommunityModule]);
+// ModuleRegistry.registerModules([AllCommunityModule]);
 
-// Badge Renderer
+// // Badge Renderer
+// // const getStatusBadge = (status: any) => {
+// //   if (status === true || status === "true")
+// //     return <span className="badge bg-success text-white">✅ Approved</span>;
+
+// //   if (status === false || status === "false")
+// //     return <span className="badge bg-danger text-white">❌ Rejected</span>;
+
+// //   return <span className="badge bg-secondary text-white">⏳ Pending</span>;
+// // };
 // const getStatusBadge = (status: any) => {
-//   if (status === true || status === "true")
-//     return <span className="badge bg-success text-white">✅ Approved</span>;
+//   // Convert to consistent value
+//   const s = String(status).toLowerCase();
 
-//   if (status === false || status === "false")
-//     return <span className="badge bg-danger text-white">❌ Rejected</span>;
+//   if (s === "true") {
+//     return (
+//       <span className="badge bg-success text-white">✅ Approved</span>
+//     );
+//   }
 
-//   return <span className="badge bg-secondary text-white">⏳ Pending</span>;
+//   if (s === "false") {
+//     return (
+//       <span className="badge bg-danger text-white">❌ Rejected</span>
+//     );
+//   }
+
+//   // PENDING (distinct color)
+//   return (
+//     <span className="badge bg-warning text-dark">⏳ Pending</span>
+//   );
 // };
-const getStatusBadge = (status: any) => {
-  // Convert to consistent value
-  const s = String(status).toLowerCase();
 
-  if (s === "true") {
-    return (
-      <span className="badge bg-success text-white">✅ Approved</span>
-    );
-  }
+// // Action button
+// const ActionCellRenderer = (props: any) => {
+//   const handleEdit = () => {
+//     props.context.handleUpdate(props.data.id);
+//   };
 
-  if (s === "false") {
-    return (
-      <span className="badge bg-danger text-white">❌ Rejected</span>
-    );
-  }
+//   return (
+//     <button onClick={handleEdit} className="btn btn-primary btn-sm">
+//       Edit
+//     </button>
+//   );
+// };
 
-  // PENDING (distinct color)
-  return (
-    <span className="badge bg-warning text-dark">⏳ Pending</span>
-  );
-};
+// const getCookie = (name: string): string | null => {
+//   const value = `; ${document.cookie}`;
+//   const parts = value.split(`; ${name}=`);
+//   if (parts.length === 2) return parts.pop()?.split(";").shift() || null;
+//   return null;
+// };
 
-// Action button
-const ActionCellRenderer = (props: any) => {
-  const handleEdit = () => {
-    props.context.handleUpdate(props.data.id);
-  };
+// const UpdateCertificate = () => {
+//   const [rowData, setRowData] = useState<any[]>([]);
+//   const [colDef1, setColDef1] = useState<ColDef[]>([]); // <-- IMPORTANT
+//   const [requiredFields, setRequiredFields] = useState<string[]>([]);
+//   const navigate = useNavigate();
 
-  return (
-    <button onClick={handleEdit} className="btn btn-primary btn-sm">
-      Edit
-    </button>
-  );
-};
+//   const regex = /^(g_|archived|extra_data)/;
 
-const getCookie = (name: string): string | null => {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop()?.split(";").shift() || null;
-  return null;
-};
+//   // Fetch certificate data
+//   const { data: dataRes } = useQuery({
+//     queryKey: ["resourceData", "certificate"],
+//     queryFn: async () => {
+//       const params = new URLSearchParams();
+//       params.append("queryId", "GET_ALL");
 
-const UpdateCertificate = () => {
-  const [rowData, setRowData] = useState<any[]>([]);
-  const [colDef1, setColDef1] = useState<ColDef[]>([]); // <-- IMPORTANT
-  const [requiredFields, setRequiredFields] = useState<string[]>([]);
-  const navigate = useNavigate();
+//       const accessToken = getCookie("access_token");
+//       if (!accessToken) throw new Error("Access token missing");
 
-  const regex = /^(g_|archived|extra_data)/;
+//       const response = await fetch(
+//         `${apiConfig.getResourceUrl("certificate")}?${params.toString()}`,
+//         {
+//           method: "GET",
+//           headers: {
+//             "Content-Type": "application/json",
+//             Authorization: `Bearer ${accessToken}`,
+//           },
+//           credentials: "include",
+//         }
+//       );
 
-  // Fetch certificate data
-  const { data: dataRes } = useQuery({
-    queryKey: ["resourceData", "certificate"],
-    queryFn: async () => {
-      const params = new URLSearchParams();
-      params.append("queryId", "GET_ALL");
+//       if (!response.ok) throw new Error("Failed to fetch certificates");
 
-      const accessToken = getCookie("access_token");
-      if (!accessToken) throw new Error("Access token missing");
+//       return await response.json();
+//     },
+//   });
 
-      const response = await fetch(
-        `${apiConfig.getResourceUrl("certificate")}?${params.toString()}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-          },
-          credentials: "include",
-        }
-      );
+//   // Fetch metadata
+//   useQuery({
+//     queryKey: ["resourceMetaData", "certificate"],
+//     queryFn: async () => {
+//       const response = await fetch(
+//         `${apiConfig.getResourceMetaDataUrl("certificate")}?`,
+//         { method: "GET", headers: { "Content-Type": "application/json" } }
+//       );
 
-      if (!response.ok) throw new Error("Failed to fetch certificates");
+//       if (!response.ok) throw new Error("Failed metadata");
 
-      return await response.json();
-    },
-  });
+//       const data = await response.json();
 
-  // Fetch metadata
-  useQuery({
-    queryKey: ["resourceMetaData", "certificate"],
-    queryFn: async () => {
-      const response = await fetch(
-        `${apiConfig.getResourceMetaDataUrl("certificate")}?`,
-        { method: "GET", headers: { "Content-Type": "application/json" } }
-      );
+//       const required = data[0]?.fieldValues
+//         .filter((f: any) => !regex.test(f.name))
+//         .map((f: any) => f.name);
 
-      if (!response.ok) throw new Error("Failed metadata");
+//       setRequiredFields(required || []);
+//       return data;
+//     },
+//   });
 
-      const data = await response.json();
+//   // Build table columns
+//   useEffect(() => {
+//     if (!dataRes) return;
 
-      const required = data[0]?.fieldValues
-        .filter((f: any) => !regex.test(f.name))
-        .map((f: any) => f.name);
+//     const data = dataRes.resource || [];
 
-      setRequiredFields(required || []);
-      return data;
-    },
-  });
+//     const fields = requiredFields.filter((f) => f !== "id");
 
-  // Build table columns
-  useEffect(() => {
-    if (!dataRes) return;
+//     const columns: ColDef[] = fields.map((field) => {
+//       // STATUS COLUMN RENDERER
+//       if (field === "status") {
+//         return {
+//           field: "status",
+//           headerName: "Status",
+//           resizable: true,
+//           sortable: true,
+//           filter: true,
+//           editable: false,
+//           cellRenderer: (params: any) => getStatusBadge(params.value),
+//         };
+//       }
 
-    const data = dataRes.resource || [];
+//       return {
+//         field,
+//         headerName: field,
+//         editable: false,
+//         resizable: true,
+//         sortable: true,
+//         filter: true,
+//       };
+//     });
 
-    const fields = requiredFields.filter((f) => f !== "id");
+//     // ACTION COLUMN
+//     columns.push({
+//       headerName: "Action",
+//       field: "action",
+//       cellRenderer: ActionCellRenderer,
+//       resizable: true,
+//       sortable: false,
+//       filter: false,
+//       width: 120,
+//     });
 
-    const columns: ColDef[] = fields.map((field) => {
-      // STATUS COLUMN RENDERER
-      if (field === "status") {
-        return {
-          field: "status",
-          headerName: "Status",
-          resizable: true,
-          sortable: true,
-          filter: true,
-          editable: false,
-          cellRenderer: (params: any) => getStatusBadge(params.value),
-        };
-      }
+//     setColDef1(columns);
+//     setRowData(data);
+//   }, [dataRes, requiredFields]);
 
-      return {
-        field,
-        headerName: field,
-        editable: false,
-        resizable: true,
-        sortable: true,
-        filter: true,
-      };
-    });
+//   const handleUpdate = (id: any) => {
+//     navigate(`/edit/certificate/${id}`);
+//   };
 
-    // ACTION COLUMN
-    columns.push({
-      headerName: "Action",
-      field: "action",
-      cellRenderer: ActionCellRenderer,
-      resizable: true,
-      sortable: false,
-      filter: false,
-      width: 120,
-    });
+//   const defaultColDef: ColDef = {
+//     flex: 1,
+//     minWidth: 100,
+//     editable: false,
+//   };
 
-    setColDef1(columns);
-    setRowData(data);
-  }, [dataRes, requiredFields]);
+//   return (
+//     <div className="ag-theme-alpine" style={{ height: 500, width: "100%" }}>
+//       <AgGridReact
+//         rowData={rowData}
+//         columnDefs={colDef1}
+//         defaultColDef={defaultColDef}
+//         pagination={true}
+//         paginationPageSize={10}
+//         animateRows={true}
+//         context={{ handleUpdate }}
+//       />
+//     </div>
+//   );
+// };
 
-  const handleUpdate = (id: any) => {
-    navigate(`/edit/certificate/${id}`);
-  };
+// export default UpdateCertificate;
 
-  const defaultColDef: ColDef = {
-    flex: 1,
-    minWidth: 100,
-    editable: false,
-  };
 
-  return (
-    <div className="ag-theme-alpine" style={{ height: 500, width: "100%" }}>
-      <AgGridReact
-        rowData={rowData}
-        columnDefs={colDef1}
-        defaultColDef={defaultColDef}
-        pagination={true}
-        paginationPageSize={10}
-        animateRows={true}
-        context={{ handleUpdate }}
-      />
-    </div>
-  );
-};
 
-export default UpdateCertificate;
+// import React, { useState, useEffect } from "react";
+// import { useNavigate } from "react-router-dom";
+// import apiConfig from "../../config/apiConfig";
+
+// import {
+//   AllCommunityModule,
+//   ModuleRegistry,
+//   ColDef
+// } from "ag-grid-community";
+
+// import { AgGridReact } from "ag-grid-react";
+// import { useQuery } from "@tanstack/react-query";
+
+// ModuleRegistry.registerModules([AllCommunityModule]);
+
+// // -------------------- STATUS BADGE --------------------
+// const getStatusBadge = (status: any) => {
+//   const s = String(status).toLowerCase();
+
+//   if (s === "true") {
+//     return (
+//       <span className="badge bg-success text-white">✅ Approved</span>
+//     );
+//   }
+
+//   if (s === "false") {
+//     return (
+//       <span className="badge bg-danger text-white">❌ Rejected</span>
+//     );
+//   }
+
+//   return (
+//     <span className="badge bg-warning text-dark">⏳ Pending</span>
+//   );
+// };
+
+// // -------------------- ACTION RENDERER --------------------
+// const ActionCellRenderer = (props: any) => {
+//   const handleEdit = () => {
+//     props.context.handleUpdate(props.data.id);
+//   };
+
+//   return (
+//     <button onClick={handleEdit} className="btn btn-primary btn-sm">
+//       Edit
+//     </button>
+//   );
+// };
+
+// // -------------------- COOKIE --------------------
+// const getCookie = (name: string): string | null => {
+//   const value = `; ${document.cookie}`;
+//   const parts = value.split(`; ${name}=`);
+//   if (parts.length === 2) return parts.pop()?.split(";").shift() || null;
+//   return null;
+// };
+
+// // -------------------- DOWNLOAD BUTTON RENDERER --------------------
+// const DownloadButtonRenderer = (params: any) => {
+//   const documentId = params.value;
+//   const accessToken = getCookie("access_token");
+
+//   const handleDownload = async (e: any) => {
+//     e.stopPropagation();
+
+//     try {
+//       const url =
+//         `${apiConfig.API_BASE_URL}/certificate` +
+//         `?document_id=${documentId}&queryId=GET_DOCUMENT` +
+//         `&dmsRole=admin&user_id=admin@rasp.com`;
+
+//       const response = await fetch(url, {
+//         method: "GET",
+//         headers: {
+//           Authorization: `Bearer ${accessToken}`,
+//           "Content-Type": "application/json",
+//         },
+//         credentials: "include",
+//       });
+
+//       if (!response.ok) throw new Error("Download failed");
+
+//       const blob = await response.blob();
+//       const downloadUrl = window.URL.createObjectURL(blob);
+
+//       const a = document.createElement("a");
+//       a.href = downloadUrl;
+
+//       const filename =
+//         response.headers
+//           .get("Content-Disposition")
+//           ?.split("filename=")[1]
+//           ?.replace(/['"]/g, "") || "certificate.pdf";
+
+//       a.download = filename;
+//       document.body.appendChild(a);
+//       a.click();
+//       a.remove();
+//       window.URL.revokeObjectURL(downloadUrl);
+//     } catch (err) {
+//       console.error("Download error:", err);
+//     }
+//   };
+
+//   return (
+//     <button
+//       onClick={handleDownload}
+//       style={{
+//         backgroundColor: "#1976d2",
+//         color: "white",
+//         border: "none",
+//         borderRadius: "4px",
+//         padding: "4px 8px",
+//         cursor: "pointer",
+//       }}
+//     >
+//       Download
+//     </button>
+//   );
+// };
+
+// // ==========================================================
+// //                    MAIN COMPONENT
+// // ==========================================================
+// const UpdateCertificate = () => {
+//   const [rowData, setRowData] = useState<any[]>([]);
+//   const [colDef1, setColDef1] = useState<ColDef[]>([]);
+//   const [requiredFields, setRequiredFields] = useState<string[]>([]);
+//   const navigate = useNavigate();
+
+//   const regex = /^(g_|archived|extra_data)/;
+
+//   // ---------------- FETCH CERTIFICATE DATA ----------------
+//   const { data: dataRes } = useQuery({
+//     queryKey: ["resourceData", "certificate"],
+//     queryFn: async () => {
+//       const params = new URLSearchParams();
+//       params.append("queryId", "GET_ALL");
+
+//       const accessToken = getCookie("access_token");
+//       if (!accessToken) throw new Error("Access token missing");
+
+//       const response = await fetch(
+//         `${apiConfig.getResourceUrl("certificate")}?${params.toString()}`,
+//         {
+//           method: "GET",
+//           headers: {
+//             "Content-Type": "application/json",
+//             Authorization: `Bearer ${accessToken}`,
+//           },
+//           credentials: "include",
+//         }
+//       );
+
+//       if (!response.ok) throw new Error("Failed to fetch certificates");
+
+//       return await response.json();
+//     },
+//   });
+
+//   // ---------------- FETCH METADATA ----------------
+//   useQuery({
+//     queryKey: ["resourceMetaData", "certificate"],
+//     queryFn: async () => {
+//       const response = await fetch(
+//         `${apiConfig.getResourceMetaDataUrl("certificate")}?`,
+//         { method: "GET", headers: { "Content-Type": "application/json" } }
+//       );
+
+//       if (!response.ok) throw new Error("Failed metadata");
+
+//       const data = await response.json();
+
+//       const required = data[0]?.fieldValues
+//         .filter((f: any) => !regex.test(f.name))
+//         .map((f: any) => f.name);
+
+//       setRequiredFields(required || []);
+//       return data;
+//     },
+//   });
+
+//   // ---------------- BUILD COLUMNS ----------------
+//   useEffect(() => {
+//     if (!dataRes) return;
+
+//     const data = dataRes.resource || [];
+//     const fields = requiredFields.filter((f) => f !== "id");
+
+//     const columns: ColDef[] = fields.map((field) => {
+//       if (field === "status") {
+//         return {
+//           field: "status",
+//           headerName: "Status",
+//           resizable: true,
+//           sortable: true,
+//           filter: true,
+//           editable: false,
+//           cellRenderer: (params: any) => getStatusBadge(params.value),
+//         };
+//       }
+
+//       return {
+//         field,
+//         headerName: field,
+//         editable: false,
+//         resizable: true,
+//         sortable: true,
+//         filter: true,
+//       };
+//     });
+
+//     // --------- DOWNLOAD BUTTON COLUMN ----------
+//     columns.push({
+//       field: "upload_certificate",
+//       headerName: "Certificate",
+//       cellRenderer: DownloadButtonRenderer,
+//       resizable: true,
+//       sortable: false,
+//       filter: false,
+//       width: 150,
+//     });
+
+//     // -------- ACTION COLUMN --------
+//     columns.push({
+//       headerName: "Action",
+//       field: "action",
+//       cellRenderer: ActionCellRenderer,
+//       resizable: true,
+//       sortable: false,
+//       filter: false,
+//       width: 120,
+//     });
+
+//     setColDef1(columns);
+//     setRowData(data);
+//   }, [dataRes, requiredFields]);
+
+//   const handleUpdate = (id: any) => {
+//     navigate(`/edit/certificate/${id}`);
+//   };
+
+//   const defaultColDef: ColDef = {
+//     flex: 1,
+//     minWidth: 100,
+//     editable: false,
+//   };
+
+//   return (
+//     <div className="ag-theme-alpine" style={{ height: 500, width: "100%" }}>
+//       <AgGridReact
+//         rowData={rowData}
+//         columnDefs={colDef1}
+//         defaultColDef={defaultColDef}
+//         pagination={true}
+//         paginationPageSize={10}
+//         animateRows={true}
+//         context={{ handleUpdate }}
+//       />
+//     </div>
+//   );
+// };
+
+// export default UpdateCertificate;
 
 // import React, { useState } from 'react';
 // import { useEffect } from 'react';
@@ -489,446 +756,265 @@ export default UpdateCertificate;
 
 
 
-// import React, { useState, useEffect, useMemo } from "react";
-// import { useNavigate } from "react-router-dom";
-// import apiConfig from "../../config/apiConfig";
-// import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
-// import { AgGridReact } from "ag-grid-react";
-// import { useQuery } from "@tanstack/react-query";
-
-// ModuleRegistry.registerModules([AllCommunityModule]);
-
-// interface Certificate {
-//   id: string;
-//   course_name: string;
-//   course_duration: number;
-//   course_mode: string;
-//   platform: string;
-//   course_completion_date: string;
-//   upload_certificate: string;
-//   status?: boolean;
-//   student_id?: string; // Hidden
-//   course_url?: string;
-//   [key: string]: any;
-// }
-
-// const getCookie = (name: string): string | null => {
-//   const value = `; ${document.cookie}`;
-//   const parts = value.split(`; ${name}=`);
-//   if (parts.length === 2) return parts.pop()?.split(";").shift() || null;
-//   return null;
-// };
-
-// const UpdateCertificate: React.FC = () => {
-//   const [rowData, setRowData] = useState<Certificate[]>([]);
-//   const navigate = useNavigate();
-//   const regex = /^(g_|archived|extra_data)/;
-
-//   // Fetch certificate data
-//   const { data: dataRes, isFetching } = useQuery({
-//     queryKey: ["resourceData", "certificate"],
-//     queryFn: async () => {
-//       const params = new URLSearchParams({ queryId: "GET_ALL" });
-
-//       const accessToken = getCookie("access_token");
-//       if (!accessToken) throw new Error("Access token not found");
-
-//       const response = await fetch(
-//         `${apiConfig.getResourceUrl("certificate")}?${params.toString()}`,
-//         {
-//           method: "GET",
-//           headers: {
-//             "Content-Type": "application/json",
-//             Authorization: `Bearer ${accessToken}`,
-//           },
-//           credentials: "include",
-//         }
-//       );
-
-//       if (!response.ok) throw new Error("Error: " + response.status);
-
-//       return await response.json();
-//     },
-//     refetchOnWindowFocus: true,
-//   });
-
-//   // Status Badge
-//   const getStatusBadge = (status: any) => {
-//     if (status === "Approved" || status === true)
-//       return <span className="badge bg-success text-white">✅ Approved</span>;
-//     if (status === "Rejected" || status === false)
-//       return <span className="badge bg-danger text-white">❌ Rejected</span>;
-//     return <span className="badge bg-secondary text-white">⏳ Pending</span>;
-//   };
-
-//   // Populate rows
-//   useEffect(() => {
-//     if (!dataRes) return;
-
-//     const certificates: Certificate[] = dataRes.resource || [];
-
-//     const cleanedRows = certificates.map((c) => ({
-//       ...c,
-//       student_id: undefined, // Hide field
-//     }));
-
-//     setRowData(cleanedRows);
-//   }, [dataRes]);
-
-//   // Define columns
-//   const colDef1 = useMemo(() => {
-//     if (!rowData.length) return [];
-
-//     const keys = Object.keys(rowData[0]).filter(
-//       (key) =>
-//         !regex.test(key) &&
-//         key !== "id" &&
-//         key !== "student_id" // Hide student_id
-//     );
-
-//     const cols = keys.map((field) => {
-//       if (field === "status") {
-//         return {
-//           field,
-//           headerName: "Status",
-//           editable: false,
-//           resizable: true,
-//           sortable: true,
-//           filter: true,
-//           cellRenderer: (params: any) => getStatusBadge(params.value),
-//         };
-//       }
-
-//       if (field === "upload_certificate") {
-//         return {
-//           field,
-//           headerName: "Certificate",
-//           sortable: true,
-//           filter: true,
-//           resizable: true,
-//           cellRenderer: (params: any) => {
-//             const documentId = params.value;
-//             const userId = params.data.user_id;
-//             const handleDownload = async (e: any) => {
-//               e.stopPropagation();
-//               const accessToken = getCookie("access_token");
-
-//               try {
-//                 const url = `${apiConfig.API_BASE_URL}/student?document_id=${documentId}&queryId=GET_DOCUMENT&dmsRole=admin&user_id=${userId}`;
-
-//                 const res = await fetch(url, {
-//                   method: "GET",
-//                   headers: {
-//                     Authorization: `Bearer ${accessToken}`,
-//                     "Content-Type": "application/json",
-//                   },
-//                   credentials: "include",
-//                 });
-
-//                 if (!res.ok)
-//                   throw new Error("Failed: " + res.statusText);
-
-//                 const blob = await res.blob();
-//                 const downloadUrl = window.URL.createObjectURL(blob);
-
-//                 const a = document.createElement("a");
-//                 a.href = downloadUrl;
-//                 a.download =
-//                   res.headers.get("Content-Disposition")?.split("filename=")[1]?.replace(/['"]/g, "") ||
-//                   "certificate";
-//                 a.click();
-//                 window.URL.revokeObjectURL(downloadUrl);
-//               } catch (err) {
-//                 console.log("Download failed", err);
-//               }
-//             };
-
-//             return (
-//               <button
-//                 className="btn btn-sm btn-primary"
-//                 onClick={handleDownload}
-//               >
-//                 Download
-//               </button>
-//             );
-//           },
-//         };
-//       }
-
-//       return {
-//         field,
-//         headerName: field,
-//         editable: false,
-//         sortable: true,
-//         filter: true,
-//         resizable: true,
-//       };
-//     });
-
-//     // Add action column
-//     cols.push({
-//       headerName: "Action",
-//       field: "action",
-//       cellRenderer: (params: any) => 
-//         <button
-//           className="btn btn-primary btn-sm"
-//           onClick={() => navigate(`/edit/certificate/${params.data.id}`)}
-//         >
-//           Edit
-//         </button>,
-//       editable: false,
-//       resizable: true,
-//       sortable: false,
-//       filter: false,
-//     });
-
-//     return cols;
-//   }, [rowData]);
-
-//   const defaultColDef = {
-//     flex: 1,
-//     minWidth: 100,
-//     editable: false,
-//   };
-
-//   if (isFetching) return <div>Loading...</div>;
-
-//   return (
-//     <div className="ag-theme-alpine" style={{ height: 500, width: "100%" }}>
-//       <AgGridReact
-//         rowData={rowData}
-//         columnDefs={colDef1}
-//         defaultColDef={defaultColDef}
-//         pagination
-//         paginationPageSize={10}
-//         animateRows
-//       />
-//     </div>
-//   );
-// };
-
-// export default UpdateCertificate;
-
-
-
-
-
-// //``````````````````````````````````````````
-// import React, { useState, useEffect, useMemo } from "react";
-// import { useNavigate } from "react-router-dom";
-// import apiConfig from "../../config/apiConfig";
-// import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
-// import { AgGridReact } from "ag-grid-react";
-// import { useQuery } from "@tanstack/react-query";
-
-// ModuleRegistry.registerModules([AllCommunityModule]);
-
-// const getCookie = (name: string): string | null => {
-//   const value = `; ${document.cookie}`;
-//   const parts = value.split(`; ${name}=`);
-//   if (parts.length === 2) return parts.pop()?.split(";").shift() || null;
-//   return null;
-// };
-
-// type NormalizedStatus = "approved" | "rejected" | "pending";
-
-// const normalizeStatusValue = (val: any): NormalizedStatus => {
-//   if (val === true) return "approved";
-//   if (val === false) return "rejected";
-//   if (val === null || val === undefined) return "pending";
-
-//   const s = String(val).trim().toLowerCase();
-
-//   // accepted approved variants
-//   const approvedSet = new Set(["approved", "true", "1", "yes", "y"]);
-//   const rejectedSet = new Set(["rejected", "false", "0", "no", "n"]);
-
-//   if (approvedSet.has(s)) return "approved";
-//   if (rejectedSet.has(s)) return "rejected";
-//   return "pending";
-// };
-
-// const UpdateCertificate: React.FC = () => {
-//   const [rowData, setRowData] = useState<any[]>([]);
-//   const navigate = useNavigate();
-//   const regex = /^(g_|archived|extra_data)/;
-
-//   // fetch certificates
-//   const { data: dataRes, isFetching } = useQuery({
-//     queryKey: ["resourceData", "certificate"],
-//     queryFn: async () => {
-//       const params = new URLSearchParams({ queryId: "GET_ALL" });
-//       const token = getCookie("access_token");
-//       if (!token) throw new Error("No access token");
-
-//       const res = await fetch(
-//         `${apiConfig.getResourceUrl("certificate")}?${params.toString()}`,
-//         {
-//           headers: {
-//             Authorization: `Bearer ${token}`,
-//             "Content-Type": "application/json",
-//           },
-//           credentials: "include",
-//         }
-//       );
-
-//       if (!res.ok) throw new Error("Failed to fetch certificates");
-//       return await res.json();
-//     },
-//     refetchOnWindowFocus: false,
-//   });
-
-//   // prepare rows and normalize status into a stable value "status_normalized"
-//   useEffect(() => {
-//     if (!dataRes) {
-//       setRowData([]);
-//       return;
-//     }
-//     const certificates = Array.isArray(dataRes.resource) ? dataRes.resource : [];
-
-//     const cleaned = certificates.map((c: any) => {
-//       const normalized = normalizeStatusValue(c.status);
-//       // keep original status as well in case other logic depends on it
-//       return {
-//         ...c,
-//         status: normalized, // set status to normalized string (approved/rejected/pending)
-//         // hide student_id by not exposing it to column generation (we'll still keep it in object)
-//         student_id: c.student_id ?? undefined,
-//       };
-//     });
-
-//     setRowData(cleaned);
-//   }, [dataRes]);
-
-//   const getStatusBadge = (status: any) => {
-//     if (status === "Approved" || status === true)
-//       return <span className="badge bg-success text-white">✅ Approved</span>;
-//     if (status === "Rejected" || status === false)
-//       return <span className="badge bg-danger text-white">❌ Rejected</span>;
-//     return <span className="badge bg-secondary text-white">⏳ Pending</span>;
-//   };
-
-//   // columns
-//   const colDef1 = useMemo(() => {
-//     if (!rowData.length) return [];
-
-//     // build keys from first row but ensure 'status' exists
-//     const firstRow = rowData[0] || {};
-//     const keys = Object.keys(firstRow).filter((k) => !regex.test(k) && k !== "id" && k !== "student_id");
-
-//     const cols: any[] = [];
-
-//     // Force-add status as first column (so it always appears)
-//     cols.push({
-//       field: "status",
-//       headerName: "Status",
-//       sortable: true,
-//       filter: true,
-//       resizable: true,
-//       width: 120,
-//       cellRenderer: (params: any) => getStatusBadge(params.value),
-//     });
-
-//     // Add remaining keys (skipping status because we already added it)
-//     keys.forEach((field) => {
-//       if (field === "status") return;
-
-//       if (field === "upload_certificate") {
-//         cols.push({
-//           field,
-//           headerName: "Certificate",
-//           sortable: true,
-//           filter: true,
-//           resizable: true,
-//           cellRenderer: (params: any) => {
-//             const documentId = params.value;
-//             const userId = params.data?.user_id;
-//             const token = getCookie("access_token");
-
-//             const handleDownload = async (e: any) => {
-//               e.stopPropagation();
-//               try {
-//                 const url = `${apiConfig.API_BASE_URL}/student?document_id=${documentId}&queryId=GET_DOCUMENT&dmsRole=admin&user_id=${userId}`;
-//                 const res = await fetch(url, {
-//                   headers: { Authorization: `Bearer ${token}` },
-//                   credentials: "include",
-//                 });
-//                 if (!res.ok) throw new Error("Download failed");
-//                 const blob = await res.blob();
-//                 const downloadUrl = window.URL.createObjectURL(blob);
-//                 const a = document.createElement("a");
-//                 a.href = downloadUrl;
-//                 const disposition = res.headers.get("Content-Disposition") || "";
-//                 const filenameMatch = disposition.match(/filename="?([^"]+)"?/);
-//                 a.download = filenameMatch ? filenameMatch[1] : `certificate_${params.data.id}`;
-//                 document.body.appendChild(a);
-//                 a.click();
-//                 a.remove();
-//                 window.URL.revokeObjectURL(downloadUrl);
-//               } catch (err) {
-//                 console.error("Download error:", err);
-//               }
-//             };
-
-//             return (
-//               <button className="btn btn-sm btn-primary" onClick={handleDownload}>
-//                 Download
-//               </button>
-//             );
-//           },
-//         });
-//       } else {
-//         cols.push({
-//           field,
-//           headerName: field,
-//           sortable: true,
-//           filter: true,
-//           resizable: true,
-//           // make sure course_completion_date displays nicely if it exists
-//           valueFormatter: (params: any) => {
-//             if (field === "course_completion_date" && params.value) {
-//               try {
-//                 const d = new Date(params.value);
-//                 if (!isNaN(d.getTime())) return d.toLocaleString();
-//               } catch {
-//                 return params.value;
-//               }
-//             }
-//             return params.value ?? "";
-//           },
-//         });
-//       }
-//     });
-
-//     // action column
-//     cols.push({
-//       headerName: "Action",
-//       field: "action",
-//       width: 120,
-//       cellRenderer: (params: any) => (
-//         <button className="btn btn-primary btn-sm" onClick={() => navigate(`/edit/certificate/${params.data.id}`)}>
-//           Edit
-//         </button>
-//       ),
-//     });
-
-//     return cols;
-//   }, [rowData, navigate]);
-
-//   if (isFetching) return <div>Loading...</div>;
-
-//   return (
-//     <div className="ag-theme-alpine" style={{ height: 520, width: "100%" }}>
-//       <AgGridReact
-//         rowData={rowData}
-//         columnDefs={colDef1}
-//         defaultColDef={{ flex: 1, minWidth: 100 }}
-//         pagination
-//         paginationPageSize={10}
-//         animateRows
-//       />
-//     </div>
-//   );
-// };
-
-// export default UpdateCertificate;
+import React, { useState, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
+import apiConfig from "../../config/apiConfig";
+
+import {
+  AllCommunityModule,
+  ModuleRegistry,
+  ColDef
+} from "ag-grid-community";
+
+import { AgGridReact } from "ag-grid-react";
+import { useQuery } from "@tanstack/react-query";
+
+ModuleRegistry.registerModules([AllCommunityModule]);
+
+// -------------------- COOKIE --------------------
+const getCookie = (name: string): string | null => {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(";").shift() || null;
+  return null;
+};
+
+// -------------------- STATUS BADGE --------------------
+const getStatusBadge = (status: any) => {
+  const s = String(status).toLowerCase();
+
+  if (s === "true") {
+    return <span className="badge bg-success text-white">Approved</span>;
+  }
+
+  if (s === "false") {
+    return <span className="badge bg-danger text-white">Rejected</span>;
+  }
+
+  return <span className="badge bg-warning text-dark">Pending</span>;
+};
+
+// -------------------- DOWNLOAD BUTTON --------------------
+const DownloadButtonRenderer = (params: any) => {
+  const documentId = params.value;
+  const accessToken = getCookie("access_token");
+
+  const handleDownload = async (e: any) => {
+    e.stopPropagation();
+
+    try {
+      const url =
+        `${apiConfig.API_BASE_URL}/certificate` +
+        `?document_id=${documentId}&queryId=GET_DOCUMENT` +
+        `&dmsRole=admin&user_id=admin@rasp.com`;
+
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      });
+
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = downloadUrl;
+
+      const filename =
+        response.headers.get("Content-Disposition")?.split("filename=")[1]
+          ?.replace(/['"]/g, "") || "certificate.pdf";
+
+      a.download = filename;
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(downloadUrl);
+    } catch (err) {
+      console.error("Download error:", err);
+    }
+  };
+
+  return (
+    <button onClick={handleDownload} className="btn btn-primary btn-sm">
+      Download
+    </button>
+  );
+};
+
+// -------------------- ACTION RENDERER --------------------
+const ActionCellRenderer = (props: any) => {
+  const handleEdit = () => props.context.handleUpdate(props.data.id);
+
+  return (
+    <button className="btn btn-warning btn-sm" onClick={handleEdit}>
+      Edit
+    </button>
+  );
+};
+
+// ==========================================================
+//                    MAIN COMPONENT
+// ==========================================================
+const UpdateCertificate = () => {
+  const navigate = useNavigate();
+  const [rowData, setRowData] = useState<any[]>([]);
+  const [requiredFields, setRequiredFields] = useState<string[]>([]);
+  const regex = /^(g_|archived|extra_data)/;
+
+  // ---------------- FETCH METADATA ----------------
+  const { error: metaError, isLoading: metaLoading } = useQuery({
+    queryKey: ["resourceMetaData", "certificate"],
+    queryFn: async () => {
+      const res = await fetch(`${apiConfig.getResourceMetaDataUrl("certificate")}?`);
+      if (!res.ok) throw new Error("Metadata load failed");
+
+      const data = await res.json();
+      const required = data[0]?.fieldValues
+        .filter((f: any) => !regex.test(f.name))
+        .map((f: any) => f.name);
+
+      setRequiredFields(required || []);
+      return data;
+    },
+  });
+
+  // ---------------- FETCH CERTIFICATES + ENRICH ----------------
+  const { error: dataError, isLoading: dataLoading } = useQuery({
+    queryKey: ["resourceData", "certificate"],
+    queryFn: async () => {
+      const params = new URLSearchParams({ queryId: "GET_ALL" });
+      const token = getCookie("access_token");
+
+      const res = await fetch(
+        `${apiConfig.getResourceUrl("certificate")}?${params.toString()}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      const json = await res.json();
+      const rawRows = json.resource || [];
+
+      // ⭐ EXACT EXAMSCHEDULING-STYLE ENRICHING LOGIC
+      const enrichedRows = await Promise.all(
+        rawRows.map(async (row: any) => {
+          const studentParams = new URLSearchParams({
+  queryId: "GET_STUDENT_BY_CERTIFICATE",
+  student_id: row.student_id,
+});
+
+
+
+          const studentRes = await fetch(
+  `${apiConfig.getResourceUrl("certificate")}?${studentParams.toString()}`,
+  { headers: { Authorization: `Bearer ${token}` } }
+);
+
+
+          if (studentRes.ok) {
+  const stuJson = await studentRes.json();
+  const stu = stuJson.resource?.[0];
+
+  return {
+    ...row,
+    roll_no: stu?.roll_no || "N/A",
+    student_name: stu?.name || "",
+  };
+}
+
+
+          return row;
+        })
+      );
+
+      setRowData(enrichedRows);
+      return enrichedRows;
+    },
+  });
+
+  const handleUpdate = (id: any) =>
+    navigate(`/edit/certificate/${id}`);
+
+  // ============================================================
+  //            COLUMN DEFINITIONS (ExamScheduling style)
+  // ============================================================
+  const colDefs = useMemo(() => {
+    return [
+      {
+        headerName: "Roll Number",
+        field: "roll_no",
+        sortable: true,
+        filter: true,
+      },
+      {
+        headerName: "Student Name",
+        field: "student_name",
+        sortable: true,
+        filter: true,
+      },
+      {
+        headerName: "Course",
+        field: "course_name",
+        sortable: true,
+        filter: true,
+      },
+      {
+        headerName: "Platform",
+        field: "platform",
+        sortable: true,
+        filter: true,
+      },
+      {
+        headerName: "Completion Date",
+        field: "course_completion_date",
+        sortable: true,
+        filter: true,
+      },
+      {
+        headerName: "Status",
+        field: "status",
+        cellRenderer: (p: any) => getStatusBadge(p.value),
+      },
+      {
+        headerName: "Certificate",
+        field: "upload_certificate",
+        cellRenderer: DownloadButtonRenderer,
+      },
+      {
+        headerName: "Action",
+        field: "Action",
+        cellRenderer: ActionCellRenderer,
+      },
+    ];
+  }, [rowData]);
+
+  const defaultColDef: ColDef = {
+    flex: 1,
+    minWidth: 120,
+    resizable: true,
+    editable: false,
+  };
+
+  return (
+    <div className="ag-theme-alpine" style={{ height: 500 }}>
+      {metaLoading || dataLoading ? (
+        <div>Loading...</div>
+      ) : metaError || dataError ? (
+        <div>Error loading data...</div>
+      ) : (
+        <AgGridReact
+          rowData={rowData}
+          columnDefs={colDefs}
+          defaultColDef={defaultColDef}
+          pagination={true}
+          paginationPageSize={10}
+          animateRows={true}
+          context={{ handleUpdate }}
+        />
+      )}
+    </div>
+  );
+};
+
+export default UpdateCertificate;
+
