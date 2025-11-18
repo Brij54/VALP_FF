@@ -193,3 +193,29 @@ export const userResourceRoleMapping = async (data: any) => {
     return false;
   }
 };
+export const logout = async () => {
+  try {
+    const response = await fetch(
+      `${apiConfig.API_BASE_URL}/auth/logout`,
+      {
+        method: "POST",
+        credentials: "include", // important for sending cookies
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Logout failed: ${response.status}`);
+    }
+
+    console.log("Logged out successfully");
+
+    // Optional: clear any local storage/session storage
+    localStorage.clear();
+    sessionStorage.clear();
+
+    return true;
+  } catch (error) {
+    console.error("Logout error:", error);
+    return false;
+  }
+};

@@ -1,6 +1,7 @@
 // src/components/Utils/Sidebar.tsx
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { UserPlus, Home, ClipboardCheck } from "lucide-react";
 
 // CSS is global; you can import here OR rely on CreateStudent importing Upload.css
 // import "../Upload.css";
@@ -17,6 +18,18 @@ export default function Sidebar({
   activeSection,
 }: SidebarProps) {
   const navigate = useNavigate();
+
+  const menuItems = [
+  { text: "Add Student", path: "/bulkUpload" },
+  { text: "Batch Configuration", path: "/batch_config" },
+  { text: "Approve Reject Certificate", path: "/approve_reject_certificate" },
+];
+
+const iconMap: Record<string, JSX.Element> = {
+  "Add Student": <UserPlus size={24} color="#007bff" />,  // Blue
+  "Batch Configuration": <Home size={24} color="#ff9800" />, // Orange
+  "Approve Reject Certificate": <ClipboardCheck size={24} color="#28a745" />, // Green
+};
 
   return (
     <>
@@ -39,32 +52,32 @@ export default function Sidebar({
       <div className={`sidebar ${sidebarCollapsed ? "collapsed" : ""}`}>
         {/* Logo Section */}
         <div className="logoSection">
-         <div
-  className="logoCircle d-flex justify-content-center align-items-center shadow-sm mx-auto"
-  style={{
-    width: "95px",           // larger circle
-    height: "95px",
-    borderRadius: "50%",
-    backgroundColor: "#fff",
-    border: "2px solid #ddd",
-    overflow: "hidden",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: "10px",          // 🟢 adds inner breathing space to prevent edge cutting
-  }}
->
-  <img
-    src="/images/IIITB_logo1.png"
-    alt="IIITB Logo"
-    style={{
-      width: "90%",
-      height: "90%",
-      objectFit: "contain",    // 🟢 shows full image, no cropping
-      objectPosition: "center",// 🟢 ensures it stays centered horizontally
-    }}
-  />
-</div>
+          <div
+            className="logoCircle d-flex justify-content-center align-items-center shadow-sm mx-auto"
+            style={{
+              width: "95px", // larger circle
+              height: "95px",
+              borderRadius: "50%",
+              backgroundColor: "#fff",
+              border: "2px solid #ddd",
+              overflow: "hidden",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              padding: "10px", // 🟢 adds inner breathing space to prevent edge cutting
+            }}
+          >
+            <img
+              src="/images/IIITB_logo1.png"
+              alt="IIITB Logo"
+              style={{
+                width: "90%",
+                height: "90%",
+                objectFit: "contain", // 🟢 shows full image, no cropping
+                objectPosition: "center", // 🟢 ensures it stays centered horizontally
+              }}
+            />
+          </div>
           <div
             className="instituteName text-center"
             style={{
@@ -86,24 +99,34 @@ Bangalore`}
 
         {/* Navigation Menu */}
         <div className="navMenu">
-          <button className="navItem" onClick={() => navigate("/bulkUpload")}>
-            <span className="navIcon">📄</span>
-            <span className="navText">Add Student</span>
-          </button>
-          {/* Batch Configuration */}
-          <button className="navItem" onClick={() => navigate("/batch_config")}>
-            <span className="navIcon">🏠</span>
-            <span className="navText">Batch Configuration</span>
-          </button>
+          {menuItems.map((item) => (
+            <button
+              key={item.text}
+              className="navItem"
+              onClick={() => navigate(item.path)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "14px",
+                padding: "12px 14px",
+                marginBottom: "12px", // ← margin added here
+                borderRadius: "8px",
+                width: "100%",
+              }}
+            >
+              <span className="navIcon">{iconMap[item.text]}</span>
 
-          {/* Approve / Reject Certificate */}
-          <button
-            className="navItem"
-            onClick={() => navigate("/approve_reject_certificate")}
-          >
-            <span className="navIcon">📄</span>
-            <span className="navText">Approve Reject Certificate</span>
-          </button>
+              <span
+                className="navText"
+                style={{
+                  fontSize: "17px",
+                  fontWeight: 600,
+                }}
+              >
+                {item.text}
+              </span>
+            </button>
+          ))}
         </div>
       </div>
     </>

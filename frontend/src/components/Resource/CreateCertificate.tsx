@@ -676,9 +676,6 @@ const CreateCertificate = () => {
           id="id-1"
           className="d-flex flex-column border border-2 p-2 gap-2 mb-2"
         >
-          <div className="border-0 fw-bold fs-3" id="id-3">
-            Certificate
-          </div>
 
           <div className="border-0 fw-bold" id="id-7">
             course_name *

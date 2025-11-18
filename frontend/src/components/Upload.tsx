@@ -26,9 +26,21 @@ import "./Upload.css";
 
 import CreateCertificate from "./Resource/CreateCertificate";
 import Sidebar from "./Utils/Sidebar";
+import { logout } from "../apis/backend";
+import { useNavigate } from "react-router-dom";
+import { LogOut } from "lucide-react";
 
 export default function Upload() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const navigate = useNavigate();
+  // Logout button handler
+  const handleLogout = async () => {
+    const ok = await logout();
+    if (ok) {
+      navigate("/login");
+    }
+  };
 
   return (
     <div className="page12Container">
@@ -46,10 +58,45 @@ export default function Upload() {
         {/* Header bar */}
         <header className="contentHeader">
           <h1 className="pageTitle">Upload Certificate</h1>
-          <div className="userProfile">
-            <div className="profileCircle">
-              <span className="profileInitial">S</span>
+          <div className="userProfile" style={{ position: "relative" }}>
+            <div className="profileCircle"
+              onClick={() => setShowDropdown((prev) => !prev)}
+              style={{ cursor: "pointer" }}
+            >
+              <span className="profileInitial">A</span>
             </div>
+
+            {showDropdown && (
+              <div
+                style={{
+                  position: "absolute",
+                  right: 0,
+                  top: "45px",
+                  background: "white",
+                  borderRadius: "8px",
+                  boxShadow: "0 2px 10px rgba(0,0,0,0.15)",
+                  padding: "10px",
+                  minWidth: "130px",
+                  zIndex: 100,
+                }}
+              >
+                <button
+                  onClick={handleLogout}
+                  style={{
+                    width: "100%",
+                    background: "none",
+                    border: "none",
+                    textAlign: "left",
+                    padding: "8px",
+                    cursor: "pointer",
+                    fontSize: "16px",
+                  }}
+                >
+                  <LogOut size={16} />
+                  <span style={{ marginLeft: "8px" }}>Logout</span>
+                </button>
+              </div>
+            )}
           </div>
         </header>
 

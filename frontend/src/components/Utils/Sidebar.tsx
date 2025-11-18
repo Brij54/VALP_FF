@@ -1,6 +1,7 @@
 // src/components/Utils/Sidebar.tsx
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { Home, FileSpreadsheet } from "lucide-react";
 // CSS is global; you can import here OR rely on CreateStudent importing Upload.css
 // import "../Upload.css";
 
@@ -9,6 +10,12 @@ type SidebarProps = {
   toggleSidebar: () => void;
   activeSection: "dashboard" | "settings";
 };
+
+const iconMap: Record<string, JSX.Element> = {
+  Home: <Home size={22} color="#007bff" />,
+  "Student Records": <FileSpreadsheet size={22} color="#28a745" />,
+};
+
 
 export default function Sidebar({
   sidebarCollapsed,
@@ -84,15 +91,52 @@ Bangalore`}
         </div>
         {/* Navigation Menu */}
         <div className="navMenu">
-          <button className="navItem" onClick={() => navigate("/upload")}>
-            <span className="navIcon">🏠</span>
-            <span className="navText">Home</span>
-          </button>
-          <button className="navItem" onClick={() => navigate("/records")}>
-            <span className="navIcon">🏠</span>
-            <span className="navText">Student Records</span>
-          </button>
-        </div>
+  {/* Home */}
+  <button
+    className="navItem"
+    onClick={() => navigate("/upload")}
+    style={{
+      display: "flex",
+      alignItems: "center",
+      gap: "14px",
+      padding: "12px 14px",
+      marginBottom: "12px",
+      borderRadius: "8px",
+      width: "100%",
+    }}
+  >
+    <span className="navIcon">{iconMap["Home"]}</span>
+    <span
+      className="navText"
+      style={{ fontSize: "17px", fontWeight: 600 }}
+    >
+      Home
+    </span>
+  </button>
+
+  {/* Student Records */}
+  <button
+    className="navItem"
+    onClick={() => navigate("/records")}
+    style={{
+      display: "flex",
+      alignItems: "center",
+      gap: "14px",
+      padding: "12px 14px",
+      marginBottom: "12px",
+      borderRadius: "8px",
+      width: "100%",
+    }}
+  >
+    <span className="navIcon">{iconMap["Student Records"]}</span>
+    <span
+      className="navText"
+      style={{ fontSize: "17px", fontWeight: 600 }}
+    >
+      Student Records
+    </span>
+  </button>
+</div>
       </div>
     </>
   );
