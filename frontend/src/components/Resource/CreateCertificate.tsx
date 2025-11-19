@@ -725,7 +725,7 @@ const CreateCertificate = () => {
             ))}
           </select>
 
-          <div className="border-0 fw-bold" id="id-P">
+          {/* <div className="border-0 fw-bold" id="id-P">
             platform *
           </div>
           <input
@@ -737,7 +737,63 @@ const CreateCertificate = () => {
             onChange={(e) =>
               setDataToSave({ ...dataToSave, platform: e.target.value })
             }
-          />
+          /> */}
+{/* PLATFORM */}
+<div className="border-0 fw-bold" id="id-P">
+  platform *
+</div>
+
+{/* Dropdown with fixed options + Other */}
+<select
+  className="form-select"
+  name="platformType"
+  required
+  value={dataToSave.platformType || ""}      // helper field
+  onChange={(e) => {
+    const choice = e.target.value;
+    if (choice === "Other") {
+      // show textbox, clear platform so user can type
+      setDataToSave({
+        ...dataToSave,
+        platformType: "Other",
+        platform: dataToSave.platform || "",  // keep previous custom if any
+      });
+    } else {
+      // directly use platform value
+      setDataToSave({
+        ...dataToSave,
+        platformType: choice,
+        platform: choice,
+      });
+    }
+  }}
+>
+  <option value="">Select platform</option>
+  <option value="Coursera">Coursera</option>
+  <option value="Udemy">Udemy</option>
+  <option value="NPTEL">NPTEL</option>
+  <option value="Other">Other</option>
+</select>
+
+{/* If Other -> show text input to enter custom platform */}
+{dataToSave.platformType === "Other" && (
+  <div className="mt-2">
+    <label className="form-label">Enter platform name</label>
+    <input
+      type="text"
+      className="form-control"
+      name="platform"
+      required
+      value={dataToSave.platform || ""}
+      onChange={(e) =>
+        setDataToSave({
+          ...dataToSave,
+          platform: e.target.value, // this is what will go to backend
+        })
+      }
+    />
+  </div>
+)}
 
           <div className="border-0 fw-bold" id="id-V">
             course_completion_date *

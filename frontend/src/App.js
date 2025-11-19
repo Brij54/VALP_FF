@@ -47,6 +47,7 @@ import BatchEdit from "./components/Edit/BatchEdit";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AddStudent from "./components/AddStudent";
 import CertificateEdit from "./components/Edit/CertificateEdit";
+import ForgotPassword from "./components/Login/ForgotPassword";
 function App() {
   return (
     <Routes>
@@ -113,6 +114,7 @@ function App() {
           </ProtectedRoute>
         }
       />
+      <Route path="/forgot_password" element={<ForgotPassword />} />
     </Routes>
   );
 }

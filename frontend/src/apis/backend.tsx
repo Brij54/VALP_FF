@@ -1,3 +1,224 @@
+// import apiConfig from "../config/apiConfig";
+// // import { User } from "../context/LoginContext";
+
+// export type User = {
+//   username: string;
+//   password: string;
+// };
+
+// export type UserRegistration = {
+//   newUsername: string;
+//   newPassword: string;
+//   newFirstName: string;
+//   newLastName: string;
+//   newEmail: string;
+//   adminUsername: string;
+//   adminPassword: string;
+//   resource: string;
+
+//   user_name: string;
+//   user_email: string;
+// };
+// const getCookie = (name: string): string | null => {
+//     const value = `; ${document.cookie}`;
+//     const parts = value.split(`; ${name}=`);
+//     if (parts.length === 2) return parts.pop()?.split(";").shift() || null;
+//     return null;
+//   };
+// export const login = async (user: User) => {
+//   try {
+//     const { username, password } = user;
+//     const params = new URLSearchParams({
+//       username: username,
+//       password: password,
+//     });
+
+//      const loginData = {
+//       username: username,
+//       password: password,
+//     }
+//     const response = await fetch(
+//       `${apiConfig.API_BASE_URL}/auth/login`,
+//       {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json",
+//         },
+//         body: JSON.stringify(loginData),
+//         credentials: "include", // to receive cookies
+//       },
+//     );
+
+//     if (!response.ok) {
+//       throw new Error(`HTTP error! Status: ${response.status}`);
+//     }
+
+//     console.log("Cookies received:", document.cookie);
+
+//     let data = null;
+//     const text = await response.text();
+
+//     if (text) {
+//       data = JSON.parse(text); // only parse if body is not empty
+//       console.log("Login response body:", data);
+//     } else {
+//       console.log("No response body received");
+//     }
+
+//     return true;
+//   } catch (error) {
+//     console.error("Login failed:", error);
+//     return false;
+//   }
+// };
+
+// export const registration = async (user:UserRegistration) => {
+//   try {
+//     // const {} = user;
+//     const params = new URLSearchParams({
+//       newUsername: user.newUsername,
+//       newPassword: user.newPassword,
+//       newFirstName: user.newFirstName,
+//       newLastName: user.newLastName,
+//       newEmail: user.newEmail,
+//       adminUsername: user.adminUsername,
+//       adminPassword: user.adminPassword,
+//       resource: user.resource,
+//     });
+//     const userToSave = {
+//       "user_name": user.user_name,
+//       "user_email": user.newEmail,
+//     };
+
+//     const response = await fetch(
+//       `${apiConfig.API_BASE_URL}/auth/add_user?${params.toString()}`,
+//       {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json",
+//         },
+//         body: JSON.stringify(userToSave),
+//         credentials: "include", // important to receive cookies from backend
+//       }
+//     );
+//     if (!response.ok) {
+//       throw new Error(`HTTP error! Status: ${response.status}`);
+//     }
+
+//     // Optional: handle body if server also returns JSON
+//     // const data = await response.json();
+//     // console.log("Registration response body:", data);
+//     console.log("Registration successful");
+//     return true; // or return any meaningful info
+//   } catch (error) {
+//     console.error("Registration failed:", error);
+//     return false;
+//   }
+// };
+
+// export const assignClientRole = async (role: string) => {
+//   try {
+//     const accessToken = getCookie("access_token");
+
+//     if (!accessToken) {
+//       throw new Error("Access token not found");
+//     }
+
+//     const params = new URLSearchParams({
+//       roleName: role,
+//     });
+
+//     const response = await fetch(
+//       `${apiConfig.API_BASE_URL}/auth/add-client-role?${params.toString()}`,
+//       {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json",
+//           "Authorization": `Bearer ${accessToken}`, // include the token here
+//         },
+//         credentials: "include", // include cookies if needed
+//       }
+//     );
+
+//     if (!response.ok) {
+//       throw new Error(`HTTP error! Status: ${response.status}`);
+//     }
+
+//     console.log("Role Assigned successfully");
+
+//     return true;
+//   } catch (error) {
+//     console.error("Assign Role failed:", error);
+//     return false;
+//   }
+// };
+// export const userResourceRoleMapping = async (data: any) => {
+//   try {
+//     const accessToken = getCookie("access_token");
+
+//     if (!accessToken) {
+//       throw new Error("Access token not found");
+//     }
+
+//     const params = new URLSearchParams({
+//       role: data.role,
+//       userName: data.userName,
+//       resourceType: data.resourceType,
+//       resourceId: data.resourceId,
+//     });
+
+//     const response = await fetch(
+//       `${apiConfig.API_BASE_URL}/auth/user_resource_role?${params.toString()}`,
+//       {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json",
+//           "Authorization": `Bearer ${accessToken}`, // include token here
+//         },
+//         credentials: "include", // important to receive cookies from backend
+//       }
+//     );
+
+//     if (!response.ok) {
+//       throw new Error(`HTTP error! Status: ${response.status}`);
+//     }
+
+//     // Optional: handle body if server also returns JSON
+//     // const data = await response.json();
+//     console.log("User Resource Role Mapping successful");
+
+//     return true; // or return any meaningful info
+//   } catch (error) {
+//     console.error("User Resource Role Mapping failed:", error);
+//     return false;
+//   }
+// };
+// export const logout = async () => {
+//   try {
+//     const response = await fetch(
+//       `${apiConfig.API_BASE_URL}/auth/logout`,
+//       {
+//         method: "POST",
+//         credentials: "include", // important for sending cookies
+//       }
+//     );
+
+//     if (!response.ok) {
+//       throw new Error(`Logout failed: ${response.status}`);
+//     }
+
+//     console.log("Logged out successfully");
+
+//     // Optional: clear any local storage/session storage
+//     localStorage.clear();
+//     sessionStorage.clear();
+
+//     return true;
+//   } catch (error) {
+//     console.error("Logout error:", error);
+//     return false;
+//   }
+// };
 import apiConfig from "../config/apiConfig";
 // import { User } from "../context/LoginContext";
 
@@ -19,35 +240,31 @@ export type UserRegistration = {
   user_name: string;
   user_email: string;
 };
+
 const getCookie = (name: string): string | null => {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop()?.split(";").shift() || null;
-    return null;
-  };
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(";").shift() || null;
+  return null;
+};
+
 export const login = async (user: User) => {
   try {
     const { username, password } = user;
-    const params = new URLSearchParams({
-      username: username,
-      password: password,
-    });
 
-     const loginData = {
+    const loginData = {
       username: username,
       password: password,
-    }
-    const response = await fetch(
-      `${apiConfig.API_BASE_URL}/auth/login`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(loginData),
-        credentials: "include", // to receive cookies
+    };
+
+    const response = await fetch(`${apiConfig.API_BASE_URL}/auth/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-    );
+      body: JSON.stringify(loginData),
+      credentials: "include", // to receive cookies
+    });
 
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
@@ -72,9 +289,8 @@ export const login = async (user: User) => {
   }
 };
 
-export const registration = async (user:UserRegistration) => {
+export const registration = async (user: UserRegistration) => {
   try {
-    // const {} = user;
     const params = new URLSearchParams({
       newUsername: user.newUsername,
       newPassword: user.newPassword,
@@ -85,9 +301,10 @@ export const registration = async (user:UserRegistration) => {
       adminPassword: user.adminPassword,
       resource: user.resource,
     });
+
     const userToSave = {
-      "user_name": user.user_name,
-      "user_email": user.newEmail,
+      user_name: user.user_name,
+      user_email: user.newEmail,
     };
 
     const response = await fetch(
@@ -105,11 +322,8 @@ export const registration = async (user:UserRegistration) => {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
 
-    // Optional: handle body if server also returns JSON
-    // const data = await response.json();
-    // console.log("Registration response body:", data);
     console.log("Registration successful");
-    return true; // or return any meaningful info
+    return true;
   } catch (error) {
     console.error("Registration failed:", error);
     return false;
@@ -134,7 +348,7 @@ export const assignClientRole = async (role: string) => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${accessToken}`, // include the token here
+          Authorization: `Bearer ${accessToken}`, // include the token here
         },
         credentials: "include", // include cookies if needed
       }
@@ -152,6 +366,7 @@ export const assignClientRole = async (role: string) => {
     return false;
   }
 };
+
 export const userResourceRoleMapping = async (data: any) => {
   try {
     const accessToken = getCookie("access_token");
@@ -173,7 +388,7 @@ export const userResourceRoleMapping = async (data: any) => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${accessToken}`, // include token here
+          Authorization: `Bearer ${accessToken}`, // include token here
         },
         credentials: "include", // important to receive cookies from backend
       }
@@ -183,8 +398,6 @@ export const userResourceRoleMapping = async (data: any) => {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
 
-    // Optional: handle body if server also returns JSON
-    // const data = await response.json();
     console.log("User Resource Role Mapping successful");
 
     return true; // or return any meaningful info
@@ -193,15 +406,13 @@ export const userResourceRoleMapping = async (data: any) => {
     return false;
   }
 };
+
 export const logout = async () => {
   try {
-    const response = await fetch(
-      `${apiConfig.API_BASE_URL}/auth/logout`,
-      {
-        method: "POST",
-        credentials: "include", // important for sending cookies
-      }
-    );
+    const response = await fetch(`${apiConfig.API_BASE_URL}/auth/logout`, {
+      method: "POST",
+      credentials: "include", // important for sending cookies
+    });
 
     if (!response.ok) {
       throw new Error(`Logout failed: ${response.status}`);
@@ -219,3 +430,31 @@ export const logout = async () => {
     return false;
   }
 };
+
+/**
+ * Forgot Password API
+ * Adjust URL and field name (usernameOrEmail) to match your backend.
+ */
+export const forgotPassword = async (payload: {
+  identifier: string;
+}): Promise<boolean> => {
+  const res = await fetch(`${apiConfig.API_BASE_URL}/auth/forgot_password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ identifier: payload.identifier }),
+  });
+
+  return res.ok;
+};
+
+// export const forgotPassword = async (data: { usernameOrEmail: string }) => {
+//   const response = await fetch(
+//     `${apiConfig.API_BASE_URL}/auth/forgot_password`,
+//     {
+//       method: "POST",
+//       headers: { "Content-Type": "application/json" },
+//       body: JSON.stringify(data),
+//     }
+//   );
+//   return response.ok;
+// };

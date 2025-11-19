@@ -56,7 +56,10 @@ public ResponseEntity<?> userRoleMapping(@RequestBody Map<String,Object> map){
     return iamService.addUserRoleMapping(map);
 }
 
-
+    @PostMapping("/forgot_password")
+    public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> body) {
+        return iamService.forgotPassword(body);
+    }
 
 
 
