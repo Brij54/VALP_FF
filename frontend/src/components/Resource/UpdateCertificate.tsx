@@ -197,8 +197,6 @@
 
 // export default UpdateCertificate;
 
-
-
 // import React, { useState, useEffect } from "react";
 // import { useNavigate } from "react-router-dom";
 // import apiConfig from "../../config/apiConfig";
@@ -481,7 +479,6 @@
 
 // ModuleRegistry.registerModules([AllCommunityModule]);
 
-
 // // interface ColumnDef {
 // //   field: string;
 // //   headerName: string;
@@ -525,7 +522,7 @@
 //     if (parts.length === 2) return parts.pop()?.split(";").shift() || null;
 //     return null;
 //   };
-  
+
 //   const UpdateCertificate = () => {
 //    const [rowData, setRowData] = useState<any[]>([]);
 //   const [colDef1, setColDef1] = useState<any[]>([]);
@@ -547,7 +544,7 @@
 //     queryKey: ['resourceData', 'certificate'],
 //      queryFn: async () => {
 //       const params = new URLSearchParams();
-    
+
 //       const queryId: any = "GET_ALL";
 //       params.append("queryId", queryId);
 //        const accessToken = getCookie("access_token");
@@ -581,7 +578,7 @@
 //       return data;
 //     },
 //   })
-  
+
 //     // Fetch metadata
 //     const {data: dataResMeta,isLoading:isLoadingDataResMeta,error:errorDataResMeta} = useQuery({
 //     queryKey: ['resourceMetaData', 'certificate'],
@@ -608,7 +605,7 @@
 //       return data;
 //     },
 //   });
-  
+
 //     const handleEdit = (id: any, field: string, value: string) => {
 //       setEditedData((prevData: any) => ({
 //         ...prevData,
@@ -618,16 +615,16 @@
 //         },
 //       }));
 //     };
-  
+
 //     const handleUpdate = async (id: any) => {
 
 //     navigate(`/edit/certificate/${id}`);
 // };
-    
+
 //   // useEffect(() => {
 //   //   const data = fetchData || [];
 //   //   const fields = requiredFields.filter(field => field !== 'id') || [];
-    
+
 //   //   const columns = fields.map(field => ({
 //   //     field: field,
 //   //     headerName: field,
@@ -636,7 +633,7 @@
 //   //     sortable: true,
 //   //     filter: true
 //   //   }));
-    
+
 //   //   // Add the Action column with the custom cell renderer
 //   //   columns.push({
 //   //     headerName: 'Action',
@@ -697,12 +694,10 @@
 //     flex: 1,
 //     minWidth: 100,
 //     editable: false,
-//   }; 
-   
+//   };
 
 // return (
 //     <div>
-       
 
 // <div className="">
 //     {rowData.length === 0 && colDef1.length === 0 ? (
@@ -749,22 +744,15 @@
 // </div>
 // )
 
-
 // };
 
 // export default UpdateCertificate
-
-
 
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import apiConfig from "../../config/apiConfig";
 
-import {
-  AllCommunityModule,
-  ModuleRegistry,
-  ColDef
-} from "ag-grid-community";
+import { AllCommunityModule, ModuleRegistry, ColDef } from "ag-grid-community";
 
 import { AgGridReact } from "ag-grid-react";
 import { useQuery } from "@tanstack/react-query";
@@ -824,7 +812,9 @@ const DownloadButtonRenderer = (params: any) => {
       a.href = downloadUrl;
 
       const filename =
-        response.headers.get("Content-Disposition")?.split("filename=")[1]
+        response.headers
+          .get("Content-Disposition")
+          ?.split("filename=")[1]
           ?.replace(/['"]/g, "") || "certificate.pdf";
 
       a.download = filename;
@@ -867,7 +857,9 @@ const UpdateCertificate = () => {
   const { error: metaError, isLoading: metaLoading } = useQuery({
     queryKey: ["resourceMetaData", "certificate"],
     queryFn: async () => {
-      const res = await fetch(`${apiConfig.getResourceMetaDataUrl("certificate")}?`);
+      const res = await fetch(
+        `${apiConfig.getResourceMetaDataUrl("certificate")}?`
+      );
       if (!res.ok) throw new Error("Metadata load failed");
 
       const data = await res.json();
@@ -894,34 +886,33 @@ const UpdateCertificate = () => {
 
       const json = await res.json();
       const rawRows = json.resource || [];
+      console.log("rawRows", rawRows);
 
       // ⭐ EXACT EXAMSCHEDULING-STYLE ENRICHING LOGIC
       const enrichedRows = await Promise.all(
         rawRows.map(async (row: any) => {
           const studentParams = new URLSearchParams({
-  queryId: "GET_STUDENT_BY_CERTIFICATE",
-  student_id: row.student_id,
-});
-
-
+            queryId: "GET_STUDENT_BY_CERTIFICATE",
+            args:"student_id:"+ row.student_id,
+          });
 
           const studentRes = await fetch(
-  `${apiConfig.getResourceUrl("certificate")}?${studentParams.toString()}`,
-  { headers: { Authorization: `Bearer ${token}` } }
-);
-
+            `${apiConfig.getResourceUrl(
+              "certificate"
+            )}?${studentParams.toString()}`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
 
           if (studentRes.ok) {
-  const stuJson = await studentRes.json();
-  const stu = stuJson.resource?.[0];
+            const stuJson = await studentRes.json();
+            const stu = stuJson.resource[0];
 
-  return {
-    ...row,
-    roll_no: stu?.roll_no || "N/A",
-    student_name: stu?.name || "",
-  };
-}
-
+            return {
+              ...row,
+              roll_no: stu?.roll_no || "N/A",
+              student_name: stu?.name || "",
+            };
+          }
 
           return row;
         })
@@ -932,8 +923,7 @@ const UpdateCertificate = () => {
     },
   });
 
-  const handleUpdate = (id: any) =>
-    navigate(`/edit/certificate/${id}`);
+  const handleUpdate = (id: any) => navigate(`/edit/certificate/${id}`);
 
   // ============================================================
   //            COLUMN DEFINITIONS (ExamScheduling style)
@@ -1017,4 +1007,3 @@ const UpdateCertificate = () => {
 };
 
 export default UpdateCertificate;
-

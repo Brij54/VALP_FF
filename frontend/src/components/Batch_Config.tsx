@@ -20,7 +20,7 @@ export default function Batch_Config() {
   const handleLogout = async () => {
     const ok = await logout();
     if (ok) {
-      navigate("/login");
+      navigate("/");
     }
   };
 
@@ -86,10 +86,10 @@ export default function Batch_Config() {
         <div className="contentBody">
           <section className="createStudentSection">
             {/* Create Batch block */}
-            <div className="pageFormContainer mb-4">
-              <h2 className="fw-semibold mb-3">Create Batch</h2>
+            {/* <div className="pageFormContainer mb-4"> */}
+              {/* <h2 className="fw-semibold mb-3">Create Batch</h2> */}
               <CreateBatch />
-            </div>
+            {/* </div> */}
 
             {/* Update Batch block */}
             <div className="pageFormContainer">

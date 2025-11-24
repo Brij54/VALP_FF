@@ -1,6 +1,257 @@
+//package com.rasp.app.controller;
+//
+//import com.rasp.app.helper.OtpStore;
+//import jakarta.servlet.http.Cookie;
+//import jakarta.servlet.http.HttpServletResponse;
+//import org.springframework.beans.factory.annotation.Value;
+//import org.springframework.http.*;
+//import org.springframework.util.LinkedMultiValueMap;
+//import org.springframework.util.MultiValueMap;
+//import org.springframework.web.bind.annotation.*;
+//import org.springframework.web.client.RestTemplate;
+//import org.springframework.mail.SimpleMailMessage;
+//import org.springframework.mail.javamail.JavaMailSender;
+//
+//import java.time.LocalDateTime;
+//import java.util.*;
+//
+//@RestController
+//@RequestMapping("/api/auth")
+//public class AuthController {
+//
+//    private final JavaMailSender mailSender;
+//
+//    public AuthController(JavaMailSender mailSender) {
+//        this.mailSender = mailSender;
+//    }
+//
+//    // ==============================
+//    // KEYCLOAK CONFIG
+//    // ==============================
+//    @Value("${spring.security.oauth2.client.provider.keycloak.clientId}")
+//    private String clientId;
+//
+//    @Value("${spring.security.oauth2.client.provider.keycloak.clientSecret}")
+//    private String clientSecret;
+//
+//    @Value("${spring.security.oauth2.client.provider.keycloak.redirectUri}")
+//    private String redirectUri;
+//
+//    @Value("${spring.security.oauth2.client.provider.keycloak.token-uri}")
+//    private String keycloakTokenUrl;
+//
+//    @Value("${spring.security.oauth2.client.provider.keycloak.frontendURL}")
+//    private String frontendURL;
+//
+//    @Value("${spring.security.oauth2.client.provider.keycloak.issuer-uri}")
+//    private String issuerUri;
+//
+//    @Value("${spring.security.oauth2.client.provider.keycloak.logout-uri}")
+//    private String logoutUrl;
+//
+//    @Value("${authentication-type:implicit}")
+//    private String authenticationType;
+//
+//
+//    // ==========================================================
+//    // LOGIN  ✔ (From your original working code)
+//    // ==========================================================
+//    @PostMapping("/login")
+//    public void login(@RequestBody Map<String, Object> loginDetails,
+//                      HttpServletResponse response) throws Exception {
+//
+//        String username = (String) loginDetails.get("username");
+//        String password = (String) loginDetails.get("password");
+//
+//        if ("implicit".equalsIgnoreCase(authenticationType)) {
+//            handleImplicitFlow(username, password, response);
+//        } else {
+//            response.sendRedirect(
+//                    keycloakTokenUrl +
+//                            "?client_id=" + clientId +
+//                            "&response_type=code" +
+//                            "&scope=openid profile email" +
+//                            "&redirect_uri=" + redirectUri
+//            );
+//        }
+//    }
+//
+//    private void handleImplicitFlow(String username, String password, HttpServletResponse response) {
+//        RestTemplate rest = new RestTemplate();
+//
+//        HttpHeaders headers = new HttpHeaders();
+//        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+//
+//        MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
+//        form.add("grant_type", "password");
+//        form.add("client_id", clientId);
+//        form.add("client_secret", clientSecret);
+//        form.add("username", username);
+//        form.add("password", password);
+//
+//        HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(form, headers);
+//
+//        ResponseEntity<Map> resp = rest.exchange(keycloakTokenUrl, HttpMethod.POST, entity, Map.class);
+//
+//        if (!resp.getStatusCode().is2xxSuccessful()) {
+//            response.setStatus(HttpStatus.UNAUTHORIZED.value());
+//            return;
+//        }
+//
+//        String token = (String) resp.getBody().get("access_token");
+//        String refresh = (String) resp.getBody().get("refresh_token");
+//
+//        setCookie(response, "access_token", token, -1);
+//        setCookie(response, "refresh_token", refresh, -1);
+//    }
+//
+//
+//    // ==========================================================
+//    // FORGOT PASSWORD  ✔
+//    // ==========================================================
+//    @PostMapping("/forgot-password")
+//    public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> req) {
+//        String email = req.get("email");
+//
+//        try {
+//            RestTemplate rest = new RestTemplate();
+//            HttpHeaders headers = new HttpHeaders();
+//            headers.set("Authorization", "Bearer " + getAdminAccessToken());
+//            HttpEntity<?> entity = new HttpEntity<>(headers);
+//
+//            String searchUrl = issuerUri + "/users?email=" + email;
+//            ResponseEntity<List> resp =
+//                    rest.exchange(searchUrl, HttpMethod.GET, entity, List.class);
+//
+//            if (resp.getBody().isEmpty()) {
+//                return ResponseEntity.status(404).body("User does not exist");
+//            }
+//
+//            String otp = String.valueOf((int)(Math.random() * 900000) + 100000);
+//
+//            OtpStore.otpMap.put(email, new OtpStore.OtpDetails(
+//                    otp, LocalDateTime.now().plusMinutes(5)
+//            ));
+//
+//            SimpleMailMessage msg = new SimpleMailMessage();
+//            msg.setTo(email);
+//            msg.setSubject("Password Reset OTP");
+//            msg.setText("Your OTP is: " + otp + "\nValid for 5 minutes.");
+//            mailSender.send(msg);
+//
+//            return ResponseEntity.ok("OTP sent successfully");
+//
+//        } catch (Exception e) {
+//            return ResponseEntity.status(500).body("Failed: " + e.getMessage());
+//        }
+//    }
+//
+//
+//    // ==========================================================
+//    // RESET PASSWORD  ✔
+//    // ==========================================================
+//    @PostMapping("/reset-password")
+//    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> req) {
+//        String email = req.get("email");
+//        String otp = req.get("otp");
+//        String newPassword = req.get("newPassword");
+//
+//        OtpStore.OtpDetails details = OtpStore.otpMap.get(email);
+//
+//        if (details == null || details.expiry.isBefore(LocalDateTime.now()))
+//            return ResponseEntity.badRequest().body("OTP expired");
+//
+//        if (!details.otp.equals(otp))
+//            return ResponseEntity.badRequest().body("Invalid OTP");
+//
+//        try {
+//            RestTemplate rest = new RestTemplate();
+//
+//            HttpHeaders headers = new HttpHeaders();
+//            headers.set("Authorization", "Bearer " + getAdminAccessToken());
+//            HttpEntity<?> entity = new HttpEntity<>(headers);
+//
+//            String searchUrl = issuerUri + "/users?email=" + email;
+//            ResponseEntity<List> resp =
+//                    rest.exchange(searchUrl, HttpMethod.GET, entity, List.class);
+//
+//            if (resp.getBody().isEmpty())
+//                return ResponseEntity.badRequest().body("User not found");
+//
+//            Map user = (Map) resp.getBody().get(0);
+//            String userId = (String) user.get("id");
+//
+//            Map<String, Object> passwordPayload = new HashMap<>();
+//            passwordPayload.put("type", "password");
+//            passwordPayload.put("temporary", false);
+//            passwordPayload.put("value", newPassword);
+//
+//            HttpHeaders headers2 = new HttpHeaders();
+//            headers2.setContentType(MediaType.APPLICATION_JSON);
+//            headers2.set("Authorization", "Bearer " + getAdminAccessToken());
+//
+//            HttpEntity<?> passReq = new HttpEntity<>(passwordPayload, headers2);
+//
+//            String resetUrl = issuerUri + "/users/" + userId + "/reset-password";
+//            rest.exchange(resetUrl, HttpMethod.PUT, passReq, String.class);
+//
+//            OtpStore.otpMap.remove(email);
+//
+//            return ResponseEntity.ok("Password reset successful");
+//
+//        } catch (Exception e) {
+//            return ResponseEntity.status(500).body("Failed: " + e.getMessage());
+//        }
+//    }
+//
+//
+//    // ==========================================================
+//    // KEYCLOAK ADMIN TOKEN  ✔
+//    // ==========================================================
+//    private String getAdminAccessToken() {
+//        RestTemplate rest = new RestTemplate();
+//
+//        HttpHeaders headers = new HttpHeaders();
+//        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+//
+//        MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
+//        form.add("grant_type", "client_credentials");
+//        form.add("client_id", clientId);
+//        form.add("client_secret", clientSecret);
+//
+//        HttpEntity<MultiValueMap<String, String>> entity =
+//                new HttpEntity<>(form, headers);
+//
+//        ResponseEntity<Map> resp = rest.exchange(
+//                keycloakTokenUrl,
+//                HttpMethod.POST,
+//                entity,
+//                Map.class
+//        );
+//
+//        return (String) resp.getBody().get("access_token");
+//    }
+//
+//
+//    // ==========================================================
+//    // COOKIE HELPER  ✔
+//    // ==========================================================
+//    private void setCookie(HttpServletResponse response, String name, String value, int maxAge) {
+//        Cookie c = new Cookie(name, value);
+//        c.setPath("/");
+//        c.setSecure(false);
+//        c.setHttpOnly(false);
+//        c.setMaxAge(maxAge);
+//        response.addCookie(c);
+//    }
+//}
+
+
 // Updated AuthController.java
 package com.rasp.app.controller;
 
+import com.rasp.app.helper.OtpStore;
+import com.rasp.app.service.EmailService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.http.HttpResponse;
@@ -8,6 +259,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.util.LinkedMultiValueMap;
@@ -24,6 +276,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -53,6 +306,9 @@ public class AuthController {
     @Value("${authentication-type:auth-code}")
     private String authenticationType;
 
+    @Value("${spring.security.oauth2.client.provider.keycloak.keycloakUrl}")
+    private String keyCloakUrl;
+
     @Value("${spring.security.oauth2.client.provider.keycloak.authorization-uri}")
     private String authorizationUri;
 
@@ -61,7 +317,8 @@ public class AuthController {
     @Value("${spring.security.oauth2.client.provider.keycloak.logout-uri}")
     private String logout;
 
-
+    @Autowired
+    private EmailService emailService;
 
 
     @PostMapping("/login")
@@ -203,6 +460,136 @@ public class AuthController {
         setCookie(response, "refresh_token", "", 0);
 
         return ResponseEntity.ok("Logged out");
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> req) {
+        String email = req.get("email");
+
+        try {
+            // CHECK USER EXISTS
+            RestTemplate rest = new RestTemplate();
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", "Bearer " + getAdminAccessToken());
+            HttpEntity<?> entity = new HttpEntity<>(headers);
+
+
+            String searchUrl = keyCloakUrl + "/users?email=" + email;
+
+            ResponseEntity<List> resp =
+                    rest.exchange(searchUrl, HttpMethod.GET, entity, List.class);
+
+            if (resp.getBody().isEmpty()) {
+                return ResponseEntity.status(404).body("User does not exist");
+            }
+
+            // GENERATE OTP
+            String otp = String.valueOf((int)(Math.random() * 900000) + 100000);
+
+            OtpStore.otpMap.put(email, new OtpStore.OtpDetails(
+                    otp, LocalDateTime.now().plusMinutes(5)
+            ));
+
+            // PRINT OTP IN CONSOLE
+//            System.out.println("====================================");
+//            System.out.println("📩 OTP for " + email + " = " + otp);
+//            System.out.println("====================================");
+            emailService.sendOtpMail(email, otp);
+
+            return ResponseEntity.ok("OTP generated");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error: " + e.getMessage());
+        }
+    }
+
+
+    // ==========================================================
+    // RESET PASSWORD
+    // ==========================================================
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> req) {
+        String email = req.get("email");
+        String otp = req.get("otp");
+        String newPassword = req.get("newPassword");
+
+        // VERIFY OTP
+        OtpStore.OtpDetails details = OtpStore.otpMap.get(email);
+        System.out.println("details : "+ details);
+        if (details == null || details.expiry.isBefore(LocalDateTime.now()))
+            return ResponseEntity.badRequest().body("OTP expired");
+
+        if (!details.otp.equals(otp))
+            return ResponseEntity.badRequest().body("Invalid OTP");
+
+        try {
+            RestTemplate rest = new RestTemplate();
+
+            // FIND USER
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", "Bearer " + getAdminAccessToken());
+            HttpEntity<?> entity = new HttpEntity<>(headers);
+
+            String searchUrl = keyCloakUrl + "/users?email=" + email;
+            ResponseEntity<List> resp =
+                    rest.exchange(searchUrl, HttpMethod.GET, entity, List.class);
+
+            if (resp.getBody().isEmpty())
+                return ResponseEntity.badRequest().body("User not found");
+
+            Map user = (Map) resp.getBody().get(0);
+            String userId = (String) user.get("id");
+
+            // SET NEW PASSWORD IN KEYCLOAK
+            Map<String, Object> passwordPayload = new HashMap<>();
+            passwordPayload.put("type", "password");
+            passwordPayload.put("temporary", false);
+            passwordPayload.put("value", newPassword);
+
+            HttpHeaders headers2 = new HttpHeaders();
+            headers2.setContentType(MediaType.APPLICATION_JSON);
+            headers2.set("Authorization", "Bearer " + getAdminAccessToken());
+
+            HttpEntity<?> passReq = new HttpEntity<>(passwordPayload, headers2);
+
+            String resetUrl = keyCloakUrl + "/users/" + userId + "/reset-password";
+            rest.exchange(resetUrl, HttpMethod.PUT, passReq, String.class);
+
+            // REMOVE OTP
+            OtpStore.otpMap.remove(email);
+
+            return ResponseEntity.ok("Password reset successful");
+
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Failed: " + e.getMessage());
+        }
+    }
+
+
+    // ==========================================================
+    // KEYCLOAK ADMIN TOKEN
+    // ==========================================================
+    private String getAdminAccessToken() {
+        RestTemplate rest = new RestTemplate();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
+        form.add("grant_type", "client_credentials");
+        form.add("client_id", clientId);
+        form.add("client_secret", clientSecret);
+
+        HttpEntity<MultiValueMap<String, String>> entity =
+                new HttpEntity<>(form, headers);
+
+        ResponseEntity<Map> resp = rest.exchange(
+                keycloakTokenUrl,
+                HttpMethod.POST,
+                entity,
+                Map.class
+        );
+
+        return (String) resp.getBody().get("access_token");
     }
 
     private void setCookie(HttpServletResponse response, String name, String value, int maxAge) {

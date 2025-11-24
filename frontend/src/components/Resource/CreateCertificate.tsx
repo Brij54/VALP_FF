@@ -443,6 +443,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchForeignResource } from "../../apis/resources";
 import { fetchEnum } from "../../apis/enum";
 import { LoginContext } from "../../context/LoginContext";
+import styles from "../Styles/CreateCertificate.module.css";
 
 export type resourceMetaData = {
   resource: string;
@@ -549,7 +550,11 @@ const CreateCertificate = () => {
               queryFn: () => fetchForeignResource(field.foreign),
             });
 
-            await fetchForeignData(field.foreign, field.name, field.foreign_field);
+            await fetchForeignData(
+              field.foreign,
+              field.name,
+              field.foreign_field
+            );
           }
         }
 
@@ -662,109 +667,133 @@ const CreateCertificate = () => {
       }
     } catch (err) {
       console.error("❌ Network / CORS error in handleCreate:", err);
-      alert("Failed to reach server. Check if backend is running and CORS is configured.");
+      alert(
+        "Failed to reach server. Check if backend is running and CORS is configured."
+      );
     }
   };
 
   if (isLoading) return <div>Loading certificate metadata...</div>;
   if (error) return <div>Error loading metadata.</div>;
 
+
+
+
   return (
-    <div>
-      <div>
-        <div
-          id="id-1"
-          className="d-flex flex-column border border-2 p-2 gap-2 mb-2"
-        >
+    <div className={styles.formCard}>
+      <div className={styles.certificateFormWrapper}>
+        
+        <h4 className={styles.sectionTitle}>Add Course Certificate</h4>
 
-          <div className="border-0 fw-bold" id="id-7">
-            course_name *
-          </div>
-          <input
-            type="text"
-            className="form-control"
-            name="course_name"
-            required
-            value={dataToSave.course_name || ""}
-            onChange={(e) =>
-              setDataToSave({ ...dataToSave, course_name: e.target.value })
-            }
-          />
+        <div className={styles.formGrid}>
 
-          <div className="border-0 fw-bold" id="id-D">
-            course_duration *
-          </div>
-          <input
-            type="text"
-            className="form-control"
-            name="course_duration"
-            required
-            value={dataToSave.course_duration || ""}
-            onChange={(e) =>
-              setDataToSave({ ...dataToSave, course_duration: e.target.value })
-            }
-          />
-
-          <div className="border-0 fw-bold" id="id-J">
-            course_mode *
-          </div>
-          <select
-            className="form-select"
-            name="course_mode"
-            required
-            value={dataToSave.course_mode || ""}
-            onChange={(e) =>
-              setDataToSave({ ...dataToSave, course_mode: e.target.value })
-            }
-          >
-            <option value="">Select course_mode</option>
-            {enums["Course_mode"]?.map((val, idx) => (
-              <option key={idx} value={val}>
-                {val}
-              </option>
-            ))}
-          </select>
-
-          <div className="border-0 fw-bold" id="id-P">
-            platform *
-          </div>
-          <input
-            type="text"
-            className="form-control"
-            name="platform"
-            required
-            value={dataToSave.platform || ""}
-            onChange={(e) =>
-              setDataToSave({ ...dataToSave, platform: e.target.value })
-            }
-          />
-
-          <div className="border-0 fw-bold" id="id-V">
-            course_completion_date *
-          </div>
-          <input
-            type="date"
-            className="form-control"
-            name="course_completion_date"
-            required
-            value={dataToSave.course_completion_date || ""}
-            onChange={(e) =>
-              setDataToSave({
-                ...dataToSave,
-                course_completion_date: e.target.value,
-              })
-            }
-          />
-
-          <div className="border-0 fw-bold" id="id-11">
-            upload_certificate *
-          </div>
-          <div className="mb-3" id="id-13">
-            <label className="form-label">
-              Upload file for upload_certificate
+          {/* course_name */}
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel}>
+              <span className={styles.required}>*</span>
+              Course Name
             </label>
             <input
-              className="form-control"
+              type="text"
+              className={styles.formControl}
+              name="course_name"
+              required
+              value={dataToSave.course_name || ""}
+              onChange={(e) =>
+                setDataToSave({ ...dataToSave, course_name: e.target.value })
+              }
+            />
+          </div>
+
+          {/* course_duration */}
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel}>
+              <span className={styles.required}>*</span>
+              Course Duration
+            </label>
+            <input
+              type="text"
+              className={styles.formControl}
+              name="course_duration"
+              required
+              value={dataToSave.course_duration || ""}
+              onChange={(e) =>
+                setDataToSave({ ...dataToSave, course_duration: e.target.value })
+              }
+            />
+          </div>
+
+          {/* course_mode */}
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel}>
+              <span className={styles.required}>*</span>
+              Course Mode
+            </label>
+            <select
+              className={styles.formControl}
+              name="course_mode"
+              required
+              value={dataToSave.course_mode || ""}
+              onChange={(e) =>
+                setDataToSave({ ...dataToSave, course_mode: e.target.value })
+              }
+            >
+              <option value="">Select course mode</option>
+              {enums["Course_mode"]?.map((val, idx) => (
+                <option key={idx} value={val}>
+                  {val}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* platform */}
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel}>
+              <span className={styles.required}>*</span>
+              Platform
+            </label>
+            <input
+              type="text"
+              className={styles.formControl}
+              name="platform"
+              required
+              value={dataToSave.platform || ""}
+              onChange={(e) =>
+                setDataToSave({ ...dataToSave, platform: e.target.value })
+              }
+            />
+          </div>
+
+          {/* completion date */}
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel}>
+              <span className={styles.required}>*</span>
+              Completion Date
+            </label>
+            <input
+              type="date"
+              className={styles.formControl}
+              name="course_completion_date"
+              required
+              value={dataToSave.course_completion_date || ""}
+              onChange={(e) =>
+                setDataToSave({
+                  ...dataToSave,
+                  course_completion_date: e.target.value,
+                })
+              }
+            />
+          </div>
+
+          {/* upload_certificate */}
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel}>
+              <span className={styles.required}>*</span>
+              Upload Certificate
+            </label>
+            <input
+              className={styles.formControl}
               type="file"
               name="upload_certificate"
               required
@@ -777,58 +806,54 @@ const CreateCertificate = () => {
             />
           </div>
 
-          {/* hidden student_id */}
-          <input
-            type="hidden"
-            name="student_id"
-            value={dataToSave.student_id || ""}
-          />
-
-          <div className="border-0 fw-bold" id="id-1F">
-            course_url
+          {/* course_url */}
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel}>Course URL</label>
+            <input
+              type="text"
+              className={styles.formControl}
+              name="course_url"
+              value={dataToSave.course_url || ""}
+              onChange={(e) =>
+                setDataToSave({ ...dataToSave, course_url: e.target.value })
+              }
+            />
           </div>
-          <input
-            type="text"
-            className="form-control"
-            name="course_url"
-            value={dataToSave.course_url || ""}
-            onChange={(e) =>
-              setDataToSave({ ...dataToSave, course_url: e.target.value })
-            }
-          />
 
-          <button className="btn btn-success" id="id-1J" onClick={handleCreate}>
+        </div>
+
+        {/* hidden */}
+        <input type="hidden" name="student_id" value={dataToSave.student_id || ""} />
+
+        <div className={styles.buttonRow}>
+          <button className={styles.primaryBtn} onClick={handleCreate}>
             Submit
           </button>
         </div>
+      </div>
 
-        {showToast && (
-          <div
-            className="toast-container position-fixed top-20 start-50 translate-middle p-3"
-            style={{ zIndex: 1550 }}
-          >
-            <div
-              className="toast show"
-              role="alert"
-              aria-live="assertive"
-              aria-atomic="true"
-            >
-              <div className="toast-header">
-                <strong className="me-auto">Success</strong>
-                <button
-                  type="button"
-                  className="btn-close"
-                  aria-label="Close"
-                  onClick={() => setShowToast(false)}
-                ></button>
-              </div>
-              <div className="toast-body text-success text-center">
-                Created successfully!
-              </div>
+      {/* Toast */}
+      {showToast && (
+        <div
+          className="toast-container position-fixed top-0 start-50 translate-middle-x p-3"
+          style={{ zIndex: 2000 }}
+        >
+          <div className="toast show shadow">
+            <div className="toast-header bg-success text-white">
+              <strong className="me-auto">Success</strong>
+              <button
+                type="button"
+                className="btn-close"
+                aria-label="Close"
+                onClick={() => setShowToast(false)}
+              ></button>
+            </div>
+            <div className="toast-body text-success fw-semibold text-center">
+              Created Successfully!
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };

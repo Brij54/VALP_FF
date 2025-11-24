@@ -35,6 +35,19 @@ spring:
         jwt:
           issuer-uri: ${KEYCLOAK_HOST}:${KEYCLOAK_PORT}/realms/${REALM}
 
+  mail:
+      host: smtp.gmail.com
+      port: 587
+      username: brij926532@gmail.com
+      password: clth uxib nmkl oqmz
+      properties:
+        mail:
+          smtp:
+            auth: true
+            starttls:
+              enable: true
+              required: true
+
 jwt:
   auth:
     converter:

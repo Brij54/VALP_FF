@@ -10,15 +10,18 @@
 
 
 .sectionTitle {
-  margin-bottom: 18px;
-  color: #333;
-  font-size: 1.1rem;
+  text-align: center;
+  margin-bottom: 24px;
+  color: #222;
+  font-size: 1.4rem;
   font-weight: 600;
 }
+
 .formGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 20px 30px;
+  gap: 28px 40px; /* large spacing for premium feel */
+  width: 100%;
 }
 
 .formGroup {
@@ -27,9 +30,10 @@
 }
 
 .formLabel {
-  margin-bottom: 6px;
-  font-weight: 500;
-  color: #444;
+  margin-bottom: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  color: #333;
 }
 
 .required {
@@ -37,12 +41,24 @@
   margin-right: 4px;
 }
 
+.batchformCard{
+
+  background: white;
+  padding: 28px;
+  height: calc(100vh - 60vh); /* adjust 80px based on your header height */
+  border-radius: 0 0 12px 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  margin: 0;
+  overflow-y: auto; /* scroll only inside the form if needed */
+
+}
+
 .formControl {
-  border: 1px solid #dcdcdc;
-  border-radius: 6px;
-  padding: 8px 10px;
-  font-size: 0.95rem;
-  transition: border-color 0.2s ease;
+  border: 1px solid #d0d0d0;
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 1rem;
+  transition: border-color 0.2s;
 }
 
 .formControl:focus {
@@ -52,35 +68,26 @@
 
 .buttonRow {
   display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 20px;
+  justify-content: center; /* center the submit button */
+  margin-top: 35px;
 }
 
 .primaryBtn {
   background-color: #007bff;
   color: white;
   border: none;
-  padding: 8px 22px;
-  border-radius: 6px;
-  font-weight: 500;
-  transition: background 0.2s ease;
+  padding: 12px 40px;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  transition: background-color 0.2s;
 }
 
 .primaryBtn:hover {
   background-color: #005dc1;
 }
 
-.secondaryBtn {
-  background-color: #f0f0f0;
-  color: #333;
-  border: none;
-  padding: 8px 22px;
-  border-radius: 6px;
-  font-weight: 500;
-  transition: background 0.2s ease;
-}
-
-.secondaryBtn:hover {
-  background-color: #e0e0e0;
+.certificateFormWrapper {
+  max-width: 1200px;
+  margin: 0 auto;
 }

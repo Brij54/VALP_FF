@@ -19,7 +19,7 @@ export default function Approve_Reject_Certificate() {
   const handleLogout = async () => {
     const ok = await logout();
     if (ok) {
-      navigate("/login");
+      navigate("/");
     }
   };
 

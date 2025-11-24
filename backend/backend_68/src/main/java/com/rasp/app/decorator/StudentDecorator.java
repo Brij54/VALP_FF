@@ -80,7 +80,7 @@ public class StudentDecorator extends BaseDecorator {
         // -----------------------------------------------------
         // Username + Password = roll_no
         // -----------------------------------------------------
-        String userName = rollNo;
+        String userName = (rollNo != null && !rollNo.isEmpty()) ? rollNo : email;
         String password = rollNo;
         System.out.println("Username: "+userName + " Password: "+password);
         RestTemplate restTemplate = new RestTemplate();

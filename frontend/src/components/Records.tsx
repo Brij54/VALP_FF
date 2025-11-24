@@ -39,7 +39,7 @@ export default function Records() {
   const handleLogout = async () => {
     const ok = await logout();
     if (ok) {
-      navigate("/login");
+      navigate("/");
     }
   };
 
@@ -104,10 +104,10 @@ export default function Records() {
         {/* White card body */}
         <div className="contentBody">
           <section className="createStudentSection">
-            <div className="pageFormContainer mb-4">
-              <h2 className="fw-semibold mb-3">Your Certificates</h2>
+            {/* <div className="pageFormContainer mb-4"> */}
+              {/* <h2 className="fw-semibold mb-3">Your Certificates</h2> */}
               <ReadCertificate />
-            </div>
+            {/* </div> */}
           </section>
         </div>
       </main>

@@ -297,7 +297,7 @@ public class KeycloakTokenFilter extends OncePerRequestFilter {
                 path.equals("/api/auth/login") ||
                         path.equals("/api/auth/register") ||
                         path.equals("/api/auth/callback") ||
-                        path.equals("/api/auth/logout") ||
+                        path.equals("/api/auth/yes") ||
                         path.equals("/api/auth/add-client-role") ||
                         path.equals("/api/auth/assign-client-role") ||
                         path.equals("/api/auth/user_resource_role") ||
@@ -318,6 +318,8 @@ public class KeycloakTokenFilter extends OncePerRequestFilter {
                         path.equals("/api/auth/addUser")||
                         path.startsWith("/api/generate_app_zip") ||
                         path.startsWith("/api/auth/adding_user") ||
+                        path.startsWith("/api/auth/forgot-password") ||
+                        path.startsWith("/api/auth/reset-password") ||
                         path.startsWith("/api/auth/user_resource_role_mapping")
 
         );

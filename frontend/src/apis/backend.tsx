@@ -193,6 +193,54 @@ export const userResourceRoleMapping = async (data: any) => {
     return false;
   }
 };
+
+
+export const forgotPassword = async (email: string) => {
+  try {
+    const response = await fetch(
+      `${apiConfig.API_BASE_URL}/auth/forgot-password`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      }
+    );
+
+    if (!response.ok) {
+      return { success: false, message: "User does not exist" };
+    }
+
+    return { success: true, message: "OTP sent successfully" };
+  } catch (error) {
+    return { success: false, message: "Something went wrong" };
+  }
+};
+
+export const resetPassword = async (
+  email: string,
+  otp: string,
+  newPassword: string
+) => {
+  try {
+    const response = await fetch(
+      `${apiConfig.API_BASE_URL}/auth/reset-password`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, otp, newPassword }),
+      }
+    );
+
+    if (!response.ok) {
+      return { success: false, message: "Invalid OTP or expired" };
+    }
+
+    return { success: true, message: "Password reset successful" };
+  } catch (error) {
+    return { success: false, message: "Something went wrong" };
+  }
+};
+
 export const logout = async () => {
   try {
     const response = await fetch(

@@ -47,12 +47,18 @@ import BatchEdit from "./components/Edit/BatchEdit";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AddStudent from "./components/AddStudent";
 import CertificateEdit from "./components/Edit/CertificateEdit";
+import ForgotPassword from "./components/Auth/ForgotPassword";
+import Home from "./components/Home";
+
 function App() {
   return (
     <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route path="/registration" element={<Registration />} />
+      <Route path="/" element={<Home />}>
+      <Route index element={<Login />} />
+      <Route path="forgot-password" element={<ForgotPassword />} />
+    </Route>
       <Route path="/edit" element={<Edit />} />
+
 
       {/* STUDENT ROUTES */}
       <Route

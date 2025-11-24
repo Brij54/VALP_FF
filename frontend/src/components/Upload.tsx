@@ -38,7 +38,7 @@ export default function Upload() {
   const handleLogout = async () => {
     const ok = await logout();
     if (ok) {
-      navigate("/login");
+      navigate("/");
     }
   };
 
@@ -103,10 +103,10 @@ export default function Upload() {
         {/* White card body */}
         <div className="contentBody">
           <section className="createStudentSection">
-            <div className="pageFormContainer mb-4">
-              <h2 className="fw-semibold mb-3">Create Certificate</h2>
+            {/* <div className="pageFormContainer mb-4"> */}
+              {/* <h2 className="fw-semibold mb-3">Create Certificate</h2> */}
               <CreateCertificate />
-            </div>
+            {/* </div> */}
           </section>
         </div>
       </main>

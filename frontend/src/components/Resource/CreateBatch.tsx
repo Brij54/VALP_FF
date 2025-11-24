@@ -4,7 +4,7 @@ import apiConfig from "../../config/apiConfig";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchForeignResource } from "../../apis/resources";
 import { fetchEnum } from "../../apis/enum";
-
+import styles from "../Styles/CreateCertificate.module.css";
 export type resourceMetaData = {
   resource: string;
   fieldValues: any[];
@@ -164,65 +164,73 @@ const CreateBatch = () => {
   };
 
   return (
-    <div>
-      <div>
-        <div
-          id="id-39"
-          className="d-flex flex-column border border-2 p-2 gap-2 mb-2"
-        >
-          <div className="border-0 fw-bold fs-3" id="id-3B">
-            Batch
+    <div className={styles.batchformCard}>
+      <div className={styles.certificateFormWrapper}>
+        {/* Title */}
+        <h2 className={styles.sectionTitle}>Create Batch</h2>
+
+        {/* Grid layout (2 columns) */}
+        <div className={styles.formGrid}>
+          {/* batch_name */}
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel}>
+              <span className={styles.required}>*</span> Batch Name
+            </label>
+            <input
+              type="text"
+              className={styles.formControl}
+              name="batch_name"
+              required
+              value={dataToSave["batch_name"] || ""}
+              onChange={(e) =>
+                setDataToSave({
+                  ...dataToSave,
+                  batch_name: e.target.value,
+                })
+              }
+            />
           </div>
-          <div className="border-0 fw-bold" id="id-3F">
-            batch_name *
+
+          {/* no_of_courses */}
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel}>
+              <span className={styles.required}>*</span> No. of Courses
+            </label>
+            <input
+              type="number"
+              className={styles.formControl}
+              name="no_of_courses"
+              required
+              value={dataToSave["no_of_courses"] || ""}
+              onChange={(e) =>
+                setDataToSave({
+                  ...dataToSave,
+                  no_of_courses: e.target.value,
+                })
+              }
+            />
           </div>
-          <input
-            type="text"
-            className="form-control"
-            name="batch_name"
-            required={true}
-            value={dataToSave["batch_name"] || ""}
-            onChange={(e) =>
-              setDataToSave({ ...dataToSave, ["batch_name"]: e.target.value })
-            }
-          />
-          <div className="border-0 fw-bold" id="id-3L">
-            no_of_courses *
-          </div>
-          <input
-            type="text"
-            className="form-control"
-            name="no_of_courses"
-            required={true}
-            value={dataToSave["no_of_courses"] || ""}
-            onChange={(e) =>
-              setDataToSave({
-                ...dataToSave,
-                ["no_of_courses"]: e.target.value,
-              })
-            }
-          />
-          <button className="btn btn-success" id="id-3P" onClick={handleCreate}>
+        </div>
+
+        {/* Submit button */}
+        <div className={styles.buttonRow}>
+          <button className={styles.primaryBtn} onClick={handleCreate}>
             Submit
           </button>
         </div>
+
+        {/* Toast */}
         {showToast && (
           <div
             className="toast-container position-fixed top-20 start-50 translate-middle p-3"
             style={{ zIndex: 1550 }}
           >
-            <div
-              className="toast show"
-              role="alert"
-              aria-live="assertive"
-              aria-atomic="true"
-            >
+            <div className="toast show" role="alert" aria-live="assertive">
               <div className="toast-header">
                 <strong className="me-auto">Success</strong>
                 <button
                   type="button"
                   className="btn-close"
-                  data-bs-dismiss="toast"
                   aria-label="Close"
                   onClick={() => setShowToast(false)}
                 ></button>
@@ -234,33 +242,6 @@ const CreateBatch = () => {
           </div>
         )}
       </div>
-      {showToast && (
-        <div
-          className="toast-container position-fixed top-20 start-50 translate-middle p-3"
-          style={{ zIndex: 1550 }}
-        >
-          <div
-            className="toast show"
-            role="alert"
-            aria-live="assertive"
-            aria-atomic="true"
-          >
-            <div className="toast-header">
-              <strong className="me-auto">Success</strong>
-              <button
-                type="button"
-                className="btn-close"
-                data-bs-dismiss="toast"
-                aria-label="Close"
-                onClick={() => setShowToast(false)}
-              ></button>
-            </div>
-            <div className="toast-body text-success text-center">
-              Created successfully!
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

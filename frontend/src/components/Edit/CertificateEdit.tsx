@@ -555,7 +555,7 @@ import { fetchEnum, getCookie } from "../../apis/enum";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import Sidebar from "../Utils/SidebarAdmin";
-import "../Batch_Config.css"; // SAME UI STYLES
+import styles from "../Styles/CreateCertificate.module.css"; // SAME UI STYLES
 
 const Edit = () => {
   const { id }: any = useParams();
@@ -828,178 +828,167 @@ const Edit = () => {
           <div className="pageFormContainer">
             {!loadingEditComp && (
               <form>
-                <div
-                  id="id-1"
-                  className="d-flex flex-column border border-2 p-2 gap-2 mb-2"
-                >
-                  <div className="border-0 fw-bold fs-3">Certificate</div>
+                <div className={styles.certificateFormWrapper}>
+                  <h2 className={styles.sectionTitle}>Edit Certificate</h2>
 
-                  {/* --- YOUR EXACT SAME CODE BELOW --- */}
-
-                  <div className="border-0 fw-bold">course_name *</div>
-                  <input
-                    type="text"
-                    className="form-control"
-                    name="course_name"
-                    required={true}
-                    value={editedRecord["course_name"] || ""}
-                    onChange={(e) =>
-                      handleEdit(id, "course_name", e.target.value)
-                    }
-                  />
-
-                  <div className="border-0 fw-bold">course_duration *</div>
-                  <input
-                    type="text"
-                    className="form-control"
-                    name="course_duration"
-                    required={true}
-                    value={editedRecord["course_duration"] || ""}
-                    onChange={(e) =>
-                      handleEdit(id, "course_duration", e.target.value)
-                    }
-                  />
-
-                  <div className="border-0 w-100 bg-light">
-                    <div className="border-0 fw-bold">course_mode *</div>
-                    <input
-                      className="form-control"
-                      name="course_mode"
-                      value={editedRecord.course_mode || ""}
-                      onChange={(e) =>
-                        handleEdit(id, e.target.name, e.target.value)
-                      }
-                    />
-                  </div>
-
-                  <div className="border-0 fw-bold">platform *</div>
-                  <input
-                    type="text"
-                    className="form-control"
-                    name="platform"
-                    required={true}
-                    value={editedRecord["platform"] || ""}
-                    onChange={(e) => handleEdit(id, "platform", e.target.value)}
-                  />
-
-                  <div className="border-0 fw-bold">
-                    course_completion_date *
-                  </div>
-                  <input
-                    className="form-control"
-                    name="course_completion_date"
-                    required={true}
-                    value={editedRecord["course_completion_date"] || ""}
-                    onChange={(e) =>
-                      handleEdit(id, e.target.value, e.target.value)
-                    }
-                  />
-
-                  <div className="border-0 fw-bold">student_id *</div>
-                  {(() => {
-                    const options = foreignKeyData["Student"] || [];
-                    const filteredOptions = options.filter((option) =>
-                      option["id"]
-                        ?.toLowerCase()
-                        .includes(
-                          (searchQueries["student_id"] || "").toLowerCase()
-                        )
-                    );
-                    return (
-                      <>
-                        {/* <button
-                          className="btn btn-secondary dropdown-toggle"
-                          type="button"
-                          id={`dropdownMenu-${"student_id"}`}
-                          data-bs-toggle="dropdown"
-                          aria-haspopup="true"
-                          aria-expanded="false"
-                        >
-                          {editedRecord["student_id"]
-                            ? options.find(
-                                (item) => item.id === editedRecord["student_id"]
-                              )?.["id"] || "Select"
-                            : `Select student_id`}
-                        </button> */}
-                        {/* <div
-                          className="dropdown-menu"
-                          aria-labelledby={`dropdownMenu-${"student_id"}`}
-                        >
-                          <input
-                            type="text"
-                            className="form-control mb-2"
-                            placeholder={"Search student_id"}
-                            value={searchQueries["student_id"] || ""}
-                            onChange={(e) =>
-                              handleSearchChange("student_id", e.target.value)
-                            }
-                          />
-
-                          {filteredOptions.length > 0 ? (
-                            filteredOptions.map((option, i) => (
-                              <button
-                                key={i}
-                                className="dropdown-item"
-                                type="button"
-                                onClick={() =>
-                                  handleEdit(id, "student_id", option.id)
-                                }
-                              >
-                                {option["id"]}
-                              </button>
-                            ))
-                          ) : (
-                            <span className="dropdown-item text-muted">
-                              No options available
-                            </span>
-                          )}
-                        </div> */}
-                      </>
-                    );
-                  })()}
-
-                  <div className="border-0 w-100 bg-light">
-                    <div className="border-0 fw-bold mb-1">status *</div>
-                    <div className="d-flex align-items-center">
-                      <select
-                        className="form-select w-auto"
-                        name="status"
-                        value={
-                          editedRecord.status === "true"
-                            ? "true"
-                            : editedRecord.status === "false"
-                            ? "false"
-                            : "Pending"
+                  <div className={styles.formGrid}>
+                    {/* course_name */}
+                    <div className={styles.formGroup}>
+                      <label className={styles.formLabel}>
+                        <span className={styles.required}>*</span> Course Name
+                      </label>
+                      <input
+                        type="text"
+                        className={styles.formControl}
+                        name="course_name"
+                        required
+                        value={editedRecord["course_name"] || ""}
+                        onChange={(e) =>
+                          handleEdit(id, "course_name", e.target.value)
                         }
-                        onChange={(e) => handleStatusChange(e.target.value)}
-                      >
-                        <option value="Pending">Pending</option>
-                        <option value="true">Approved</option>
-                        <option value="false">Rejected</option>
-                      </select>
+                      />
+                    </div>
 
-                      {getStatusBadge(editedRecord.status)}
+                    {/* course_duration */}
+                    <div className={styles.formGroup}>
+                      <label className={styles.formLabel}>
+                        <span className={styles.required}>*</span> Course
+                        Duration
+                      </label>
+                      <input
+                        type="text"
+                        className={styles.formControl}
+                        name="course_duration"
+                        required
+                        value={editedRecord["course_duration"] || ""}
+                        onChange={(e) =>
+                          handleEdit(id, "course_duration", e.target.value)
+                        }
+                      />
+                    </div>
+
+                    {/* course_mode */}
+                    <div className={styles.formGroup}>
+                      <label className={styles.formLabel}>
+                        <span className={styles.required}>*</span> Course Mode
+                      </label>
+                      <input
+                        className={styles.formControl}
+                        name="course_mode"
+                        value={editedRecord.course_mode || ""}
+                        onChange={(e) =>
+                          handleEdit(id, "course_mode", e.target.value)
+                        }
+                      />
+                    </div>
+
+                    {/* platform */}
+                    <div className={styles.formGroup}>
+                      <label className={styles.formLabel}>
+                        <span className={styles.required}>*</span> Platform
+                      </label>
+                      <input
+                        type="text"
+                        className={styles.formControl}
+                        name="platform"
+                        required
+                        value={editedRecord["platform"] || ""}
+                        onChange={(e) =>
+                          handleEdit(id, "platform", e.target.value)
+                        }
+                      />
+                    </div>
+
+                    {/* completion date */}
+                    <div className={styles.formGroup}>
+                      <label className={styles.formLabel}>
+                        <span className={styles.required}>*</span> Completion
+                        Date
+                      </label>
+                      <input
+                        type="date"
+                        className={styles.formControl}
+                        name="course_completion_date"
+                        required
+                        value={editedRecord["course_completion_date"] || ""}
+                        onChange={(e) =>
+                          handleEdit(
+                            id,
+                            "course_completion_date",
+                            e.target.value
+                          )
+                        }
+                      />
+                    </div>
+
+                    {/* status */}
+                    <div className={styles.formGroup}>
+                      <label className={styles.formLabel}>
+                        <span className={styles.required}>*</span> Status
+                      </label>
+
+                      {/* Dropdown + badge container */}
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "12px",
+                          padding: "10px",
+                          border: "1px solid #d0d0d0",
+                          borderRadius: "8px",
+                          background: "#fafafa",
+                        }}
+                      >
+                        {/* Dropdown */}
+                        <select
+                          className={styles.formControl}
+                          style={{ flex: "0 0 180px" }}
+                          name="status"
+                          value={
+                            editedRecord.status === "true"
+                              ? "true"
+                              : editedRecord.status === "false"
+                              ? "false"
+                              : "Pending"
+                          }
+                          onChange={(e) => handleStatusChange(e.target.value)}
+                        >
+                          <option value="Pending">Pending</option>
+                          <option value="true">Approved</option>
+                          <option value="false">Rejected</option>
+                        </select>
+
+                        {/* Live Badge */}
+                        <div style={{ flex: 1 }}>
+                          {getStatusBadge(editedRecord.status)}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* course_url */}
+                    <div className={styles.formGroup}>
+                      <label className={styles.formLabel}>Course URL</label>
+                      <input
+                        type="text"
+                        className={styles.formControl}
+                        name="course_url"
+                        value={editedRecord["course_url"] || ""}
+                        onChange={(e) =>
+                          handleEdit(id, "course_url", e.target.value)
+                        }
+                      />
                     </div>
                   </div>
 
-                  <div className="border-0 fw-bold">course_url</div>
-                  <input
-                    type="text"
-                    className="form-control"
-                    name="course_url"
-                    required={false}
-                    value={editedRecord["course_url"] || ""}
-                    onChange={(e) =>
-                      handleEdit(id, "course_url", e.target.value)
-                    }
-                  />
-
-                  <button
-                    className="btn btn-success"
-                    onClick={(e) => handleUpdate(id, e)}
-                  >
-                    Submit
-                  </button>
+                  {/* Submit */}
+                  <div className={styles.buttonRow}>
+                    <button
+                      className={styles.primaryBtn}
+                      onClick={(e) => handleUpdate(id, e)}
+                    >
+                      Submit
+                    </button>
+                  </div>
                 </div>
               </form>
             )}

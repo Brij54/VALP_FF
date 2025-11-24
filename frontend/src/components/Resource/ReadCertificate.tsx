@@ -182,8 +182,6 @@
 
 // console.log(getUserIdFromToken());
 
-
-
 //   // ------------------ UPLOAD CERTIFICATE (DOWNLOAD BUTTON) ------------------
 //   if (field === "upload_certificate") {
 //     return {
@@ -325,11 +323,7 @@
 
 import React, { useState, useEffect, useContext } from "react";
 import apiConfig from "../../config/apiConfig";
-import {
-  AllCommunityModule,
-  ModuleRegistry,
-  ColDef,
-} from "ag-grid-community";
+import { AllCommunityModule, ModuleRegistry, ColDef } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
 import { useQuery } from "@tanstack/react-query";
 import CertificateModel from "../../models/CertificateModel";
@@ -355,22 +349,16 @@ const getStatusBadge = (status: any) => {
   const s = String(status).toLowerCase();
 
   if (s === "true") {
-    return (
-      <span className="badge bg-success text-white">✅ Approved</span>
-    );
+    return <span className="badge bg-success text-white">✅ Approved</span>;
   }
   if (s === "false") {
-    return (
-      <span className="badge bg-danger text-white">❌ Rejected</span>
-    );
+    return <span className="badge bg-danger text-white">❌ Rejected</span>;
   }
-  return (
-    <span className="badge bg-warning text-dark">⏳ Pending</span>
-  );
+  return <span className="badge bg-warning text-dark">⏳ Pending</span>;
 };
 
 const ReadCertificate = () => {
-  const { user } = useContext(LoginContext);          // logged-in user
+  const { user } = useContext(LoginContext); // logged-in user
   const userEmail = user?.email_id?.toLowerCase() || "";
 
   const [rowData, setRowData] = useState<any[]>([]);
@@ -387,7 +375,7 @@ const ReadCertificate = () => {
   const { data: studentsData } = useQuery({
     queryKey: ["students"],
     queryFn: () => fetchForeignResource("Student"),
-    enabled: !!userEmail,                       // only once we know who is logged in
+    enabled: !!userEmail, // only once we know who is logged in
   });
 
   useEffect(() => {
@@ -399,8 +387,7 @@ const ReadCertificate = () => {
       : studentsData.resource || [];
 
     const match = students.find(
-      (s: any) =>
-        s.email && s.email.toLowerCase() === userEmail
+      (s: any) => s.email && s.email.toLowerCase() === userEmail
     );
 
     if (match?.id) {
@@ -600,51 +587,46 @@ const ReadCertificate = () => {
   };
 
   return (
-    <div>
-      {rowData.length === 0 && colDef1.length === 0 ? (
-        <div>No data available. Please add a resource attribute.</div>
-      ) : (
-        <div className="ag-theme-alpine" style={{ height: 500, width: "100%" }}>
-          <AgGridReact
-            rowData={rowData}
-            columnDefs={colDef1}
-            defaultColDef={defaultColDef}
-            pagination={true}
-            paginationPageSize={10}
-            animateRows={true}
-            rowSelection="multiple"
-          />
-        </div>
-      )}
+  <div style={{ padding: "20px" }}>
 
-      {showToast && (
-        <div
-          className="toast-container position-fixed top-20 start-50 translate-middle p-3"
-          style={{ zIndex: 1550 }}
-        >
-          <div
-            className="toast show"
-            role="alert"
-            aria-live="assertive"
-            aria-atomic="true"
-          >
-            <div className="toast-header">
-              <strong className="me-auto">Success</strong>
-              <button
-                type="button"
-                className="btn-close"
-                aria-label="Close"
-                onClick={() => setShowToast(false)}
-              ></button>
-            </div>
-            <div className="toast-body text-success text-center">
-              Created successfully!
-            </div>
+    {/* 🔥 Grid Section */}
+    <div className="ag-theme-alpine" style={{ height: 500, width: "100%" }}>
+      <AgGridReact
+        rowData={rowData}
+        columnDefs={colDef1}
+        defaultColDef={defaultColDef}
+        pagination={true}
+        paginationPageSize={10}
+        animateRows={true}
+        rowSelection="multiple"
+      />
+    </div>
+
+    {/* Toast */}
+    {showToast && (
+      <div
+        className="toast-container position-fixed top-20 start-50 translate-middle p-3"
+        style={{ zIndex: 1550 }}
+      >
+        <div className="toast show" role="alert">
+          <div className="toast-header">
+            <strong className="me-auto">Success</strong>
+            <button
+              type="button"
+              className="btn-close"
+              aria-label="Close"
+              onClick={() => setShowToast(false)}
+            ></button>
+          </div>
+          <div className="toast-body text-success text-center">
+            Created successfully!
           </div>
         </div>
-      )}
-    </div>
-  );
+      </div>
+    )}
+  </div>
+);
+
 };
 
 export default ReadCertificate;
