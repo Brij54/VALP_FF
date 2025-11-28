@@ -28,6 +28,7 @@
     "dayjs": "^1.11.13",
     "file-saver": "^2.0.5",
     "html2pdf.js": "^0.12.1",
+    "jszip": "^3.10.1",
     "jwt-decode": "^4.0.0",
     "lucide-react": "^0.553.0",
     "pdf-lib": "^1.17.1",
