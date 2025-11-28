@@ -49,6 +49,10 @@ import AddStudent from "./components/AddStudent";
 import CertificateEdit from "./components/Edit/CertificateEdit";
 import ForgotPassword from "./components/Auth/ForgotPassword";
 import Home from "./components/Home";
+import ValpCertificateGenerator from "./components/ValpCertificateGenerator";
+import DeanSignatureUpload from "./components/DeanSignature";
+import DeanSignature from "./components/DeanSignature";
+import DeanEdit from "./components/Edit/DeanEdit";
 
 function App() {
   return (
@@ -87,6 +91,7 @@ function App() {
           </ProtectedRoute>
         }
       />
+      
       <Route
         path="/bulkUpload"
         element={
@@ -116,6 +121,33 @@ function App() {
         element={
           <ProtectedRoute requiredRoles={["admin"]}>
             <CertificateEdit />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/valp/generate"
+        element={
+          <ProtectedRoute requiredRoles={["admin"]}>
+            <ValpCertificateGenerator />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/DeanSignature"
+        element={
+          <ProtectedRoute requiredRoles={["admin"]}>
+            <DeanSignature />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/edit/dean/:id"
+        element={
+          <ProtectedRoute requiredRoles={["admin"]}>
+            <DeanEdit />
           </ProtectedRoute>
         }
       />

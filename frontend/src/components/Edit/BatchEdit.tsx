@@ -322,7 +322,6 @@
 
 // export default Edit;
 
-
 import React, { useEffect, useRef, useState } from "react";
 import { useLocation, useParams } from "react-router-dom";
 import apiConfig from "../../config/apiConfig";
@@ -555,93 +554,101 @@ const Edit = () => {
 
   return (
     <div className="page12Container">
-
-      <Sidebar sidebarCollapsed={false} toggleSidebar={() => {}} activeSection="dashboard" />
+      <Sidebar
+        sidebarCollapsed={false}
+        toggleSidebar={() => {}}
+        activeSection="dashboard"
+      />
 
       <main className="mainContent">
-
         <header className="contentHeader">
           <h1 className="pageTitle">Edit Batch</h1>
         </header>
 
-        <div className="contentBody">
-
-          <div className="pageFormContainer">
-
-            {!loadingEditComp && (
-              <form>
-                <div
-                  id="id-39"
-                  className="d-flex flex-column border border-2 p-2 gap-2 mb-2"
-                >
-                  {/* YOUR ORIGINAL CODE STARTS HERE — untouched */}
-                  
-                  <div className="border-0 fw-bold fs-3" id="id-3B">
-                    Batch
-                  </div>
-
-                  <div className="border-0 fw-bold" id="id-3F">
-                    batch_name *
-                  </div>
-                  <input
-                    type="text"
-                    className="form-control"
-                    name="batch_name"
-                    required={true}
-                    value={editedRecord["batch_name"] || ""}
-                    onChange={(e) => handleEdit(id, "batch_name", e.target.value)}
-                  />
-
-                  <div className="border-0 fw-bold" id="id-3L">
-                    no_of_courses *
-                  </div>
-                  <input
-                    type="number"
-                    className="form-control"
-                    name="no_of_courses"
-                    required={true}
-                    value={editedRecord["no_of_courses"] || ""}
-                    onChange={(e) =>
-                      handleEdit(id, "no_of_courses", e.target.value)
-                    }
-                  />
-
-                  <button
-                    className="btn btn-success"
-                    id="id-3P"
-                    onClick={(e) => handleUpdate(id, e)}
-                  >
-                    Submit
-                  </button>
-
-                  {/* YOUR ORIGINAL CODE ENDS HERE */}
-                </div>
-              </form>
-            )}
-
-            {showToast && (
+        {/* <div className="pageFormContainer1 d-flex justify-content-center"> */}
+        {!loadingEditComp && (
+          <form
+            className="w-100"
+            style={{
+              maxWidth: "500px",
+              backgroundColor: "#fff",
+              borderRadius: "10px",
+              padding: "60px 10px",
+              margin: "100px auto", // keeps it responsive
+            }}
+          >
+            <div className="card shadow-sm border-0 rounded">
+              {/* Card Header */}
               <div
-                className="toast-container position-fixed top-20 start-50 translate-middle p-3"
+                className="card-header text-white text-center fw-semibold"
+                style={{
+                  background: "linear-gradient(135deg, #007bff, #0056d2)",
+                  padding: "15px 10px",
+                  fontSize: "20px",
+                  borderTopLeftRadius: "10px",
+                  borderTopRightRadius: "10px",
+                  letterSpacing: "0.5px",
+                }}
               >
-                <div className="toast show">
-                  <div className="toast-header">
-                    <strong className="me-auto">Success</strong>
-                    <button
-                      type="button"
-                      className="btn-close"
-                      onClick={() => setShowToast(false)}
-                    ></button>
-                  </div>
-                  <div className="toast-body text-success text-center">
-                    Updated successfully!
-                  </div>
-                </div>
+                Edit Batch Details
               </div>
-            )}
 
+              {/* Card Body */}
+              <div className="card-body p-4">
+                {/* Batch Title */}
+                <label className="fw-bold mb-1">Batch Name *</label>
+                <input
+                  type="text"
+                  className="form-control mb-3 rounded-3"
+                  name="batch_name"
+                  required
+                  value={editedRecord["batch_name"] || ""}
+                  onChange={(e) => handleEdit(id, "batch_name", e.target.value)}
+                />
+
+                {/* Number of Courses */}
+                <label className="fw-bold mb-1">No. of Courses *</label>
+                <input
+                  type="number"
+                  className="form-control mb-4 rounded-3"
+                  name="no_of_courses"
+                  required
+                  value={editedRecord["no_of_courses"] || ""}
+                  onChange={(e) =>
+                    handleEdit(id, "no_of_courses", e.target.value)
+                  }
+                />
+
+                {/* Submit Button */}
+                <button
+                  className="btn btn-success w-100 py-2 fs-6 fw-semibold rounded-3"
+                  onClick={(e) => handleUpdate(id, e)}
+                >
+                  Update
+                </button>
+              </div>
+            </div>
+          </form>
+        )}
+
+        {showToast && (
+          <div className="toast-container position-fixed top-20 start-50 translate-middle p-3">
+            <div className="toast show">
+              <div className="toast-header">
+                <strong className="me-auto">Success</strong>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setShowToast(false)}
+                />
+              </div>
+              <div className="toast-body text-success text-center">
+                Updated Successfully!
+              </div>
+            </div>
           </div>
-        </div>
-
+        )}
+        {/* </div> */}
       </main>
     </div>
   );

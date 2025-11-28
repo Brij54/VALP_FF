@@ -1,0 +1,21 @@
+.dean-wrapper {
+  max-width: 600px;
+  margin: auto;
+}
+
+.preview-box {
+  width: 240px;
+  height: 110px;
+  border: 1px solid #ccc;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+}
+
+.preview-box img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}

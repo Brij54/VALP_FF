@@ -1,12 +1,17 @@
 package com.rasp.app.decorator;
 
+import com.lowagie.text.pdf.PdfDocument;
+import com.lowagie.text.pdf.PdfPage;
+import com.rasp.app.helper.BatchHelper;
 import com.rasp.app.helper.CertificateHelper;
 import com.rasp.app.helper.StudentHelper;
+import com.rasp.app.resource.Batch;
 import com.rasp.app.resource.Certificate;
 import com.rasp.app.resource.Student;
 import net.bytebuddy.implementation.bind.annotation.Super;
 import platform.db.Expression;
 import platform.db.REL_OP;
+import platform.db.ResourceMetaData;
 import platform.decorator.BaseDecorator;
 import platform.resource.BaseResource;
 import platform.util.ApplicationException;
@@ -14,9 +19,12 @@ import platform.util.ExceptionSeverity;
 import platform.webservice.BaseService;
 import platform.webservice.ServletContext;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Map;
+
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
 
 public class CertificateDecorator extends BaseDecorator {
     public CertificateDecorator() {
@@ -40,7 +48,64 @@ public class CertificateDecorator extends BaseDecorator {
             return list.toArray(new BaseResource[0]);
         }
 
+        if ("SAVE_VALP_CERTIFICATE".equalsIgnoreCase(queryId)) {
+
+            String studentId = (String) map.get("student_id");
+            String base64 = (String) map.get("base64");
+
+            if (studentId == null || studentId.trim().isEmpty()) {
+                throw new ApplicationException(ExceptionSeverity.ERROR,
+                        "student_id is required");
+            }
+
+            if (base64 == null || base64.trim().isEmpty()) {
+                throw new ApplicationException(ExceptionSeverity.ERROR,
+                        "PDF base64 is required");
+            }
+
+            try {
+                // Fetch student just to verify existence
+                BaseResource[] stuArr = StudentHelper.getInstance()
+                        .getByExpression(new Expression(Student.FIELD_ID, REL_OP.EQ, studentId));
+
+                if (stuArr == null || stuArr.length == 0) {
+                    throw new ApplicationException(ExceptionSeverity.ERROR,
+                            "Student not found for id " + studentId);
+                }
+
+                Student student = (Student) stuArr[0];
+
+                // -------------------------------------------
+                // CREATE NEW CERTIFICATE ROW
+                // -------------------------------------------
+                Certificate cert = new Certificate();
+                cert.setId(UUID.randomUUID().toString());
+                cert.setStudent_id(student.getId());
+                cert.setCourse_name("VALP Certificate");
+                cert.setCourse_duration(0L);
+                cert.setCourse_mode("NA");
+                cert.setPlatform("IIIT Bangalore");
+                cert.setCourse_completion_date(new java.util.Date());
+                cert.setStatus(true);
+
+                // Store Base64 PDF safely
+                cert.setUpload_certificate(base64);
+
+                // Save to database
+                CertificateHelper.getInstance().add(cert);
+
+                return new BaseResource[]{ cert };
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw new ApplicationException(ExceptionSeverity.ERROR,
+                        "Failed to save certificate: " + e.getMessage());
+            }
+        }
         // fallback -> default behaviour for all other queries
         return super.getQuery(ctx, queryId, map, service);
     }
+
+
+
 }

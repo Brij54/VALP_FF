@@ -1,0 +1,30 @@
+{
+  "dean": {
+    "cluster": "rasp_db",
+    "ui" : false,
+    "api" : true,
+    "fields": {
+      "id": {
+        "name": "id",
+        "required": "true",
+        "type": "String"
+      },
+      "name": {
+        "name": "name",
+        "required": "true",
+        "type": "String"
+      },
+      "signature": {
+        "name": "signature",
+        "required": "true",
+        "is_file" : "true",
+        "type": "String"
+      },
+      "updated_at": {
+        "name": "updated_at",
+        "required": "false",
+        "type": "Date"
+      }
+    }
+  }
+}

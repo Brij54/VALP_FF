@@ -13,6 +13,14 @@ import { useQuery } from "@tanstack/react-query";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
+// ⭐ ONLY THIS FUNCTION ADDED
+const prettifyHeader = (str:any) => {
+  if (!str) return "";
+  return str
+    .replace(/_/g, " ")
+    .replace(/\w\S*/g, (w:any) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
+};
+
 interface ColumnDef {
   field: string;
   headerName: string;
@@ -30,7 +38,16 @@ const ActionCellRenderer = (props: any) => {
   };
 
   return (
-    <button onClick={handleEdit} className="btn btn-primary">
+    <button
+      onClick={handleEdit}
+      className="btn btn-primary"
+      style={{
+        fontSize: "14px",
+        padding: "6px 20px",
+        borderRadius: "8px",
+        fontWeight: 500,
+      }}
+    >
       Edit
     </button>
   );
@@ -40,6 +57,7 @@ export type ResourceMetaData = {
   resource: string;
   fieldValues: any[];
 };
+
 const getCookie = (name: string): string | null => {
   const value = `; ${document.cookie}`;
   const parts = value.split(`; ${name}=`);
@@ -63,6 +81,7 @@ const UpdateBatch = () => {
   const regex = /^(g_|archived|extra_data)/;
 
   const [currentUrl, setCurrentUrl] = useState("");
+
   // Fetch resource data
   const {
     data: dataRes,
@@ -87,9 +106,9 @@ const UpdateBatch = () => {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`, // Add token here
+            Authorization: `Bearer ${accessToken}`,
           },
-          credentials: "include", // include cookies if needed
+          credentials: "include",
         }
       );
 
@@ -99,10 +118,6 @@ const UpdateBatch = () => {
 
       const data = await response.json();
       setFetchedData(data.resource || []);
-      const initialEditedData = fetchData.reduce((acc: any, item: any) => {
-        acc[item.id] = { ...item };
-        return acc;
-      }, {});
       return data;
     },
   });
@@ -158,14 +173,17 @@ const UpdateBatch = () => {
 
     const columns = fields.map((field) => ({
       field: field,
-      headerName: field,
+
+      // ⭐ ONLY CHANGE HERE
+      headerName: prettifyHeader(field),
+
       editable: false,
       resizable: true,
       sortable: true,
       filter: true,
     }));
 
-    // Add the Action column with the custom cell renderer
+    // Action column remains same
     columns.push({
       headerName: "Action",
       field: "Action",
@@ -176,6 +194,7 @@ const UpdateBatch = () => {
       filter: false,
       width: 120,
     } as ColumnDef);
+
     setColDef1(columns);
     setRowData(data);
   }, [fetchData, requiredFields]);
@@ -217,19 +236,13 @@ const UpdateBatch = () => {
           className="toast-container position-fixed top-20 start-50 translate-middle p-3"
           style={{ zIndex: 1550 }}
         >
-          <div
-            className="toast show"
-            role="alert"
-            aria-live="assertive"
-            aria-atomic="true"
-          >
+          <div className="toast show">
             <div className="toast-header">
               <strong className="me-auto">Success</strong>
               <button
                 type="button"
                 className="btn-close"
                 data-bs-dismiss="toast"
-                aria-label="Close"
                 onClick={() => setShowToast(false)}
               ></button>
             </div>

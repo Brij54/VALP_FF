@@ -132,7 +132,6 @@
 //   );
 // }
 
-
 import React, { useState } from "react";
 import { forgotPassword, resetPassword } from "../../apis/backend";
 import "../../App.css";
@@ -145,7 +144,7 @@ export default function ForgotPassword() {
   const [msg, setMsg] = useState("");
   const [err, setErr] = useState("");
 
-  const handleSendOTP = async (e:any) => {
+  const handleSendOTP = async (e: any) => {
     e.preventDefault();
     setErr("");
     setMsg("");
@@ -161,7 +160,7 @@ export default function ForgotPassword() {
     setStep(2);
   };
 
-  const handleResetPassword = async (e:any) => {
+  const handleResetPassword = async (e: any) => {
     e.preventDefault();
     setErr("");
     setMsg("");
@@ -183,94 +182,90 @@ export default function ForgotPassword() {
       style={{
         height: "100vh",
         width: "min(30vw, 400px)",
-        background: "#f9f9f9",
+        background: "#ffffff",
       }}
     >
-   
-        
-        {/* Header */}
-        <h3 className="text-center text-primary fw-bold mb-4">
-          Forgot Password
-        </h3>
+      {/* Header */}
+      <h3 className="text-center text-primary fw-bold mb-4">Forgot Password</h3>
 
-        {msg && <div className="text-success text-center">{msg}</div>}
-        {err && <div className="text-danger text-center">{err}</div>}
+      {msg && <div className="text-success text-center">{msg}</div>}
+      {err && <div className="text-danger text-center">{err}</div>}
 
-        {/* STEP 1 */}
-        {step === 1 && (
-          <form onSubmit={handleSendOTP}>
-            <input
-              className="form-control bg-light border-1 mb-3"
-              placeholder="Enter Registered Email"
-              type="email"
-              required
-              style={{
-      padding: "14px",
-      borderRadius: "10px",   // 🔥 smooth curve
-    }}
-              onChange={(e) => setEmail(e.target.value)}
-            />
+      {/* STEP 1 */}
+      {step === 1 && (
+        <form onSubmit={handleSendOTP}>
+          <input
+            className="form-control bg-light border-1 mb-3"
+            placeholder="Enter Registered Email"
+            type="email"
+            required
+            style={{
+              padding: "14px",
+              borderRadius: "10px", // 🔥 smooth curve
+            }}
+            onChange={(e) => setEmail(e.target.value)}
+          />
 
-            <button
-              className="btn text-white w-100"
-              style={{ background: "#2D88D4", borderRadius: 10 }}
-            >
-              Send OTP
-            </button>
+          <button
+            className="btn text-white w-100"
+            style={{ background: "#2D88D4", borderRadius: 10 }}
+          >
+            Send OTP
+          </button>
 
-            <p className="mt-3 text-center">
-              Remember password?{" "}
-              <a href="/" className="text-primary">
-                Login
-              </a>
-            </p>
-          </form>
-        )}
-
-        {/* STEP 2 */}
-        {step === 2 && (
-          <form onSubmit={handleResetPassword}>
-            <input
-              className="form-control bg-light mb-3"
-              placeholder="Enter OTP"
-              required
-              onChange={(e) => setOtp(e.target.value)}
-            />
-
-            <input
-              className="form-control bg-light mb-3"
-              placeholder="Enter New Password"
-              type="password"
-              required
-              style={{
-      padding: "14px",
-      borderRadius: "10px",   // 🔥 smooth curve
-    }}
-              onChange={(e) => setNewPassword(e.target.value)}
-            />
-
-            <button
-              className="btn text-white w-100"
-              style={{ background: "#2D88D4", borderRadius: 10 }}
-            >
-              Reset Password
-            </button>
-          </form>
-        )}
-
-        {/* STEP 3 */}
-        {step === 3 && (
-          <div className="text-center">
-            <p>Password changed successfully!</p>
-            <a
-              href="/"
-              className="btn text-white w-100"
-              style={{ background: "#2D88D4", borderRadius: 10 }}
-            >
-              Go to Login
+          <p className="mt-3 text-center">
+            Remember password?{" "}
+            <a href="/" className="text-primary">
+              Login
             </a>
-          </div>
-        )}
+          </p>
+        </form>
+      )}
+
+      {/* STEP 2 */}
+      {step === 2 && (
+        <form onSubmit={handleResetPassword}>
+          <input
+            className="form-control bg-light mb-3"
+            placeholder="Enter OTP"
+            required
+            onChange={(e) => setOtp(e.target.value)}
+          />
+
+          <input
+            className="form-control bg-light mb-3"
+            placeholder="Enter New Password"
+            type="password"
+            required
+            style={{
+              padding: "14px",
+              borderRadius: "10px", // 🔥 smooth curve
+            }}
+            onChange={(e) => setNewPassword(e.target.value)}
+          />
+
+          <button
+            className="btn text-white w-100"
+            style={{ background: "#2D88D4", borderRadius: 10 }}
+          >
+            Reset Password
+          </button>
+        </form>
+      )}
+
+      {/* STEP 3 */}
+      {step === 3 && (
+        <div className="text-center">
+          <p>Password changed successfully!</p>
+          <a
+            href="/"
+            className="btn text-white w-100"
+            style={{ background: "#2D88D4", borderRadius: 10 }}
+          >
+            Go to Login
+          </a>
+        </div>
+      )}
       {/* </div> */}
     </div>
   );

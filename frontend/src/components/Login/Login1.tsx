@@ -3,7 +3,7 @@ import "../../App.css";
 
 export default function Login1(props: any) {
   return (
-    <div className="d-flex flex-column justify-content-center align-items-center" style={{ height: "100vh", width:"min(30vw,400px)", background: "#f9f9f9" }}>
+    <div className="d-flex flex-column justify-content-center align-items-center" style={{ height: "100vh", width:"min(30vw,400px)", background: "#ffffff" }}>
       <form
         className="w-100 mw-400 p-4"
         onSubmit={props.handleSubmit}

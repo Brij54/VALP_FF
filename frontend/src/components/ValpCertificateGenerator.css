@@ -1,0 +1,46 @@
+.pageFormContainer2 {
+  display: flex; /* Arranges children side-by-side */
+  gap: 10px; /* Adds space between the input and the button */
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  align-items: center; /* Vertically aligns the items in the center */
+  width: 30%;
+}
+
+/* You would also style the children using their classes: */
+.form-control {
+  flex-grow: 1; /* Makes the input field take up available space */
+}
+
+.btn-primary {
+  /* Basic button styling */
+}
+
+/* Styling for the Container Div */
+.table-wrapper {
+  /* Create the card-like effect */
+  padding: 15px; 
+  border: 1px solid #dee2e6; 
+  border-radius: 8px; 
+  background-color: #ffffff; 
+  margin-top: 20px;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05); /* Subtle Shadow */
+  
+  /* Ensure no padding on the inner table */
+  overflow-x: auto; /* Handles horizontal scrolling if the table is too wide */
+}
+
+/* Styling for the Table Header */
+.table-wrapper .table thead th {
+  background-color: #f8f9fa; /* Light background for the header row */
+  color: #343a40; /* Darker text */
+  font-weight: 700;
+  vertical-align: middle; /* Center header text vertically */
+}
+
+/* Ensure the table itself fits well within the wrapper */
+.table-wrapper .table {
+  margin-bottom: 0; /* Remove default table margin inside the wrapper */
+}

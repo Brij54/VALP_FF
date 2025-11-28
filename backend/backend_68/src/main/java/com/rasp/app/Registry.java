@@ -10,6 +10,7 @@ public class Registry {
 		public static void register(){
 				 HelperManager.getInstance().register(BatchHelper.getInstance());
 				 HelperManager.getInstance().register(CertificateHelper.getInstance());
+				 HelperManager.getInstance().register(DeanHelper.getInstance());
 				 HelperManager.getInstance().register(ResourceRoleHelper.getInstance());
 				 HelperManager.getInstance().register(RoleResourcePermissionHelper.getInstance());
 				 HelperManager.getInstance().register(RoleUserResInstanceHelper.getInstance());
@@ -18,6 +19,7 @@ public class Registry {
 				 HelperManager.getInstance().register(UsersHelper.getInstance());
 				 ServiceManager.getInstance().register(new BatchService());
 				 ServiceManager.getInstance().register(new CertificateService());
+				 ServiceManager.getInstance().register(new DeanService());
 				 ServiceManager.getInstance().register(new ResourceRoleService());
 				 ServiceManager.getInstance().register(new RoleResourcePermissionService());
 				 ServiceManager.getInstance().register(new RoleUserResInstanceService());

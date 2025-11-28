@@ -1,7 +1,7 @@
 // src/components/Utils/Sidebar.tsx
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { UserPlus, Home, ClipboardCheck } from "lucide-react";
+import { UserPlus, Home, ClipboardCheck, FileBadge2, Award } from "lucide-react";
 
 // CSS is global; you can import here OR rely on CreateStudent importing Upload.css
 // import "../Upload.css";
@@ -23,12 +23,16 @@ export default function Sidebar({
   { text: "Add Student", path: "/bulkUpload" },
   { text: "Batch Configuration", path: "/batch_config" },
   { text: "Approve Reject Certificate", path: "/approve_reject_certificate" },
+  { text: "VALP Certificate Generate", path: "/valp/generate" },
+  { text: "Dean Signature", path: "/DeanSignature" },
 ];
 
 const iconMap: Record<string, JSX.Element> = {
   "Add Student": <UserPlus size={24} color="#007bff" />,  // Blue
   "Batch Configuration": <Home size={24} color="#ff9800" />, // Orange
   "Approve Reject Certificate": <ClipboardCheck size={24} color="#28a745" />, // Green
+  "VALP Certificate Generate": <Award size={24} color="#28a745" />, // Green
+  "Dean Signature": <FileBadge2 size={24} color="#28a745" />, // Green
 };
 
   return (
