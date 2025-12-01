@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchForeignResource } from '../../apis/resources';
 import { fetchEnum } from '../../apis/enum';
+import styles from '../Styles/CreateCertificate.module.css';
 
 
 export type resourceMetaData = {

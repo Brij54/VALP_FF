@@ -1046,7 +1046,7 @@ export default function ValpCertificateGenerator() {
             {/* ⭐ BULK ZIP BUTTON */}
             {students.length > 0 && (
               <button
-                className="btn btn-success mb-3"
+                className="btn btn-success mb-3 mt-3  fs-5 rounded-3 shadow-sm"
                 onClick={handleBulkGenerateZIP}
               >
                 Generate All Certificates (ZIP)
