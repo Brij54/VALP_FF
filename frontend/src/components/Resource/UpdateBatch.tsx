@@ -11,6 +11,7 @@ import {
 import { AgGridReact } from "ag-grid-react";
 import { useQuery } from "@tanstack/react-query";
 
+
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 // ⭐ ONLY THIS FUNCTION ADDED

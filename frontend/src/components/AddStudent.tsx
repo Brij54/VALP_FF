@@ -256,6 +256,7 @@ import apiConfig from "../config/apiConfig";
 import BulkUploadModal from "./BulkUpload";
 import Sidebar from "./Utils/SidebarAdmin";
 import * as XLSX from "xlsx";
+import styles from "./Styles/CreateCertificate.module.css";
 
 // Import logout from backend API
 import { logout } from "../apis/backend";
@@ -357,8 +358,9 @@ export default function AddStudent() {
 
         {/* White Page Body */}
         <div className="contentBody">
-          <section className="createStudentSection">
-            <h2 className="fw-semibold mb-3">Upload Student Data</h2>
+          <section className="createStudentSection"
+            style={{ padding: "16px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)" }}>
+            <h2 className={styles.sectionTitle1}>Upload Student Data</h2>
 
             <div
               className="card p-3"

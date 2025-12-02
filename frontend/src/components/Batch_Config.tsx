@@ -9,7 +9,7 @@ import UpdateBatch from "./Resource/UpdateBatch";
 import Sidebar from "./Utils/SidebarAdmin";
 import { logout } from "../apis/backend";
 import { LogOut } from "lucide-react";
-
+import styles from "./Styles/CreateCertificate.module.css";
 
 export default function Batch_Config() {
   const navigate = useNavigate();
@@ -93,7 +93,7 @@ export default function Batch_Config() {
 
             {/* Update Batch block */}
             <div className="pageFormContainer">
-              <h2 className="fw-semibold mb-3">Update Batch</h2>
+              <h2 className={styles.sectionTitle1}>Update Batch</h2>
               <UpdateBatch />
             </div>
           </section>

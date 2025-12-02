@@ -8,6 +8,7 @@ import UpdateCertificate from "./Resource/UpdateCertificate";
 import Sidebar from "./Utils/SidebarAdmin";
 import { logout } from "../apis/backend";
 import { LogOut } from "lucide-react";
+import styles from "./Styles/CreateCertificate.module.css";
 
 
 export default function Approve_Reject_Certificate() {
@@ -88,7 +89,7 @@ export default function Approve_Reject_Certificate() {
         <div className="contentBody">
           <section className="createStudentSection">
             <div className="pageFormContainer">
-              <h2 className="fw-semibold mb-3">Student Certificates</h2>
+              <h2 className={styles.sectionTitle1}>Student Certificates</h2>
 
               {/* Your AG-Grid table for students */}
               <UpdateCertificate />

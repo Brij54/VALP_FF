@@ -8,6 +8,7 @@ import Sidebar from "./Utils/SidebarAdmin";
 import { logout } from "../apis/backend";
 import { LogOut } from "lucide-react";
 import CreateDean from "./Resource/CreateDean";
+import styles from "./Styles/CreateCertificate.module.css";
 
 export default function DeanSignature() {
   const navigate = useNavigate();
@@ -96,7 +97,7 @@ export default function DeanSignature() {
 
             {/* Update Batch block */}
             <div className="pageFormContainer">
-              <h2 className="fw-semibold mb-3">Update Batch</h2>
+              <h2 className={styles.sectionTitle1}>Update Signature</h2>
               <UpdateDean />
             </div>
           </section>
