@@ -272,7 +272,7 @@ const prettifyHeader = (str: string) => {
 const EditButton = ({ id, handleUpdate }: any) => {
   return (
     <button
-      className="btn btn-warning"
+      className="btn btn-outline-primary"
       style={{
         fontSize: "16px",
         marginBottom: "6px",
@@ -280,7 +280,7 @@ const EditButton = ({ id, handleUpdate }: any) => {
         padding: "6px 14px",
         borderRadius: "8px",
         marginRight: "8px",
-        fontWeight: 500,
+        fontWeight: 600,
       }}
       onClick={() => handleUpdate(id)}
     >
@@ -297,18 +297,18 @@ const ViewButton = ({ documentId, onView }: any) => {
 
   return (
     <button
-      className="btn btn-info"
+      className="btn btn-outline-primary"
       style={{
         marginBottom: "6px",
         width: "100px",
         fontSize: "16px",
         padding: "6px 14px",
         borderRadius: "8px",
-        fontWeight: 500,
+        fontWeight: 600,
       }}
       onClick={() => onView(documentId)}
     >
-      View
+      👁 View
     </button>
   );
 };
@@ -479,8 +479,9 @@ const UpdateDean = () => {
       <h2
         style={{
           marginBottom: "20px",
-          color: "#2b3a67",
+          color: "#222",
           fontWeight: "600",
+          fontSize: "1.4 rem",
           textAlign: "center",
         }}
       >

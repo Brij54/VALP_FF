@@ -690,8 +690,8 @@ const CreateCertificate = () => {
           {/* course_name */}
           <div className={styles.formGroup}>
             <label className={styles.formLabel}>
-              <span className={styles.required}>*</span>
               Course Name
+              <span className={styles.required}>*</span>
             </label>
             <input
               type="text"
@@ -708,8 +708,8 @@ const CreateCertificate = () => {
           {/* course_duration */}
           <div className={styles.formGroup}>
             <label className={styles.formLabel}>
-              <span className={styles.required}>*</span>
               Course Duration
+              <span className={styles.required}>*</span>
             </label>
             <input
               type="text"
@@ -726,8 +726,8 @@ const CreateCertificate = () => {
           {/* course_mode */}
           <div className={styles.formGroup}>
             <label className={styles.formLabel}>
-              <span className={styles.required}>*</span>
               Course Mode
+              <span className={styles.required}>*</span>
             </label>
             <select
               className={styles.formControl}
@@ -750,8 +750,8 @@ const CreateCertificate = () => {
           {/* platform */}
           <div className={styles.formGroup}>
             <label className={styles.formLabel}>
-              <span className={styles.required}>*</span>
               Platform
+              <span className={styles.required}>*</span>
             </label>
             <input
               type="text"
@@ -768,8 +768,8 @@ const CreateCertificate = () => {
           {/* completion date */}
           <div className={styles.formGroup}>
             <label className={styles.formLabel}>
-              <span className={styles.required}>*</span>
               Completion Date
+              <span className={styles.required}>*</span>
             </label>
             <input
               type="date"
@@ -789,8 +789,8 @@ const CreateCertificate = () => {
           {/* upload_certificate */}
           <div className={styles.formGroup}>
             <label className={styles.formLabel}>
-              <span className={styles.required}>*</span>
               Upload Certificate
+              <span className={styles.required}>*</span>
             </label>
             <input
               className={styles.formControl}

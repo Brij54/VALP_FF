@@ -39,8 +39,8 @@ spring:
       host: smtp.gmail.com
       port: 587
       username: brij926532@gmail.com
-#      password: ${SMTP_PASSWORD}
-      password: clth uxib nmkl oqmz
+      password: ${SMTP_PASSWORD}
+#      password: clth uxib nmkl oqmz
       properties:
         mail:
           smtp:

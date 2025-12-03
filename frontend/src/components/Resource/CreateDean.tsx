@@ -187,7 +187,8 @@ const CreateDean = () => {
           style={{
             textAlign: "center",
             fontWeight: "600",
-            color: "#2b3a67",
+            fontSize: "1.4 rem",
+            color: "#222",
             marginBottom: "30px",
           }}
         >

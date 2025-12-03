@@ -835,7 +835,7 @@ const ReadCertificate = () => {
   }, [filteredCertificates]);
 
   /* --------------------------------------------------
-     8. Build Column Defs with PRETTIFIED HEADERS 🔥
+     8. Build Column Defs with PRETTIFIED HEADERS + DATE FORMAT 🔥
   ----------------------------------------------------*/
   useEffect(() => {
     const flds =
@@ -846,13 +846,13 @@ const ReadCertificate = () => {
     const columns: ColDef[] = flds.map((field: any) => {
       const baseCol: ColDef = {
         field,
-        headerName: prettifyHeader(field), // 🔥 NEW UPDATED HEADER NAME
+        headerName: prettifyHeader(field),
         resizable: true,
         sortable: true,
         filter: true,
       };
 
-      // Status field
+      // Status field styling
       if (field.toLowerCase() === "status") {
         return {
           ...baseCol,
@@ -861,7 +861,23 @@ const ReadCertificate = () => {
         };
       }
 
-      // Download button
+      // 🟢 FORMAT COURSE_COMPLETION_DATE → Date Only
+      if (field.toLowerCase() === "course_completion_date") {
+        return {
+          ...baseCol,
+          headerName: "Course Completion Date",
+          cellRenderer: (params: any) => {
+            if (!params.value) return "";
+            return new Date(params.value).toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "short",
+              day: "2-digit",
+            });
+          },
+        };
+      }
+
+      // Certificate download button
       if (field === "upload_certificate") {
         return {
           ...baseCol,
@@ -942,12 +958,8 @@ const ReadCertificate = () => {
     editable: false,
   };
 
-  /* --------------------------------------------------
-     10. Render UI
-  ----------------------------------------------------*/
   return (
     <div style={{ padding: "20px" }}>
-      {/* AG GRID */}
       <div className="ag-theme-alpine" style={{ height: 500, width: "100%" }}>
         <AgGridReact
           rowData={rowData}
@@ -984,4 +996,5 @@ const ReadCertificate = () => {
 };
 
 export default ReadCertificate;
+
 
