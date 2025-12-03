@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import apiConfig from "../../config/apiConfig";
+import { authFetch } from "../../apis/authFetch";
+
 import {
   AllCommunityModule,
   ModuleRegistry,
@@ -59,12 +61,12 @@ export type ResourceMetaData = {
   fieldValues: any[];
 };
 
-const getCookie = (name: string): string | null => {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop()?.split(";").shift() || null;
-  return null;
-};
+// const getCookie = (name: string): string | null => {
+//   const value = `; ${document.cookie}`;
+//   const parts = value.split(`; ${name}=`);
+//   if (parts.length === 2) return parts.pop()?.split(";").shift() || null;
+//   return null;
+// };
 
 const UpdateBatch = () => {
   const [rowData, setRowData] = useState<any[]>([]);
@@ -95,24 +97,32 @@ const UpdateBatch = () => {
 
       const queryId: any = "GET_ALL";
       params.append("queryId", queryId);
-      const accessToken = getCookie("access_token");
+      // const accessToken = getCookie("access_token");
 
-      if (!accessToken) {
-        throw new Error("Access token not found");
-      }
+      // if (!accessToken) {
+      //   throw new Error("Access token not found");
+      // }
 
-      const response = await fetch(
-        `${apiConfig.getResourceUrl("batch")}?` + params.toString(),
+      // const response = await authFetch(
+      //   `${apiConfig.getResourceUrl("batch")}?` + params.toString(),
+      //   {
+      //     method: "GET",
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //       Authorization: `Bearer ${accessToken}`,
+      //     },
+      //     credentials: "include",
+      //   }
+      // );
+      const response = await authFetch(
+        `${apiConfig.getResourceUrl("batch")}?${params.toString()}`,
         {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
           },
-          credentials: "include",
         }
       );
-
       if (!response.ok) {
         throw new Error("Error: " + response.status);
       }
@@ -131,7 +141,7 @@ const UpdateBatch = () => {
   } = useQuery({
     queryKey: ["resourceMetaData", "batch"],
     queryFn: async () => {
-      const response = await fetch(
+      const response = await authFetch(
         `${apiConfig.getResourceMetaDataUrl("batch")}?`,
         {
           method: "GET",

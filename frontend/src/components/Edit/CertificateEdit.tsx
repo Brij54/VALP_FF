@@ -1,3 +1,4 @@
+
 // import React, { useEffect, useRef, useState } from "react";
 // import { useParams, useNavigate } from "react-router-dom";
 // import apiConfig from "../../config/apiConfig";
@@ -6,7 +7,7 @@
 // import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 // import Sidebar from "../Utils/SidebarAdmin";
-// import styles from "../Styles/CreateCertificate.module.css"; // SAME UI STYLES
+// import styles from "../Styles/CreateCertificate.module.css";
 
 // const Edit = () => {
 //   const { id }: any = useParams();
@@ -18,7 +19,7 @@
 
 //   const [editedRecord, setEditedRecord] = useState<any>({});
 //   const [fields, setFields] = useState<any[]>([]);
-//   const [resMetaData, setResMetaData] = useState([]);
+//   const [resMetaData, setResMetaData] = useState<any[]>([]);
 //   const [requiredFields, setRequiredFields] = useState<string[]>([]);
 //   const [showToast, setShowToast] = useState(false);
 //   const [foreignKeyData, setForeignKeyData] = useState<Record<string, any[]>>(
@@ -28,6 +29,7 @@
 //     {}
 //   );
 //   const [enums, setEnums] = useState<Record<string, any[]>>({});
+
 //   const regex = /^(g_|archived|extra_data)/;
 //   const fetchedResources = useRef(new Set<string>());
 //   const fetchedEnum = useRef(new Set<string>());
@@ -41,18 +43,16 @@
 
 //     const url = `${baseUrl}?${params.toString()}`;
 //     const accessToken = getCookie("access_token");
+
 //     const response = await fetch(url, {
 //       headers: {
 //         Authorization: `Bearer ${accessToken}`,
 //       },
 //       credentials: "include",
 //     });
-//     if (!response.ok) {
-//       throw new Error("Network response was not ok");
-//     }
 
-//     const data = await response.json();
-//     return data;
+//     if (!response.ok) throw new Error("Network response was not ok");
+//     return response.json();
 //   };
 
 //   const useGetById = (id: string, resourceName: string) => {
@@ -68,33 +68,20 @@
 //     "Certificate"
 //   );
 
-//   // useEffect(() => {
-//   //   if (fetchDataById.length > 0 && !loadingEditComp) {
-//   //     setEditedRecord((prevData: any) => ({
-//   //       ...prevData,
-//   //       ...Object.fromEntries(
-//   //         Object.entries(fetchedDataById["resource"][0]).filter(
-//   //           ([key]) => !regex.test(key)
-//   //         )
-//   //       ),
-//   //     }));
-//   //   }
-//   // }, [fetchedDataById, loadingEditComp]);
-// useEffect(() => {
-//   if (fetchedDataById?.resource?.length > 0 && !loadingEditComp) {
-//     setEditedRecord((prevData: any) => ({
-//       ...prevData,
-//       ...Object.fromEntries(
-//         Object.entries(fetchedDataById.resource[0]).filter(([key]) => !regex.test(key))
-//       ),
-//     }));
-//   }
-// }, [fetchedDataById, loadingEditComp]);
-//   const {
-//     data: metaData,
-//     isLoading,
-//     error,
-//   } = useQuery({
+//   useEffect(() => {
+//     if (fetchedDataById?.resource?.length > 0 && !loadingEditComp) {
+//       setEditedRecord((prevData: any) => ({
+//         ...prevData,
+//         ...Object.fromEntries(
+//           Object.entries(fetchedDataById.resource[0]).filter(
+//             ([key]) => !regex.test(key)
+//           )
+//         ),
+//       }));
+//     }
+//   }, [fetchedDataById, loadingEditComp]);
+
+//   useQuery({
 //     queryKey: ["resMetaData"],
 //     queryFn: async () => {
 //       const res = await fetch(metadataUrl, {
@@ -102,18 +89,17 @@
 //         headers: { "Content-Type": "application/json" },
 //       });
 
-//       if (!res.ok) {
-//         throw new Error(`Failed to fetch metadata: ${res.statusText}`);
-//       }
+//       if (!res.ok) throw new Error(`Failed to fetch metadata: ${res.statusText}`);
 
 //       const data = await res.json();
 
 //       setResMetaData(data);
-//       setFields(data[0].fieldValues);
+//       setFields(data[0]?.fieldValues || []);
 
-//       const foreignFields = data[0].fieldValues.filter(
+//       const foreignFields = (data[0]?.fieldValues || []).filter(
 //         (field: any) => field.foreign
 //       );
+
 //       for (const field of foreignFields) {
 //         if (!fetchedResources.current.has(field.foreign)) {
 //           fetchedResources.current.add(field.foreign);
@@ -123,17 +109,14 @@
 //             queryFn: () => fetchForeignResource(field.foreign),
 //           });
 
-//           await fetchForeignData(
-//             field.foreign,
-//             field.name,
-//             field.foreign_field
-//           );
+//           await fetchForeignData(field.foreign, field.name, field.foreign_field);
 //         }
 //       }
 
-//       const enumFields = data[0].fieldValues.filter(
+//       const enumFields = (data[0]?.fieldValues || []).filter(
 //         (field: any) => field.isEnum === true
 //       );
+
 //       for (const field of enumFields) {
 //         if (!fetchedEnum.current.has(field.possible_value)) {
 //           fetchedEnum.current.add(field.possible_value);
@@ -154,10 +137,7 @@
 //   const fetchEnumData = async (enumName: string) => {
 //     try {
 //       const data = await fetchEnum(enumName);
-//       setEnums((prev) => ({
-//         ...prev,
-//         [enumName]: data,
-//       }));
+//       setEnums((prev) => ({ ...prev, [enumName]: data }));
 //     } catch (err) {
 //       console.error(`Error fetching enum data for ${enumName}:`, err);
 //     }
@@ -170,16 +150,11 @@
 //   ) => {
 //     try {
 //       const data = await fetchForeignResource(foreignResource);
-//       setForeignKeyData((prev) => ({
-//         ...prev,
-//         [foreignResource]: data,
-//       }));
+//       setForeignKeyData((prev) => ({ ...prev, [foreignResource]: data }));
 //     } catch (err) {
 //       console.error(`Error fetching foreign data for ${fieldName}:`, err);
 //     }
 //   };
-
-//   useEffect(() => {}, [editedRecord]);
 
 //   const handleEdit = (id: any, field: string, value: any) => {
 //     setEditedRecord((prevData: any) => ({
@@ -199,109 +174,61 @@
 //     setSearchQueries((prev) => ({ ...prev, [fieldName]: value }));
 //   };
 
-//   const base64EncodeFun = (str: string) => {
-//     return btoa(unescape(encodeURIComponent(str)));
-//   };
+//   const base64EncodeFun = (str: string) => btoa(unescape(encodeURIComponent(str)));
 
-//   // const handleUpdate = async (id: any, e: React.FormEvent) => {
-//   //   e.preventDefault();
-//   //   if (editedRecord.length === 0) return;
+//   const handleUpdate = async (id: any, e: React.FormEvent) => {
+//     e.preventDefault();
 
-//   //   const params = new FormData();
+//     if (!editedRecord || Object.keys(editedRecord).length === 0) return;
 
-//   //   let selectedFile = null;
-//   //   selectedFile = Object.keys(editedRecord).filter(
-//   //     (key) => editedRecord[key] instanceof File
-//   //   );
-//   //   if (selectedFile !== undefined && selectedFile.length > 0) {
-//   //     params.append("file", editedRecord[selectedFile[0]]);
-//   //     editedRecord[selectedFile[0]] = "";
+//     const params = new FormData();
 
-//   //     params.append("description", "my description");
-//   //     params.append("appId", "hostel_management_system");
-//   //     params.append("dmsRole", "admin");
-//   //     params.append("user_id", "admin@rasp.com");
-//   //     params.append("tags", "t1,t2,attend");
-//   //   }
-//   //   const jsonString = JSON.stringify(editedRecord);
+//     const selectedFileKeys = Object.keys(editedRecord).filter(
+//       (key) => editedRecord[key] instanceof File
+//     );
 
-//   //   const base64Encoded = base64EncodeFun(jsonString);
-//   //   params.append("resource", base64Encoded);
-//   //   params.append("action", "MODIFY");
-//   //   const accessToken = getCookie("access_token");
+//     if (selectedFileKeys.length > 0) {
+//       const fileKey = selectedFileKeys[0];
+//       params.append("file", editedRecord[fileKey]);
+//       editedRecord[fileKey] = "";
 
-//   //   if (!accessToken) {
-//   //     throw new Error("Access token not found");
-//   //   }
-
-//   //   try {
-//   //     const response = await fetch(apiUrl, {
-//   //       method: "POST",
-//   //       headers: {
-//   //         Authorization: `Bearer ${accessToken}`,
-//   //       },
-//   //       credentials: "include",
-//   //       body: params,
-//   //     });
-
-//   //     if (response.ok) {
-//   //       setShowToast(true);
-//   //       setTimeout(() => setShowToast(false), 3000);
-//   //     }
-//   //   } catch (error) {}
-//   // };
-// const handleUpdate = async (id: any, e: React.FormEvent) => {
-//   e.preventDefault();
-//   if (editedRecord.length === 0) return;
-
-//   const params = new FormData();
-
-//   let selectedFile = null;
-//   selectedFile = Object.keys(editedRecord).filter(
-//     (key) => editedRecord[key] instanceof File
-//   );
-
-//   if (selectedFile !== undefined && selectedFile.length > 0) {
-//     params.append("file", editedRecord[selectedFile[0]]);
-//     editedRecord[selectedFile[0]] = "";
-
-//     params.append("description", "my description");
-//     params.append("appId", "hostel_management_system");
-//     params.append("dmsRole", "admin");
-//     params.append("user_id", "admin@rasp.com");
-//     params.append("tags", "t1,t2,attend");
-//   }
-
-//   const jsonString = JSON.stringify(editedRecord);
-//   const base64Encoded = base64EncodeFun(jsonString);
-
-//   params.append("resource", base64Encoded);
-//   params.append("action", "MODIFY");
-
-//   const accessToken = getCookie("access_token");
-//   if (!accessToken) throw new Error("Access token not found");
-
-//   try {
-//     const response = await fetch(apiUrl, {
-//       method: "POST",
-//       headers: {
-//         Authorization: `Bearer ${accessToken}`,
-//       },
-//       credentials: "include",
-//       body: params,
-//     });
-
-//     if (response.ok) {
-//       setShowToast(true);
-//       setTimeout(() => setShowToast(false), 1000);
-
-//       // ✅ Redirect to approve/reject page
-//       navigate("/approve_reject_certificate");
-//       // OR if you literally want absolute URL:
-//       // window.location.href = "http://localhost:3001/approve_reject_certificate";
+//       params.append("description", "my description");
+//       params.append("appId", "hostel_management_system");
+//       params.append("dmsRole", "admin");
+//       params.append("user_id", "admin@rasp.com");
+//       params.append("tags", "t1,t2,attend");
 //     }
-//   } catch (error) {}
-// };
+
+//     const jsonString = JSON.stringify(editedRecord);
+//     const base64Encoded = base64EncodeFun(jsonString);
+
+//     params.append("resource", base64Encoded);
+//     params.append("action", "MODIFY");
+
+//     const accessToken = getCookie("access_token");
+//     if (!accessToken) throw new Error("Access token not found");
+
+//     try {
+//       const response = await fetch(apiUrl, {
+//         method: "POST",
+//         headers: {
+//           Authorization: `Bearer ${accessToken}`,
+//         },
+//         credentials: "include",
+//         body: params,
+//       });
+
+//       if (response.ok) {
+//         setShowToast(true);
+//         setTimeout(() => setShowToast(false), 1000);
+
+//         // ✅ Redirect on success
+//         navigate("/approve_reject_certificate");
+//       }
+//     } catch (error) {
+//       console.error(error);
+//     }
+//   };
 
 //   const getStatusBadge = (status: string) => {
 //     if (status === "true")
@@ -344,7 +271,6 @@
 //                   <h2 className={styles.sectionTitle}>Edit Certificate</h2>
 
 //                   <div className={styles.formGrid}>
-//                     {/* course_name */}
 //                     <div className={styles.formGroup}>
 //                       <label className={styles.formLabel}>
 //                         <span className={styles.required}>*</span> Course Name
@@ -361,11 +287,9 @@
 //                       />
 //                     </div>
 
-//                     {/* course_duration */}
 //                     <div className={styles.formGroup}>
 //                       <label className={styles.formLabel}>
-//                         <span className={styles.required}>*</span> Course
-//                         Duration
+//                         <span className={styles.required}>*</span> Course Duration
 //                       </label>
 //                       <input
 //                         type="text"
@@ -379,7 +303,6 @@
 //                       />
 //                     </div>
 
-//                     {/* course_mode */}
 //                     <div className={styles.formGroup}>
 //                       <label className={styles.formLabel}>
 //                         <span className={styles.required}>*</span> Course Mode
@@ -394,7 +317,6 @@
 //                       />
 //                     </div>
 
-//                     {/* platform */}
 //                     <div className={styles.formGroup}>
 //                       <label className={styles.formLabel}>
 //                         <span className={styles.required}>*</span> Platform
@@ -405,17 +327,13 @@
 //                         name="platform"
 //                         required
 //                         value={editedRecord["platform"] || ""}
-//                         onChange={(e) =>
-//                           handleEdit(id, "platform", e.target.value)
-//                         }
+//                         onChange={(e) => handleEdit(id, "platform", e.target.value)}
 //                       />
 //                     </div>
 
-//                     {/* completion date */}
-//                     <div className={styles.formGroup}>
+//                     {/* <div className={styles.formGroup}>
 //                       <label className={styles.formLabel}>
-//                         <span className={styles.required}>*</span> Completion
-//                         Date
+//                         <span className={styles.required}>*</span> Completion Date
 //                       </label>
 //                       <input
 //                         type="date"
@@ -424,22 +342,16 @@
 //                         required
 //                         value={editedRecord["course_completion_date"] || ""}
 //                         onChange={(e) =>
-//                           handleEdit(
-//                             id,
-//                             "course_completion_date",
-//                             e.target.value
-//                           )
+//                           handleEdit(id, "course_completion_date", e.target.value)
 //                         }
 //                       />
-//                     </div>
+//                     </div> */}
 
-//                     {/* status */}
 //                     <div className={styles.formGroup}>
 //                       <label className={styles.formLabel}>
 //                         <span className={styles.required}>*</span> Status
 //                       </label>
 
-//                       {/* Dropdown + badge container */}
 //                       <div
 //                         style={{
 //                           display: "flex",
@@ -451,7 +363,6 @@
 //                           background: "#fafafa",
 //                         }}
 //                       >
-//                         {/* Dropdown */}
 //                         <select
 //                           className={styles.formControl}
 //                           style={{ flex: "0 0 180px" }}
@@ -470,14 +381,12 @@
 //                           <option value="false">Rejected</option>
 //                         </select>
 
-//                         {/* Live Badge */}
 //                         <div style={{ flex: 1 }}>
 //                           {getStatusBadge(editedRecord.status)}
 //                         </div>
 //                       </div>
 //                     </div>
 
-//                     {/* course_url */}
 //                     <div className={styles.formGroup}>
 //                       <label className={styles.formLabel}>Course URL</label>
 //                       <input
@@ -492,18 +401,10 @@
 //                     </div>
 //                   </div>
 
-//                   {/* Submit */}
 //                   <div className={styles.buttonRow}>
-//                     {/* <button
-//                       className={styles.primaryBtn}
-//                       onClick={(e) => handleUpdate(id, e)}
-//                     >
-//                       Submit
-//                     </button> */}
 //                     <button className={styles.primaryBtn} type="submit">
-//   Submit
-// </button>
-
+//                       Submit
+//                     </button>
 //                   </div>
 //                 </div>
 //               </form>
@@ -544,6 +445,38 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Sidebar from "../Utils/SidebarAdmin";
 import styles from "../Styles/CreateCertificate.module.css";
 
+/** ✅ authFetch added inside this file */
+async function authFetch(
+  input: RequestInfo,
+  init: RequestInit = {}
+): Promise<Response> {
+  const finalInit: RequestInit = {
+    credentials: "include",
+    ...init,
+    headers: {
+      ...(init.headers || {}),
+    },
+  };
+
+  // Add Authorization header from cookie (your current approach)
+  const token = getCookie("access_token");
+  if (token && !(finalInit.headers as any)?.Authorization) {
+    (finalInit.headers as any).Authorization = `Bearer ${token}`;
+  }
+
+  const res = await fetch(input, finalInit);
+
+  // ✅ Global 401 handling
+  if (res.status === 401) {
+    localStorage.clear();
+    sessionStorage.clear();
+    window.location.href = "/";
+    throw new Error("Unauthorized");
+  }
+
+  return res;
+}
+
 const Edit = () => {
   const { id }: any = useParams();
   const navigate = useNavigate();
@@ -577,13 +510,11 @@ const Edit = () => {
     });
 
     const url = `${baseUrl}?${params.toString()}`;
-    const accessToken = getCookie("access_token");
 
-    const response = await fetch(url, {
+    const response = await authFetch(url, {
       headers: {
-        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
       },
-      credentials: "include",
     });
 
     if (!response.ok) throw new Error("Network response was not ok");
@@ -619,7 +550,7 @@ const Edit = () => {
   useQuery({
     queryKey: ["resMetaData"],
     queryFn: async () => {
-      const res = await fetch(metadataUrl, {
+      const res = await authFetch(metadataUrl, {
         method: "GET",
         headers: { "Content-Type": "application/json" },
       });
@@ -709,7 +640,8 @@ const Edit = () => {
     setSearchQueries((prev) => ({ ...prev, [fieldName]: value }));
   };
 
-  const base64EncodeFun = (str: string) => btoa(unescape(encodeURIComponent(str)));
+  const base64EncodeFun = (str: string) =>
+    btoa(unescape(encodeURIComponent(str)));
 
   const handleUpdate = async (id: any, e: React.FormEvent) => {
     e.preventDefault();
@@ -740,24 +672,15 @@ const Edit = () => {
     params.append("resource", base64Encoded);
     params.append("action", "MODIFY");
 
-    const accessToken = getCookie("access_token");
-    if (!accessToken) throw new Error("Access token not found");
-
     try {
-      const response = await fetch(apiUrl, {
+      const response = await authFetch(apiUrl, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-        credentials: "include",
         body: params,
       });
 
       if (response.ok) {
         setShowToast(true);
         setTimeout(() => setShowToast(false), 1000);
-
-        // ✅ Redirect on success
         navigate("/approve_reject_certificate");
       }
     } catch (error) {
@@ -862,25 +785,11 @@ const Edit = () => {
                         name="platform"
                         required
                         value={editedRecord["platform"] || ""}
-                        onChange={(e) => handleEdit(id, "platform", e.target.value)}
-                      />
-                    </div>
-
-                    {/* <div className={styles.formGroup}>
-                      <label className={styles.formLabel}>
-                        <span className={styles.required}>*</span> Completion Date
-                      </label>
-                      <input
-                        type="date"
-                        className={styles.formControl}
-                        name="course_completion_date"
-                        required
-                        value={editedRecord["course_completion_date"] || ""}
                         onChange={(e) =>
-                          handleEdit(id, "course_completion_date", e.target.value)
+                          handleEdit(id, "platform", e.target.value)
                         }
                       />
-                    </div> */}
+                    </div>
 
                     <div className={styles.formGroup}>
                       <label className={styles.formLabel}>
