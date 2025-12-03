@@ -10,6 +10,7 @@ import {
 } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
 import { useQuery } from '@tanstack/react-query';
+import { authFetch } from '../../apis/authFetch';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -73,21 +74,15 @@ const getCookie = (name: string): string | null => {
       params.append("queryId", queryId);
        const accessToken = getCookie("access_token");
 
-  if (!accessToken) {
-    throw new Error("Access token not found");
-  }
+      if (!accessToken) {
+        throw new Error("Access token not found");
+      }
 
-      const response = await fetch(
-        `${apiConfig.getResourceUrl('dean')}?` + params.toString(),
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${accessToken}`, // Add token here
-          },
-          credentials: "include", // include cookies if needed
-        }
+      const response = await authFetch(
+        `${apiConfig.getResourceUrl("dean")}?${params.toString()}`,
+        { method: "GET" }
       );
+
 
       if (!response.ok) {
         throw new Error("Error: " + response.status);
@@ -95,11 +90,14 @@ const getCookie = (name: string): string | null => {
 
       const data = await response.json();
       setFetchedData(data.resource || []);
-       const initialEditedData = fetchData.reduce((acc: any, item: any) => {
-            acc[item.id] = { ...item };
-            return acc;
-             }, {});
+      setEditedData(
+        (data.resource || []).reduce((acc: any, item: any) => {
+          acc[item.id] = { ...item };
+          return acc;
+        }, {})
+      );
       return data;
+
     },
   })
   
@@ -107,7 +105,7 @@ const getCookie = (name: string): string | null => {
     const {data: dataResMeta,isLoading:isLoadingDataResMeta,error:errorDataResMeta} = useQuery({
     queryKey: ['resourceMetaData', 'dean'],
    queryFn: async () => {
-      const response = await fetch(
+      const response = await authFetch(
         `${apiConfig.getResourceMetaDataUrl('dean')}?`,
         {
           method: "GET",

@@ -82,9 +82,13 @@ public class KeycloakTokenFilter extends OncePerRequestFilter {
 
             String newAccessToken = tokens[0];
             String newRefreshToken = tokens[1];
+            int accessMaxAge = maxAgeFromJwtSeconds(newAccessToken, 15 * 60);          // 15 min fallback
+            int refreshMaxAge = maxAgeFromJwtSeconds(newRefreshToken, 7 * 24 * 3600);  // 7 days fallback
+            setCookie(response, "access_token", newAccessToken, accessMaxAge);
+            setCookie(response, "refresh_token", newRefreshToken, refreshMaxAge);
 
-            setCookie(response, "access_token", newAccessToken, -1);
-            setCookie(response, "refresh_token", newRefreshToken, -1);
+//            setCookie(response, "access_token", newAccessToken, -1);
+//            setCookie(response, "refresh_token", newRefreshToken, -1);
 
             // ✅ Wrap request with updated Authorization header
             HttpServletRequest modifiedRequest = new HttpServletRequestWrapper(request) {
@@ -280,12 +284,41 @@ public class KeycloakTokenFilter extends OncePerRequestFilter {
         return null;
     }
 
-    private void setCookie(HttpServletResponse response, String name, String value, int maxAge) {
+//    private void setCookie(HttpServletResponse response, String name, String value, int maxAge) {
+//        Cookie cookie = new Cookie(name, value);
+//        cookie.setHttpOnly(false); // prevents JavaScript access
+//        cookie.setSecure(false);  // set true in HTTPS
+//        cookie.setPath("/");
+//        cookie.setMaxAge(maxAge);
+//        response.addCookie(cookie);
+//    }
+private int maxAgeFromJwtSeconds(String jwt, int fallbackSeconds) {
+    try {
+        String[] parts = jwt.split("\\.");
+        if (parts.length < 2) return fallbackSeconds;
+
+        String payloadJson = new String(java.util.Base64.getUrlDecoder().decode(parts[1]));
+        JsonNode payload = objectMapper.readTree(payloadJson);
+
+        if (!payload.has("exp")) return fallbackSeconds;
+
+        long expMillis = payload.get("exp").asLong() * 1000L;
+        long nowMillis = System.currentTimeMillis();
+        long secondsLeft = (expMillis - nowMillis) / 1000L;
+
+        // keep a small buffer; never negative
+        return (int) Math.max(0, secondsLeft - 5);
+    } catch (Exception e) {
+        return fallbackSeconds;
+    }
+}
+
+    private void setCookie(HttpServletResponse response, String name, String value, int maxAgeSeconds) {
         Cookie cookie = new Cookie(name, value);
-        cookie.setHttpOnly(false); // prevents JavaScript access
-        cookie.setSecure(false);  // set true in HTTPS
+        cookie.setHttpOnly(false);   // ✅ keep false ONLY if frontend reads document.cookie
+        cookie.setSecure(false);     // ✅ true in HTTPS
         cookie.setPath("/");
-        cookie.setMaxAge(maxAge);
+        cookie.setMaxAge(maxAgeSeconds); // ✅ real expiry
         response.addCookie(cookie);
     }
 
@@ -320,7 +353,8 @@ public class KeycloakTokenFilter extends OncePerRequestFilter {
                         path.startsWith("/api/auth/adding_user") ||
                         path.startsWith("/api/auth/forgot-password") ||
                         path.startsWith("/api/auth/reset-password") ||
-                        path.startsWith("/api/auth/user_resource_role_mapping")
+                        path.startsWith("/api/auth/user_resource_role_mapping") ||
+                        path.startsWith("/api/auth/logout")
 
         );
     }

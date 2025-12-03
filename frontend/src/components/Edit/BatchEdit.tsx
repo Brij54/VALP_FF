@@ -5,6 +5,9 @@
 // import { fetchEnum, getCookie } from "../../apis/enum";
 // import { useQuery, useQueryClient } from "@tanstack/react-query";
 
+// import Sidebar from "../Utils/SidebarAdmin";
+// import "../Batch_Config.css"; // for UI design
+
 // const Edit = () => {
 //   const { id }: any = useParams();
 //   const baseUrl = apiConfig.getResourceUrl("Batch");
@@ -38,9 +41,9 @@
 //     const accessToken = getCookie("access_token");
 //     const response = await fetch(url, {
 //       headers: {
-//         Authorization: `Bearer ${accessToken}`, // Add token here
+//         Authorization: `Bearer ${accessToken}`,
 //       },
-//       credentials: "include", // include cookies if needed
+//       credentials: "include",
 //     });
 //     if (!response.ok) {
 //       throw new Error("Network response was not ok");
@@ -64,25 +67,8 @@
 //   );
 
 //   useEffect(() => {
-//     // console.log()
-
 //     if (fetchDataById.length > 0 && !loadingEditComp) {
-//       console.log("fetchedDataById", fetchedDataById["resource"][0]);
-//       // setEditedRecord((prevData: any) => ({
-//       //   ...prevData,
-//       //   ...Object.fromEntries(
-//       //     Object.entries(fetchedDataById["resource"][0]).filter(
-//       //       ([key]) => !regex.test(key)
-//       //     )
-//       //   ),
-//       // }));
 //       setEditedRecord(fetchedDataById["resource"][0]);
-//       console.log(
-//         "fetched data by ID",
-//         fetchedDataById,
-//         loadingEditComp,
-//         editedRecord
-//       );
 //     }
 //   }, [fetchedDataById, loadingEditComp]);
 
@@ -147,7 +133,6 @@
 //     },
 //   });
 
-//   // ✅ async function, not useQuery
 //   const fetchEnumData = async (enumName: string) => {
 //     try {
 //       const data = await fetchEnum(enumName);
@@ -160,7 +145,6 @@
 //     }
 //   };
 
-//   // ✅ async function, not useQuery
 //   const fetchForeignData = async (
 //     foreignResource: string,
 //     fieldName: string,
@@ -187,6 +171,7 @@
 //   const handleSearchChange = (fieldName: string, value: string) => {
 //     setSearchQueries((prev) => ({ ...prev, [fieldName]: value }));
 //   };
+
 //   const base64EncodeFun = (str: string) => {
 //     return btoa(unescape(encodeURIComponent(str)));
 //   };
@@ -226,9 +211,9 @@
 //       const response = await fetch(apiUrl, {
 //         method: "POST",
 //         headers: {
-//           Authorization: `Bearer ${accessToken}`, // Add token here
+//           Authorization: `Bearer ${accessToken}`,
 //         },
-//         credentials: "include", // include cookies if needed
+//         credentials: "include",
 //         body: params,
 //       });
 
@@ -244,86 +229,110 @@
 //   };
 
 //   return (
-//     <>
-//       {!loadingEditComp && (
-//         <div className="container mt-4">
-//           <form>
-//             <div
-//               id="id-39"
-//               className="d-flex flex-column border border-2 p-2 gap-2 mb-2"
-//             >
-//               <div className="border-0 fw-bold fs-3" id="id-3B">
-//                 Batch
-//               </div>
-//               <div className="border-0 fw-bold" id="id-3F">
-//                 batch_name *
-//               </div>
-//               <input
-//                 type="text"
-//                 className="form-control"
-//                 name="batch_name"
-//                 required={true}
-//                 value={editedRecord["batch_name"] || ""}
-//                 onChange={(e) => handleEdit(id, "batch_name", e.target.value)}
-//               />
-//               <div className="border-0 fw-bold" id="id-3L">
-//                 no_of_courses *
-//               </div>
-//               <input
-//                 type="number"
-//                 className="form-control"
-//                 name="no_of_courses"
-//                 required={true}
-//                 value={editedRecord["no_of_courses"] || ""}
-//                 onChange={(e) =>
-//                   handleEdit(id, "no_of_courses", e.target.value)
-//                 }
-//               />
-//               <button
-//                 className="btn btn-success"
-//                 id="id-3P"
-//                 onClick={(e) => handleUpdate(id, e)}
+//     <div className="page12Container">
+//       <Sidebar
+//         sidebarCollapsed={false}
+//         toggleSidebar={() => {}}
+//         activeSection="dashboard"
+//       />
+
+//       <main className="mainContent">
+//         <header className="contentHeader">
+//           <h1 className="pageTitle">Edit Batch</h1>
+//         </header>
+
+//         {/* <div className="pageFormContainer1 d-flex justify-content-center"> */}
+//         {!loadingEditComp && (
+//           <form
+//             className="w-100"
+//             style={{
+//               maxWidth: "500px",
+//               backgroundColor: "#fff",
+//               borderRadius: "10px",
+//               padding: "60px 10px",
+//               margin: "100px auto", // keeps it responsive
+//             }}
+//           >
+//             <div className="card shadow-sm border-0 rounded">
+//               {/* Card Header */}
+//               <div
+//                 className="card-header text-white text-center fw-semibold"
+//                 style={{
+//                   background: "linear-gradient(135deg, #007bff, #0056d2)",
+//                   padding: "15px 10px",
+//                   fontSize: "20px",
+//                   borderTopLeftRadius: "10px",
+//                   borderTopRightRadius: "10px",
+//                   letterSpacing: "0.5px",
+//                 }}
 //               >
-//                 Submit
-//               </button>
+//                 Edit Batch Details
+//               </div>
+
+//               {/* Card Body */}
+//               <div className="card-body p-4">
+//                 {/* Batch Title */}
+//                 <label className="fw-bold mb-1">Batch Name *</label>
+//                 <input
+//                   type="text"
+//                   className="form-control mb-3 rounded-3"
+//                   name="batch_name"
+//                   required
+//                   value={editedRecord["batch_name"] || ""}
+//                   onChange={(e) => handleEdit(id, "batch_name", e.target.value)}
+//                 />
+
+//                 {/* Number of Courses */}
+//                 <label className="fw-bold mb-1">No. of Courses *</label>
+//                 <input
+//                   type="number"
+//                   className="form-control mb-4 rounded-3"
+//                   name="no_of_courses"
+//                   required
+//                   value={editedRecord["no_of_courses"] || ""}
+//                   onChange={(e) =>
+//                     handleEdit(id, "no_of_courses", e.target.value)
+//                   }
+//                 />
+
+//                 {/* Submit Button */}
+//                 <button
+//                   className="btn btn-success w-100 py-2 fs-6 fw-semibold rounded-3"
+//                   onClick={(e) => handleUpdate(id, e)}
+//                 >
+//                   Update
+//                 </button>
+//               </div>
 //             </div>
 //           </form>
+//         )}
 
-//           {showToast && (
-//             <div
-//               className="toast-container position-fixed top-20 start-50 translate-middle p-3"
-//               style={{ zIndex: 1550 }}
-//             >
-//               <div
-//                 className="toast show"
-//                 role="alert"
-//                 aria-live="assertive"
-//                 aria-atomic="true"
-//               >
-//                 <div className="toast-header">
-//                   <strong className="me-auto">Success</strong>
-//                   <button
-//                     type="button"
-//                     className="btn-close"
-//                     onClick={() => setShowToast(false)}
-//                   ></button>
-//                 </div>
-//                 <div className="toast-body text-success text-center">
-//                   Updated successfully!
-//                 </div>
+//         {showToast && (
+//           <div className="toast-container position-fixed top-20 start-50 translate-middle p-3">
+//             <div className="toast show">
+//               <div className="toast-header">
+//                 <strong className="me-auto">Success</strong>
+//                 <button
+//                   type="button"
+//                   className="btn-close"
+//                   onClick={() => setShowToast(false)}
+//                 />
+//               </div>
+//               <div className="toast-body text-success text-center">
+//                 Updated Successfully!
 //               </div>
 //             </div>
-//           )}
-//         </div>
-//       )}
-//     </>
+//           </div>
+//         )}
+//         {/* </div> */}
+//       </main>
+//     </div>
 //   );
 // };
 
 // export default Edit;
-
 import React, { useEffect, useRef, useState } from "react";
-import { useLocation, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import apiConfig from "../../config/apiConfig";
 import { fetchForeignResource } from "../../apis/resources";
 import { fetchEnum, getCookie } from "../../apis/enum";
@@ -331,6 +340,39 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import Sidebar from "../Utils/SidebarAdmin";
 import "../Batch_Config.css"; // for UI design
+
+// ✅ authFetch added here
+async function authFetch(
+  input: RequestInfo,
+  init: RequestInit = {}
+): Promise<Response> {
+  const finalInit: RequestInit = {
+    credentials: "include",
+    ...init,
+    headers: {
+      ...(init.headers || {}),
+    },
+  };
+
+  // Add Authorization from cookie if not already present
+  const token = getCookie("access_token");
+  const headersObj = finalInit.headers as Record<string, string>;
+  if (token && !headersObj.Authorization) {
+    headersObj.Authorization = `Bearer ${token}`;
+  }
+
+  const res = await fetch(input, finalInit);
+
+  // ✅ Global 401 handling
+  if (res.status === 401) {
+    localStorage.clear();
+    sessionStorage.clear();
+    window.location.href = "/";
+    throw new Error("Unauthorized");
+  }
+
+  return res;
+}
 
 const Edit = () => {
   const { id }: any = useParams();
@@ -340,7 +382,7 @@ const Edit = () => {
 
   const [editedRecord, setEditedRecord] = useState<any>({});
   const [fields, setFields] = useState<any[]>([]);
-  const [resMetaData, setResMetaData] = useState([]);
+  const [resMetaData, setResMetaData] = useState<any[]>([]);
   const [requiredFields, setRequiredFields] = useState<string[]>([]);
   const [showToast, setShowToast] = useState(false);
   const [foreignKeyData, setForeignKeyData] = useState<Record<string, any[]>>(
@@ -362,16 +404,16 @@ const Edit = () => {
     });
 
     const url = `${baseUrl}?${params.toString()}`;
-    const accessToken = getCookie("access_token");
-    const response = await fetch(url, {
+
+    // ✅ replaced fetch -> authFetch
+    const response = await authFetch(url, {
+      method: "GET",
       headers: {
-        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
       },
-      credentials: "include",
     });
-    if (!response.ok) {
-      throw new Error("Network response was not ok");
-    }
+
+    if (!response.ok) throw new Error("Network response was not ok");
 
     const data = await response.json();
     return data;
@@ -391,26 +433,21 @@ const Edit = () => {
   );
 
   useEffect(() => {
-    if (fetchDataById.length > 0 && !loadingEditComp) {
+    if (fetchedDataById?.resource?.length > 0 && !loadingEditComp) {
       setEditedRecord(fetchedDataById["resource"][0]);
     }
   }, [fetchedDataById, loadingEditComp]);
 
-  const {
-    data: metaData,
-    isLoading,
-    error,
-  } = useQuery({
+  useQuery({
     queryKey: ["resMetaData"],
     queryFn: async () => {
-      const res = await fetch(metadataUrl, {
+      // ✅ replaced fetch -> authFetch
+      const res = await authFetch(metadataUrl, {
         method: "GET",
         headers: { "Content-Type": "application/json" },
       });
 
-      if (!res.ok) {
-        throw new Error(`Failed to fetch metadata: ${res.statusText}`);
-      }
+      if (!res.ok) throw new Error(`Failed to fetch metadata`);
 
       const data = await res.json();
 
@@ -502,15 +539,15 @@ const Edit = () => {
 
   const handleUpdate = async (id: any, e: React.FormEvent) => {
     e.preventDefault();
-    if (editedRecord.length === 0) return;
+    if (!editedRecord || Object.keys(editedRecord).length === 0) return;
 
     const params = new FormData();
 
-    let selectedFile = null;
-    selectedFile = Object.keys(editedRecord).filter(
+    const selectedFile = Object.keys(editedRecord).filter(
       (key) => editedRecord[key] instanceof File
     );
-    if (selectedFile !== undefined && selectedFile.length > 0) {
+
+    if (selectedFile.length > 0) {
       params.append("file", editedRecord[selectedFile[0]]);
       editedRecord[selectedFile[0]] = "";
 
@@ -520,24 +557,17 @@ const Edit = () => {
       params.append("user_id", "admin@rasp.com");
       params.append("tags", "t1,t2,attend");
     }
-    const jsonString = JSON.stringify(editedRecord);
 
+    const jsonString = JSON.stringify(editedRecord);
     const base64Encoded = base64EncodeFun(jsonString);
+
     params.append("resource", base64Encoded);
     params.append("action", "MODIFY");
-    const accessToken = getCookie("access_token");
-
-    if (!accessToken) {
-      throw new Error("Access token not found");
-    }
 
     try {
-      const response = await fetch(apiUrl, {
+      // ✅ replaced fetch -> authFetch
+      const response = await authFetch(apiUrl, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-        credentials: "include",
         body: params,
       });
 
@@ -565,7 +595,6 @@ const Edit = () => {
           <h1 className="pageTitle">Edit Batch</h1>
         </header>
 
-        {/* <div className="pageFormContainer1 d-flex justify-content-center"> */}
         {!loadingEditComp && (
           <form
             className="w-100"
@@ -574,11 +603,10 @@ const Edit = () => {
               backgroundColor: "#fff",
               borderRadius: "10px",
               padding: "60px 10px",
-              margin: "100px auto", // keeps it responsive
+              margin: "100px auto",
             }}
           >
             <div className="card shadow-sm border-0 rounded">
-              {/* Card Header */}
               <div
                 className="card-header text-white text-center fw-semibold"
                 style={{
@@ -593,9 +621,7 @@ const Edit = () => {
                 Edit Batch Details
               </div>
 
-              {/* Card Body */}
               <div className="card-body p-4">
-                {/* Batch Title */}
                 <label className="fw-bold mb-1">Batch Name *</label>
                 <input
                   type="text"
@@ -606,7 +632,6 @@ const Edit = () => {
                   onChange={(e) => handleEdit(id, "batch_name", e.target.value)}
                 />
 
-                {/* Number of Courses */}
                 <label className="fw-bold mb-1">No. of Courses *</label>
                 <input
                   type="number"
@@ -619,7 +644,6 @@ const Edit = () => {
                   }
                 />
 
-                {/* Submit Button */}
                 <button
                   className="btn btn-success w-100 py-2 fs-6 fw-semibold rounded-3"
                   onClick={(e) => handleUpdate(id, e)}
@@ -648,7 +672,6 @@ const Edit = () => {
             </div>
           </div>
         )}
-        {/* </div> */}
       </main>
     </div>
   );
