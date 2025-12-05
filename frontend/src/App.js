@@ -53,7 +53,10 @@ import ValpCertificateGenerator from "./components/ValpCertificateGenerator";
 import DeanSignatureUpload from "./components/DeanSignature";
 import DeanSignature from "./components/DeanSignature";
 import DeanEdit from "./components/Edit/DeanEdit";
-
+import Offline_Course_Registration from "./components/Offline_Course_Registration";
+import Program_Config from "./components/Program_Config";
+import ProgramEdit from "./components/Edit/ProgramEdit";
+import Program_Records from "./components/Program_Records";
 function App() {
   return (
     <Routes>
@@ -82,6 +85,16 @@ function App() {
         }
       />
 
+      <Route
+        path="/offline_course_registration"
+        element={
+          <ProtectedRoute requiredRoles={["student"]}>
+            <Offline_Course_Registration />
+          </ProtectedRoute>
+        }
+      />
+
+
       {/* ADMIN ROUTES */}
       <Route
         path="/batch_config"
@@ -105,6 +118,15 @@ function App() {
         element={
           <ProtectedRoute requiredRoles={["admin"]}>
             <Approve_Reject_Certificate />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/program_config"
+        element={
+          <ProtectedRoute requiredRoles={["admin"]}>
+            <Program_Config/>
           </ProtectedRoute>
         }
       />
@@ -144,10 +166,28 @@ function App() {
       />
 
       <Route
+        path="/program_records"
+        element={
+          <ProtectedRoute requiredRoles={["admin"]}>
+            <Program_Records />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
         path="/edit/dean/:id"
         element={
           <ProtectedRoute requiredRoles={["admin"]}>
             <DeanEdit />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/edit/program/:id"
+        element={
+          <ProtectedRoute requiredRoles={["admin"]}>
+            <ProgramEdit/>
           </ProtectedRoute>
         }
       />

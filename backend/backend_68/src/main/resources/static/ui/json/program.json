@@ -1,0 +1,45 @@
+{
+
+"program": {
+
+  "cluster" : "rasp_db",
+  "ui" : false,
+  "api" : true,
+  "fields" : {
+    "id": {
+
+     "name" : "id",
+     "required" : "true",
+     "type" : "String"
+     },
+    "name": {
+
+     "name" : "name",
+     "required" : "true",
+     "type" : "String"
+     },
+    "seats": {
+
+     "name" : "seats",
+     "required" : "true",
+     "type" : "Long"
+     },
+    "instructor_name": {
+
+     "name" : "instructor_name",
+     "required" : "true",
+     "type" : "String"
+     },
+    "syllabus": {
+
+     "name" : "syllabus",
+     "required" : "false",
+     "is_file" : "true",
+     "type" : "String"
+      }
+   
+  }
+ }
+
+}
+

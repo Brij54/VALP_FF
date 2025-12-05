@@ -25,6 +25,8 @@ export default function Sidebar({
   { text: "Approve Reject Certificate", path: "/approve_reject_certificate" },
   { text: "VALP Certificate Generate", path: "/valp/generate" },
   { text: "Dean Signature", path: "/DeanSignature" },
+  { text: "Program Configuration", path: "/program_config" },
+  { text: "Program Records", path: "/program_records" },
 ];
 
 const iconMap: Record<string, JSX.Element> = {
@@ -33,6 +35,8 @@ const iconMap: Record<string, JSX.Element> = {
   "Approve Reject Certificate": <ClipboardCheck size={24} color="#28a745" />, // Green
   "VALP Certificate Generate": <Award size={24} color="#28a745" />, // Green
   "Dean Signature": <FileBadge2 size={24} color="#28a745" />, // Green
+  "Program Configuration": <FileBadge2 size={24} color="#28a745" />, // Green
+  "Program Records": <FileBadge2 size={24} color="#28a745" />, // Green
 };
 
   return (

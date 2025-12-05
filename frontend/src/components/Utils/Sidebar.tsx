@@ -16,7 +16,6 @@ const iconMap: Record<string, JSX.Element> = {
   "Student Records": <FileSpreadsheet size={22} color="#28a745" />,
 };
 
-
 export default function Sidebar({
   sidebarCollapsed,
   toggleSidebar,
@@ -91,52 +90,77 @@ Bangalore`}
         </div>
         {/* Navigation Menu */}
         <div className="navMenu">
-  {/* Home */}
-  <button
-    className="navItem"
-    onClick={() => navigate("/upload")}
-    style={{
-      display: "flex",
-      alignItems: "center",
-      gap: "14px",
-      padding: "12px 14px",
-      marginBottom: "12px",
-      borderRadius: "8px",
-      width: "100%",
-    }}
-  >
-    <span className="navIcon">{iconMap["Home"]}</span>
-    <span
-      className="navText"
-      style={{ fontSize: "17px", fontWeight: 600 }}
-    >
-      Home
-    </span>
-  </button>
+          {/* Home */}
+          <button
+            className="navItem"
+            onClick={() => navigate("/upload")}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "14px",
+              padding: "12px 14px",
+              marginBottom: "12px",
+              borderRadius: "8px",
+              width: "100%",
+            }}
+          >
+            <span className="navIcon">{iconMap["Home"]}</span>
+            <span
+              className="navText"
+              style={{ fontSize: "17px", fontWeight: 600 }}
+            >
+              Home
+            </span>
+          </button>
 
-  {/* Student Records */}
-  <button
-    className="navItem"
-    onClick={() => navigate("/records")}
-    style={{
-      display: "flex",
-      alignItems: "center",
-      gap: "14px",
-      padding: "12px 14px",
-      marginBottom: "12px",
-      borderRadius: "8px",
-      width: "100%",
-    }}
-  >
-    <span className="navIcon">{iconMap["Student Records"]}</span>
-    <span
-      className="navText"
-      style={{ fontSize: "17px", fontWeight: 600 }}
-    >
-      Student Records
-    </span>
-  </button>
-</div>
+          {/* Student Records */}
+          <button
+            className="navItem"
+            onClick={() => navigate("/records")}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "14px",
+              padding: "12px 14px",
+              marginBottom: "12px",
+              borderRadius: "8px",
+              width: "100%",
+            }}
+          >
+            <span className="navIcon">{iconMap["Student Records"]}</span>
+            <span
+              className="navText"
+              style={{ fontSize: "17px", fontWeight: 600 }}
+            >
+              Student Records
+            </span>
+          </button>
+
+          <button
+            className="navItem"
+            onClick={() => navigate("/offline_course_registration")}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "14px",
+              padding: "12px 14px",
+              marginBottom: "12px",
+              borderRadius: "8px",
+              width: "100%",
+            }}
+          >
+            <span className="navIcon">{iconMap["Student Records"]}</span>
+            <span
+              className="navText"
+              style={{ fontSize: "17px", fontWeight: 600 }}
+            >
+              Offline Course Registration
+            </span>
+          </button>
+
+
+          
+        </div>
       </div>
     </>
   );

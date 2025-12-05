@@ -1,0 +1,38 @@
+{
+
+"program_registration": {
+
+  "cluster" : "rasp_db",
+  "ui" : false,
+  "api" : true,
+  "fields" : {
+    "id": {
+
+     "name" : "id",
+     "required" : "true",
+     "type" : "String"
+     },
+    "program_id": {
+
+     "name" : "program_id",
+     "required" : "true",
+     "foreign" : {
+      "resource" : "Program" 
+      },
+     "type" : "String"
+     },
+    "student_id": {
+
+     "name" : "student_id",
+     "required" : "true",
+     "foreign" : {
+      "resource" : "Student" 
+      },
+     "type" : "String"
+      }
+   
+  }
+ }
+
+}
+
