@@ -1,1142 +1,4 @@
-// import React, { useState, useEffect, useMemo } from "react";
-// import { useNavigate } from "react-router-dom";
-// import apiConfig from "../../config/apiConfig";
-
-// import { AllCommunityModule, ModuleRegistry, ColDef } from "ag-grid-community";
-// import { AgGridReact } from "ag-grid-react";
-// import { useQuery } from "@tanstack/react-query";
-
-// ModuleRegistry.registerModules([AllCommunityModule]);
-
-// // -------------------- COOKIE --------------------
-// const getCookie = (name: string): string | null => {
-//   const value = `; ${document.cookie}`;
-//   const parts = value.split(`; ${name}=`);
-//   if (parts.length === 2) return parts.pop()?.split(";").shift() || null;
-//   return null;
-// };
-
-// // -------------------- STATUS BADGE --------------------
-// const getStatusBadge = (status: any) => {
-//   const s = String(status).toLowerCase();
-
-//   const badgeStyle = {
-//     fontSize: "14px",
-//     padding: "6px 12px",
-//     borderRadius: "8px",
-//   };
-
-//   if (s === "true") {
-//     return (
-//       <span className="badge bg-success text-white" style={badgeStyle}>
-//         Approved
-//       </span>
-//     );
-//   }
-
-//   if (s === "false") {
-//     return (
-//       <span className="badge bg-danger text-white" style={badgeStyle}>
-//         Rejected
-//       </span>
-//     );
-//   }
-
-//   return (
-//     <span className="badge bg-warning text-dark" style={badgeStyle}>
-//       Pending
-//     </span>
-//   );
-// };
-
-// // -------------------- VIEW + DOWNLOAD BUTTON --------------------
-// const ViewDownloadRenderer = (params: any) => {
-//   const documentId = params.value;
-
-//   const handleView = (e: any) => {
-//     e.stopPropagation();
-//     params.context.handleViewPdf(documentId);
-//   };
-
-//   const handleDownload = (e: any) => {
-//     e.stopPropagation();
-//     params.context.handleDownload(documentId);
-//   };
-
-//   return (
-//     <div className="d-flex gap-1">
-//       <button
-//         onClick={handleView}
-//         className="btn btn-info"
-//         style={{
-//           fontSize: "12px",
-//           padding: "6px 8px",
-//           marginTop: "6px",
-//           borderRadius: "8px",
-//           fontWeight: 500,
-//         }}
-//       >
-//         View
-//       </button>
-
-//       <button
-//         onClick={handleDownload}
-//         className="btn btn-primary"
-//         style={{
-//           fontSize: "12px",
-//           padding: "6px 8px",
-//           marginTop: "6px",
-//           borderRadius: "8px",
-//           fontWeight: 500,
-//         }}
-//       >
-//         Download
-//       </button>
-//     </div>
-//   );
-// };
-
-// // -------------------- ACTION RENDERER --------------------
-// const ActionCellRenderer = (props: any) => {
-//   const handleEdit = () => props.context.handleUpdate(props.data.id);
-
-//   return (
-//     <button
-//       className="btn btn-warning"
-//       style={{
-//         fontSize: "12px",
-//         padding: "6px 15px",
-//         borderRadius: "8px",
-//         fontWeight: 500,
-//       }}
-//       onClick={handleEdit}
-//     >
-//       Edit
-//     </button>
-//   );
-// };
-
-// // ==========================================================
-// //                    MAIN COMPONENT
-// // ==========================================================
-// const UpdateCertificate = () => {
-//   const navigate = useNavigate();
-//   const [rowData, setRowData] = useState<any[]>([]);
-//   const [requiredFields, setRequiredFields] = useState<string[]>([]);
-//   const regex = /^(g_|archived|extra_data)/;
-
-//   // PDF Modal State
-//   const [showModal, setShowModal] = useState(false);
-//   const [pdfUrl, setPdfUrl] = useState("");
-
-//   // -------------------- VIEW PDF FUNCTION --------------------
-//   const handleViewPdf = async (documentId: string) => {
-//     const accessToken = getCookie("access_token");
-
-//     const url =
-//       `${apiConfig.API_BASE_URL}/certificate` +
-//       `?document_id=${documentId}&queryId=GET_DOCUMENT` +
-//       `&dmsRole=admin&user_id=admin@rasp.com`;
-
-//     const response = await fetch(url, {
-//       method: "GET",
-//       headers: {
-//         Authorization: `Bearer ${accessToken}`,
-//       },
-//     });
-
-//     const blob = await response.blob();
-//     const fileURL = URL.createObjectURL(blob);
-
-//     setPdfUrl(fileURL);
-//     setShowModal(true);
-//   };
-
-//   // -------------------- DOWNLOAD PDF FUNCTION --------------------
-//   const handleDownload = async (documentId: string) => {
-//     const accessToken = getCookie("access_token");
-
-//     const url =
-//       `${apiConfig.API_BASE_URL}/certificate` +
-//       `?document_id=${documentId}&queryId=GET_DOCUMENT` +
-//       `&dmsRole=admin&user_id=admin@rasp.com`;
-
-//     const response = await fetch(url, {
-//       method: "GET",
-//       headers: {
-//         Authorization: `Bearer ${accessToken}`,
-//       },
-//     });
-
-//     const blob = await response.blob();
-//     const downloadUrl = window.URL.createObjectURL(blob);
-
-//     const a = document.createElement("a");
-//     a.href = downloadUrl;
-
-//     const filename =
-//       response.headers
-//         .get("Content-Disposition")
-//         ?.split("filename=")[1]
-//         ?.replace(/['"]/g, "") || "certificate.pdf";
-
-//     a.download = filename;
-//     a.click();
-//     a.remove();
-//     window.URL.revokeObjectURL(downloadUrl);
-//   };
-
-//   // ---------------- FETCH METADATA ----------------
-//   const { error: metaError, isLoading: metaLoading } = useQuery({
-//     queryKey: ["resourceMetaData", "certificate"],
-//     queryFn: async () => {
-//       const res = await fetch(
-//         `${apiConfig.getResourceMetaDataUrl("certificate")}?`
-//       );
-//       if (!res.ok) throw new Error("Metadata load failed");
-
-//       const data = await res.json();
-//       const required = data[0]?.fieldValues
-//         .filter((f: any) => !regex.test(f.name))
-//         .map((f: any) => f.name);
-
-//       setRequiredFields(required || []);
-//       return data;
-//     },
-//   });
-
-//   // ---------------- FETCH CERTIFICATES + ENRICH ----------------
-//   const { error: dataError, isLoading: dataLoading } = useQuery({
-//     queryKey: ["resourceData", "certificate"],
-//     queryFn: async () => {
-//       const params = new URLSearchParams({ queryId: "GET_ALL" });
-//       const token = getCookie("access_token");
-
-//       const res = await fetch(
-//         `${apiConfig.getResourceUrl("certificate")}?${params.toString()}`,
-//         { headers: { Authorization: `Bearer ${token}` } }
-//       );
-
-//       const json = await res.json();
-//       const rawRows = json.resource || [];
-
-//       const enrichedRows = await Promise.all(
-//         rawRows.map(async (row: any) => {
-//           const studentParams = new URLSearchParams({
-//             queryId: "GET_STUDENT_BY_CERTIFICATE",
-//             args: "student_id:" + row.student_id,
-//           });
-
-//           const studentRes = await fetch(
-//             `${apiConfig.getResourceUrl(
-//               "certificate"
-//             )}?${studentParams.toString()}`,
-//             { headers: { Authorization: `Bearer ${token}` } }
-//           );
-
-//           if (studentRes.ok) {
-//             const stuJson = await studentRes.json();
-//             const stu = stuJson.resource[0];
-
-//             return {
-//               ...row,
-//               roll_no: stu?.roll_no || "N/A",
-//               student_name: stu?.name || "",
-//             };
-//           }
-
-//           return row;
-//         })
-//       );
-
-//       setRowData(enrichedRows);
-//       return enrichedRows;
-//     },
-//   });
-
-//   const handleUpdate = (id: any) => navigate(`/edit/certificate/${id}`);
-
-//   // ============================================================
-//   //            COLUMN DEFINITIONS
-//   // ============================================================
-//   const colDefs = useMemo(() => {
-//     return [
-//       { headerName: "Roll Number", field: "roll_no", sortable: true, filter: true },
-//       { headerName: "Student Name", field: "student_name", sortable: true, filter: true },
-//       { headerName: "Course", field: "course_name", sortable: true, filter: true },
-//       { headerName: "Platform", field: "platform", sortable: true, filter: true },
-//       { headerName: "Completion Date", field: "course_completion_date", sortable: true, filter: true },
-//       { headerName: "Status", field: "status", cellRenderer: (p: any) => getStatusBadge(p.value) },
-//       {
-//         headerName: "Certificate",
-//         field: "upload_certificate",
-//         cellRenderer: ViewDownloadRenderer,
-//       },
-//       {
-//         headerName: "Action",
-//         field: "Action",
-//         cellRenderer: ActionCellRenderer,
-//       },
-//     ];
-//   }, [rowData]);
-
-//   const defaultColDef: ColDef = {
-//     flex: 1,
-//     minWidth: 120,
-//     resizable: true,
-//     editable: false,
-//   };
-
-//   return (
-//     <>
-//       <div className="ag-theme-alpine" style={{ height: 500 }}>
-//         {metaLoading || dataLoading ? (
-//           <div>Loading...</div>
-//         ) : metaError || dataError ? (
-//           <div>Error loading data...</div>
-//         ) : (
-//           <AgGridReact
-//             rowData={rowData}
-//             columnDefs={colDefs}
-//             defaultColDef={defaultColDef}
-//             pagination={true}
-//             paginationPageSize={10}
-//             animateRows={true}
-//             context={{ handleUpdate, handleViewPdf, handleDownload }}
-//           />
-//         )}
-//       </div>
-
-//       {/* ---------- PDF MODAL ---------- */}
-//       {showModal && (
-//         <div
-//           style={{
-//             position: "fixed",
-//             top: 0,
-//             left: 0,
-//             width: "100%",
-//             height: "100%",
-//             background: "rgba(0,0,0,0.6)",
-//             display: "flex",
-//             justifyContent: "center",
-//             alignItems: "center",
-//             zIndex: 9999,
-//           }}
-//         >
-//           <div
-//             style={{
-//               width: "70%",
-//               height: "80%",
-//               background: "white",
-//               padding: "10px",
-//               borderRadius: "12px",
-//               position: "relative",
-//             }}
-//           >
-//             <button
-//               onClick={() => setShowModal(false)}
-//               className="btn btn-danger"
-//               style={{ position: "absolute", top: 10, right: 10 }}
-//             >
-//               Close
-//             </button>
-
-//             <iframe
-//               src={pdfUrl}
-//               style={{ width: "100%", height: "100%", border: "none" }}
-//               title="PDF Preview"
-//             />
-//           </div>
-//         </div>
-//       )}
-//     </>
-//   );
-// };
-
-// export default UpdateCertificate;
-
-
-
-// import React, { useState, useEffect, useMemo } from "react";
-// import { useNavigate } from "react-router-dom";
-// import apiConfig from "../../config/apiConfig";
-
-// import { AllCommunityModule, ModuleRegistry, ColDef } from "ag-grid-community";
-// import { AgGridReact } from "ag-grid-react";
-// import { useQuery } from "@tanstack/react-query";
-
-// ModuleRegistry.registerModules([AllCommunityModule]);
-
-// // -------------------- COOKIE --------------------
-// const getCookie = (name: string): string | null => {
-//   const value = `; ${document.cookie}`;
-//   const parts = value.split(`; ${name}=`);
-//   if (parts.length === 2) return parts.pop()?.split(";").shift() || null;
-//   return null;
-// };
-
-// // -------------------- STATUS BADGE --------------------
-// const getStatusBadge = (status: any) => {
-//   const s = String(status).toLowerCase();
-
-//   const badgeStyle = {
-//     fontSize: "14px",
-//     padding: "6px 12px",
-//     borderRadius: "8px",
-//   };
-
-//   if (s === "true") {
-//     return (
-//       <span className="badge bg-success text-white" style={badgeStyle}>
-//         Approved
-//       </span>
-//     );
-//   }
-
-//   if (s === "false") {
-//     return (
-//       <span className="badge bg-danger text-white" style={badgeStyle}>
-//         Rejected
-//       </span>
-//     );
-//   }
-
-//   return (
-//     <span className="badge bg-warning text-dark" style={badgeStyle}>
-//       Pending
-//     </span>
-//   );
-// };
-
-// // -------------------- VIEW + DOWNLOAD BUTTON --------------------
-// const ViewDownloadRenderer = (params: any) => {
-//   const documentId = params.value;
-
-//   const handleView = (e: any) => {
-//     e.stopPropagation();
-//     params.context.handleViewPdf(documentId);
-//   };
-
-//   const handleDownload = (e: any) => {
-//     e.stopPropagation();
-//     params.context.handleDownload(documentId);
-//   };
-
-//   return (
-//     <div className="d-flex gap-1">
-//       <button
-//         onClick={handleView}
-//         className="btn btn-info"
-//         style={{
-//           fontSize: "12px",
-//           padding: "6px 8px",
-//           marginTop: "6px",
-//           borderRadius: "8px",
-//           fontWeight: 500,
-//         }}
-//       >
-//         View
-//       </button>
-
-//       <button
-//         onClick={handleDownload}
-//         className="btn btn-primary"
-//         style={{
-//           fontSize: "12px",
-//           padding: "6px 8px",
-//           marginTop: "6px",
-//           borderRadius: "8px",
-//           fontWeight: 500,
-//         }}
-//       >
-//         Download
-//       </button>
-//     </div>
-//   );
-// };
-
-// // -------------------- ACTION RENDERER --------------------
-// const ActionCellRenderer = (props: any) => {
-//   const handleEdit = () => props.context.handleUpdate(props.data.id);
-
-//   return (
-//     <button
-//       className="btn btn-warning"
-//       style={{
-//         fontSize: "12px",
-//         padding: "6px 15px",
-//         borderRadius: "8px",
-//         fontWeight: 500,
-//       }}
-//       onClick={handleEdit}
-//     >
-//       Edit
-//     </button>
-//   );
-// };
-
-// // ==========================================================
-// //                    MAIN COMPONENT
-// // ==========================================================
-// const UpdateCertificate = () => {
-//   const navigate = useNavigate();
-//   const [rowData, setRowData] = useState<any[]>([]);
-//   const [requiredFields, setRequiredFields] = useState<string[]>([]);
-//   const regex = /^(g_|archived|extra_data)/;
-
-//   // PDF Modal State
-//   const [showModal, setShowModal] = useState(false);
-//   const [pdfUrl, setPdfUrl] = useState("");
-
-//   // -------------------- VIEW PDF FUNCTION --------------------
-//   const handleViewPdf = async (documentId: string) => {
-//     const accessToken = getCookie("access_token");
-
-//     const url =
-//       `${apiConfig.API_BASE_URL}/certificate` +
-//       `?document_id=${documentId}&queryId=GET_DOCUMENT` +
-//       `&dmsRole=admin&user_id=admin@rasp.com`;
-
-//     const response = await fetch(url, {
-//       method: "GET",
-//       headers: {
-//         Authorization: `Bearer ${accessToken}`,
-//       },
-//     });
-
-//     const blob = await response.blob();
-//     const fileURL = URL.createObjectURL(blob);
-
-//     setPdfUrl(fileURL);
-//     setShowModal(true);
-//   };
-
-//   // -------------------- DOWNLOAD PDF FUNCTION --------------------
-//   const handleDownload = async (documentId: string) => {
-//     const accessToken = getCookie("access_token");
-
-//     const url =
-//       `${apiConfig.API_BASE_URL}/certificate` +
-//       `?document_id=${documentId}&queryId=GET_DOCUMENT` +
-//       `&dmsRole=admin&user_id=admin@rasp.com`;
-
-//     const response = await fetch(url, {
-//       method: "GET",
-//       headers: {
-//         Authorization: `Bearer ${accessToken}`,
-//       },
-//     });
-
-//     const blob = await response.blob();
-//     const downloadUrl = window.URL.createObjectURL(blob);
-
-//     const a = document.createElement("a");
-//     a.href = downloadUrl;
-
-//     const filename =
-//       response.headers
-//         .get("Content-Disposition")
-//         ?.split("filename=")[1]
-//         ?.replace(/['"]/g, "") || "certificate.pdf";
-
-//     a.download = filename;
-//     a.click();
-//     a.remove();
-//     window.URL.revokeObjectURL(downloadUrl);
-//   };
-
-//   // ---------------- FETCH METADATA ----------------
-//   const { error: metaError, isLoading: metaLoading } = useQuery({
-//     queryKey: ["resourceMetaData", "certificate"],
-//     queryFn: async () => {
-//       const res = await fetch(
-//         `${apiConfig.getResourceMetaDataUrl("certificate")}?`
-//       );
-//       if (!res.ok) throw new Error("Metadata load failed");
-
-//       const data = await res.json();
-//       const required = data[0]?.fieldValues
-//         .filter((f: any) => !regex.test(f.name))
-//         .map((f: any) => f.name);
-
-//       setRequiredFields(required || []);
-//       return data;
-//     },
-//   });
-
-//   // ---------------- FETCH CERTIFICATES + ENRICH ----------------
-//   const { error: dataError, isLoading: dataLoading } = useQuery({
-//     queryKey: ["resourceData", "certificate"],
-//     queryFn: async () => {
-//       const params = new URLSearchParams({ queryId: "GET_ALL" });
-//       const token = getCookie("access_token");
-
-//       const res = await fetch(
-//         `${apiConfig.getResourceUrl("certificate")}?${params.toString()}`,
-//         { headers: { Authorization: `Bearer ${token}` } }
-//       );
-
-//       const json = await res.json();
-//       const rawRows = json.resource || [];
-
-//       const enrichedRows = await Promise.all(
-//         rawRows.map(async (row: any) => {
-//           const studentParams = new URLSearchParams({
-//             queryId: "GET_STUDENT_BY_CERTIFICATE",
-//             args: "student_id:" + row.student_id,
-//           });
-
-//           const studentRes = await fetch(
-//             `${apiConfig.getResourceUrl(
-//               "certificate"
-//             )}?${studentParams.toString()}`,
-//             { headers: { Authorization: `Bearer ${token}` } }
-//           );
-
-//           if (studentRes.ok) {
-//             const stuJson = await studentRes.json();
-//             const stu = stuJson.resource[0];
-
-//             return {
-//               ...row,
-//               roll_no: stu?.roll_no || "N/A",
-//               student_name: stu?.name || "",
-//             };
-//           }
-
-//           return row;
-//         })
-//       );
-
-//       setRowData(enrichedRows);
-//       return enrichedRows;
-//     },
-//   });
-
-//   const handleUpdate = (id: any) => navigate(`/edit/certificate/${id}`);
-
-//   // ============================================================
-//   //            COLUMN DEFINITIONS
-//   // ============================================================
-//   const colDefs = useMemo(() => {
-//     return [
-//       { headerName: "Roll Number", field: "roll_no", sortable: true, filter: true },
-//       { headerName: "Student Name", field: "student_name", sortable: true, filter: true },
-//       { headerName: "Course", field: "course_name", sortable: true, filter: true },
-//       { headerName: "Platform", field: "platform", sortable: true, filter: true },
-//       { headerName: "Completion Date", field: "course_completion_date", sortable: true, filter: true },
-//       { headerName: "Status", field: "status", cellRenderer: (p: any) => getStatusBadge(p.value) },
-//       {
-//         headerName: "Certificate",
-//         field: "upload_certificate",
-//         cellRenderer: ViewDownloadRenderer,
-//       },
-//       {
-//         headerName: "Action",
-//         field: "Action",
-//         cellRenderer: ActionCellRenderer,
-//       },
-//     ];
-//   }, [rowData]);
-
-//   const defaultColDef: ColDef = {
-//     flex: 1,
-//     minWidth: 120,
-//     resizable: true,
-//     editable: false,
-//   };
-
-//   return (
-//     <>
-//       <div className="ag-theme-alpine" style={{ height: 500 }}>
-//         {metaLoading || dataLoading ? (
-//           <div>Loading...</div>
-//         ) : metaError || dataError ? (
-//           <div>Error loading data...</div>
-//         ) : (
-//           <AgGridReact
-//             rowData={rowData}
-//             columnDefs={colDefs}
-//             defaultColDef={defaultColDef}
-//             pagination={true}
-//             paginationPageSize={10}
-//             animateRows={true}
-//             context={{ handleUpdate, handleViewPdf, handleDownload }}
-//           />
-//         )}
-//       </div>
-
-//       {/* ---------- PDF MODAL ---------- */}
-//       {showModal && (
-//         <div
-//           style={{
-//             position: "fixed",
-//             top: 0,
-//             left: 0,
-//             width: "100%",
-//             height: "100%",
-//             background: "rgba(0,0,0,0.6)",
-//             display: "flex",
-//             justifyContent: "center",
-//             alignItems: "center",
-//             zIndex: 9999,
-//           }}
-//         >
-//           <div
-//             style={{
-//               width: "70%",
-//               height: "80%",
-//               background: "white",
-//               padding: "10px",
-//               borderRadius: "12px",
-//               position: "relative",
-//             }}
-//           >
-//             <button
-//               onClick={() => setShowModal(false)}
-//               className="btn btn-danger"
-//               style={{ position: "absolute", top: 10, right: 10 }}
-//             >
-//               Close
-//             </button>
-
-//             <iframe
-//               src={pdfUrl}
-//               style={{ width: "100%", height: "100%", border: "none" }}
-//               title="PDF Preview"
-//             />
-//           </div>
-//         </div>
-//       )}
-//     </>
-//   );
-// };
-
-// export default UpdateCertificate;
-
-
-// import React, { useState, useEffect, useMemo } from "react";
-// import { useNavigate } from "react-router-dom";
-// import apiConfig from "../../config/apiConfig";
-
-// import { AllCommunityModule, ModuleRegistry, ColDef } from "ag-grid-community";
-// import { AgGridReact } from "ag-grid-react";
-// import { useQuery } from "@tanstack/react-query";
-
-// ModuleRegistry.registerModules([AllCommunityModule]);
-
-// // -------------------- COOKIE --------------------
-// const getCookie = (name: string): string | null => {
-//   const value = `; ${document.cookie}`;
-//   const parts = value.split(`; ${name}=`);
-//   if (parts.length === 2) return parts.pop()?.split(";").shift() || null;
-//   return null;
-// };
-
-// // -------------------- authFetch (INSIDE) --------------------
-// async function authFetch(
-//   input: RequestInfo,
-//   init: RequestInit = {}
-// ): Promise<Response> {
-//   const finalInit: RequestInit = {
-//     credentials: "include",
-//     ...init,
-//     headers: {
-//       ...(init.headers || {}),
-//     },
-//   };
-
-//   // attach Authorization automatically (if not already passed)
-//   const token = getCookie("access_token");
-//   const headersObj = finalInit.headers as Record<string, string>;
-//   if (token && !headersObj?.Authorization) {
-//     headersObj.Authorization = `Bearer ${token}`;
-//   }
-
-//   const res = await fetch(input, finalInit);
-
-//   // ✅ Global 401 handling
-//   if (res.status === 401) {
-//     localStorage.clear();
-//     sessionStorage.clear();
-//     window.location.href = "/";
-//     throw new Error("Unauthorized");
-//   }
-
-//   return res;
-// }
-
-// // -------------------- STATUS BADGE --------------------
-// const getStatusBadge = (status: any) => {
-//   const s = String(status).toLowerCase();
-
-//   const badgeStyle: React.CSSProperties = {
-//     fontSize: "14px",
-//     padding: "6px 12px",
-//     borderRadius: "8px",
-//     display: "inline-block",
-//     textAlign: "center",
-//   };
-
-//   if (s === "true") {
-//     return (
-//       <span className="badge bg-success text-white" style={badgeStyle}>
-//         Approved
-//       </span>
-//     );
-//   }
-
-//   if (s === "false") {
-//     return (
-//       <span className="badge bg-danger text-white" style={badgeStyle}>
-//         Rejected
-//       </span>
-//     );
-//   }
-
-//   return (
-//     <span className="badge bg-warning text-dark" style={badgeStyle}>
-//       Pending
-//     </span>
-//   );
-// };
-
-// // -------------------- VIEW BUTTON ONLY --------------------
-// const ViewRenderer = (params: any) => {
-//   const documentId = params.value;
-
-//   const handleView = (e: any) => {
-//     e.stopPropagation();
-//     params.context.handleViewPdf(documentId);
-//   };
-
-//   return (
-//     <button
-//       onClick={handleView}
-//       className="btn btn-outline-primary"
-//       style={{
-//         fontSize: "13px",
-//         padding: "6px 14px",
-//         borderRadius: "8px",
-//         fontWeight: 600,
-//       }}
-//     >
-//       👁 View
-//     </button>
-//   );
-// };
-
-// // -------------------- ACTION RENDERER --------------------
-// const ActionCellRenderer = (props: any) => {
-//   const handleEdit = () => props.context.handleUpdate(props.data.id);
-
-//   return (
-//     <button
-//       className="btn btn-outline-primary"
-//       style={{
-//         fontSize: "13px",
-//         padding: "6px 14px",
-//         borderRadius: "8px",
-//         fontWeight: 600,
-//       }}
-//       onClick={handleEdit}
-//     >
-//       Edit
-//     </button>
-//   );
-// };
-
-// // ==========================================================
-// //                    MAIN COMPONENT
-// // ==========================================================
-// const UpdateCertificate = () => {
-//   const navigate = useNavigate();
-//   const [rowData, setRowData] = useState<any[]>([]);
-//   const [requiredFields, setRequiredFields] = useState<string[]>([]);
-//   const regex = /^(g_|archived|extra_data)/;
-
-//   // PDF Modal State
-//   const [showModal, setShowModal] = useState(false);
-//   const [pdfUrl, setPdfUrl] = useState("");
-
-//   // -------------------- VIEW PDF FUNCTION --------------------
-//   const handleViewPdf = async (documentId: string) => {
-//     const url =
-//       `${apiConfig.API_BASE_URL}/certificate` +
-//       `?document_id=${documentId}&queryId=GET_DOCUMENT` +
-//       `&dmsRole=admin&user_id=admin@rasp.com`;
-
-//     const response = await authFetch(url, {
-//       method: "GET",
-//       headers: { Authorization: `Bearer ${accessToken}` },
-//     });
-
-//     const blob = await response.blob();
-//     const fileURL = URL.createObjectURL(blob);
-
-//     setPdfUrl(fileURL);
-//     setShowModal(true);
-//   };
-
-//   // -------------------- DOWNLOAD PDF FUNCTION --------------------
-//   const handleDownload = async (documentId: string) => {
-//     const url =
-//       `${apiConfig.API_BASE_URL}/certificate` +
-//       `?document_id=${documentId}&queryId=GET_DOCUMENT` +
-//       `&dmsRole=admin&user_id=admin@rasp.com`;
-
-//     const response = await authFetch(url, {
-//       method: "GET",
-//     });
-
-//     const blob = await response.blob();
-//     const downloadUrl = window.URL.createObjectURL(blob);
-
-//     const a = document.createElement("a");
-//     a.href = downloadUrl;
-
-//     const filename =
-//       response.headers
-//         .get("Content-Disposition")
-//         ?.split("filename=")[1]
-//         ?.replace(/['"]/g, "") || "certificate.pdf";
-
-//     a.download = filename;
-//     a.click();
-//     a.remove();
-//     window.URL.revokeObjectURL(downloadUrl);
-//   };
-
-//   // ---------------- FETCH METADATA ----------------
-//   useQuery({
-//     queryKey: ["resourceMetaData", "certificate"],
-//     queryFn: async () => {
-//       const res = await fetch(apiConfig.getResourceMetaDataUrl("certificate") + "?");
-//       const res = await authFetch(`${apiConfig.getResourceMetaDataUrl("certificate")}?`, {
-//         method: "GET",
-//         headers: { "Content-Type": "application/json" },
-//       });
-
-//       if (!res.ok) throw new Error("Metadata load failed");
-
-//       const data = await res.json();
-
-//       const required = data[0]?.fieldValues
-//         .filter((f: any) => !regex.test(f.name))
-//         .map((f: any) => f.name);
-
-//       setRequiredFields(required || []);
-//       return data;
-//     },
-//   });
-
-//   // ---------------- FETCH CERTIFICATES + ENRICH ----------------
-//   useQuery({
-//     queryKey: ["resourceData", "certificate"],
-//     queryFn: async () => {
-//       const token = getCookie("access_token");
-
-//       const res = await fetch(
-//         `${apiConfig.getResourceUrl("certificate")}?queryId=GET_ALL`,
-//         { headers: { Authorization: `Bearer ${token}` } }
-//       const params = new URLSearchParams({ queryId: "GET_ALL" });
-
-//       const res = await authFetch(
-//         `${apiConfig.getResourceUrl("certificate")}?${params.toString()}`,
-//         {
-//           method: "GET",
-//           headers: { "Content-Type": "application/json" },
-//         }
-//       );
-
-//       if (!res.ok) throw new Error("Certificate load failed");
-
-//       const json = await res.json();
-//       const rawRows = json.resource || [];
-
-//       const enrichedRows = await Promise.all(
-//         rawRows.map(async (row: any) => {
-//           const studentRes = await fetch(
-//             `${apiConfig.getResourceUrl("certificate")}?queryId=GET_STUDENT_BY_CERTIFICATE&args=student_id:${row.student_id}`,
-//             { headers: { Authorization: `Bearer ${token}` } }
-//           const studentParams = new URLSearchParams({
-//             queryId: "GET_STUDENT_BY_CERTIFICATE",
-//             args: "student_id:" + row.student_id,
-//           });
-
-//           const studentRes = await authFetch(
-//             `${apiConfig.getResourceUrl("certificate")}?${studentParams.toString()}`,
-//             {
-//               method: "GET",
-//               headers: { "Content-Type": "application/json" },
-//             }
-//           );
-
-//           if (studentRes.ok) {
-//             const stuJson = await studentRes.json();
-//             const stu = stuJson.resource?.[0];
-
-//             return {
-//               ...row,
-//               roll_no: stu?.roll_no || "N/A",
-//               student_name: stu?.name || "",
-//             };
-//           }
-
-//           return row;
-//         })
-//       );
-
-//       setRowData(enrichedRows);
-//       return enrichedRows;
-//     },
-//   });
-
-//   const handleUpdate = (id: any) => navigate(`/edit/certificate/${id}`);
-
-//   // ============================================================
-//   //            COLUMN DEFINITIONS  (UPDATED - NO DOWNLOAD)
-//   // ============================================================
-//   const colDefs = useMemo(() => {
-//     return [
-//       {
-//         headerName: "Roll Number",
-//         field: "roll_no",
-//         sortable: true,
-//         filter: true,
-//       },
-//       {
-//         headerName: "Student Name",
-//         field: "student_name",
-//         sortable: true,
-//         filter: true,
-//       },
-//       { headerName: "Course", field: "course_name", sortable: true, filter: true },
-//       { headerName: "Platform", field: "platform", sortable: true, filter: true },
-
-//       {
-//         headerName: "Completion Date",
-//         field: "course_completion_date",
-//         sortable: true,
-//         filter: true,
-//       },
-//       {
-//         headerName: "Status",
-//         field: "status",
-//         cellRenderer: (p: any) => getStatusBadge(p.value),
-//       },
-//       {
-//         headerName: "Completion Date",
-//         field: "course_completion_date",
-//         sortable: true,
-//         filter: true,
-//         cellRenderer: (params: any) => {
-//           if (!params.value) return "";
-//           const d = new Date(params.value);
-//           return d.toLocaleDateString("en-US", {
-//             year: "numeric",
-//             month: "short",
-//             day: "2-digit",
-//           });
-//         },
-//       },
-
-//       {
-//         headerName: "Status",
-//         field: "status",
-//         cellRenderer: (p: any) => getStatusBadge(p.value),
-//       },
-
-//       {
-//         headerName: "View",
-//         field: "upload_certificate",
-//         cellRenderer: ViewRenderer, // ONLY VIEW BUTTON NOW
-//       },
-
-//       {
-//         headerName: "Action",
-//         field: "Action",
-//         cellRenderer: ActionCellRenderer,
-//       },
-//     ];
-//   }, [rowData]);
-
-//   const defaultColDef: ColDef = {
-//     flex: 1,
-//     minWidth: 120,
-//     resizable: true,
-//     editable: false,
-//     cellStyle: {
-//       display: "flex",
-//       // justifyContent: "center",
-//       alignItems: "center",
-//     },
-//   };
-
-//   return (
-//     <>
-//       <div className="ag-theme-alpine" style={{ height: 500 }}>
-//         <AgGridReact
-//           rowData={rowData}
-//           columnDefs={colDefs}
-//           defaultColDef={defaultColDef}
-//           pagination={true}
-//           paginationPageSize={10}
-//           animateRows={true}
-//           context={{ handleUpdate, handleViewPdf }}
-//         />
-//       </div>
-
-//       {/* ---------- PDF MODAL ---------- */}
-//       {showModal && (
-//         <div
-//           style={{
-//             position: "fixed",
-//             top: 0,
-//             left: 0,
-//             width: "100%",
-//             height: "100%",
-//             background: "rgba(0,0,0,0.6)",
-//             display: "flex",
-//             justifyContent: "center",
-//             alignItems: "center",
-//             zIndex: 9999,
-//           }}
-//         >
-//           <div
-//             style={{
-//               width: "70%",
-//               height: "80%",
-//               background: "white",
-//               padding: "10px",
-//               borderRadius: "12px",
-//               position: "relative",
-//             }}
-//           >
-//             <button
-//               onClick={() => setShowModal(false)}
-//               className="btn btn-danger"
-//               style={{ position: "absolute", top: 10, right: 10 }}
-//             >
-//               Close
-//             </button>
-
-//             <iframe
-//               src={pdfUrl}
-//               style={{ width: "100%", height: "100%", border: "none" }}
-//               title="PDF Preview"
-//             />
-//           </div>
-//         </div>
-//       )}
-//     </>
-//   );
-// };
-
-// export default UpdateCertificate;
-
-
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import apiConfig from "../../config/apiConfig";
 
@@ -1220,6 +82,14 @@ const getStatusBadge = (status: any) => {
   );
 };
 
+// ✅ FILTER SHOULD USE A STRING VALUE (NOT JSX)
+const statusToLabel = (status: any) => {
+  const s = String(status).toLowerCase();
+  if (s === "true") return "Approved";
+  if (s === "false") return "Rejected";
+  return "Pending";
+};
+
 // -------------------- VIEW BUTTON --------------------
 const ViewRenderer = (params: any) => {
   const documentId = params.value;
@@ -1265,17 +135,20 @@ const ActionCellRenderer = (props: any) => {
   );
 };
 
-// ==========================================================
-//                    MAIN COMPONENT
-// ==========================================================
 const UpdateCertificate = () => {
   const navigate = useNavigate();
+  const gridRef = useRef<AgGridReact>(null);
+
   const [rowData, setRowData] = useState<any[]>([]);
   const [requiredFields, setRequiredFields] = useState<string[]>([]);
   const regex = /^(g_|archived|extra_data)/;
 
   const [showModal, setShowModal] = useState(false);
   const [pdfUrl, setPdfUrl] = useState("");
+
+  // Bulk approve UI
+  const [selectedCount, setSelectedCount] = useState(0);
+  const [isApproving, setIsApproving] = useState(false);
 
   // -------------------- VIEW PDF --------------------
   const handleViewPdf = async (documentId: string) => {
@@ -1284,10 +157,7 @@ const UpdateCertificate = () => {
       `?document_id=${documentId}&queryId=GET_DOCUMENT` +
       `&dmsRole=admin&user_id=admin@rasp.com`;
 
-    const response = await authFetch(url, {
-      method: "GET",
-    });
-
+    const response = await authFetch(url, { method: "GET" });
     const blob = await response.blob();
     const fileURL = URL.createObjectURL(blob);
 
@@ -1299,15 +169,17 @@ const UpdateCertificate = () => {
   useQuery({
     queryKey: ["resourceMetaData", "certificate"],
     queryFn: async () => {
-      const res = await authFetch(`${apiConfig.getResourceMetaDataUrl("certificate")}?`, {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-      });
+      const res = await authFetch(
+        `${apiConfig.getResourceMetaDataUrl("certificate")}?`,
+        {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        }
+      );
 
       if (!res.ok) throw new Error("Metadata load failed");
 
       const data = await res.json();
-
       const required = data[0]?.fieldValues
         .filter((f: any) => !regex.test(f.name))
         .map((f: any) => f.name);
@@ -1373,11 +245,80 @@ const UpdateCertificate = () => {
 
   const handleUpdate = (id: any) => navigate(`/edit/certificate/${id}`);
 
+  // ---------------- Bulk Approve Selected ----------------
+  const handleApproveSelected = async () => {
+    const api = gridRef.current?.api;
+    if (!api) return;
+
+    const selectedRows = api.getSelectedRows() || [];
+    if (!selectedRows.length) return;
+
+    setIsApproving(true);
+    try {
+      // Update in backend: set status true for each selected row
+      await Promise.all(
+        selectedRows.map(async (row: any) => {
+          const updated = { ...row, status: true };
+
+          // remove UI-only fields before sending
+          delete (updated as any).roll_no;
+          delete (updated as any).student_name;
+          delete (updated as any).Action;
+
+          const params = new FormData();
+          const jsonString = JSON.stringify(updated);
+          const base64Encoded = btoa(unescape(encodeURIComponent(jsonString)));
+
+          params.append("resource", base64Encoded);
+          params.append("action", "MODIFY");
+
+          const url = `${apiConfig.getResourceUrl("certificate")}?`;
+
+          const res = await authFetch(url, {
+            method: "POST",
+            body: params,
+          });
+
+          if (!res.ok) throw new Error("Approve failed: " + res.status);
+        })
+      );
+
+      // Update UI instantly
+      const selectedIds = new Set(selectedRows.map((r: any) => r.id));
+      setRowData((prev) =>
+        prev.map((r) => (selectedIds.has(r.id) ? { ...r, status: true } : r))
+      );
+
+      // Clear selection
+      api.deselectAll();
+      setSelectedCount(0);
+    } catch (e) {
+      console.error(e);
+      alert("Bulk approve failed. Check console/network.");
+    } finally {
+      setIsApproving(false);
+    }
+  };
+
   // ============================================================
-  //            COLUMN DEFINITIONS
+  //            COLUMN DEFINITIONS (WITH STATUS FILTER ✅)
   // ============================================================
-  const colDefs = useMemo(() => {
+  const colDefs = useMemo<ColDef[]>(() => {
     return [
+      // checkbox selection column (needed for bulk actions)
+      {
+        headerName: "",
+        field: "__select__",
+        width: 60,
+        pinned: "left",
+        checkboxSelection: true,
+        headerCheckboxSelection: true,
+        headerCheckboxSelectionFilteredOnly: true,
+        sortable: false,
+        filter: false,
+        resizable: false,
+      },
+
       { headerName: "Roll Number", field: "roll_no", sortable: true, filter: true },
       { headerName: "Student Name", field: "student_name", sortable: true, filter: true },
       { headerName: "Course", field: "course_name", sortable: true, filter: true },
@@ -1399,18 +340,39 @@ const UpdateCertificate = () => {
         },
       },
 
-      { headerName: "Status", field: "status", cellRenderer: (p: any) => getStatusBadge(p.value) },
+      // ✅ Status column: badge renderer + set filter using valueGetter
+      {
+        headerName: "Status",
+        field: "status",
+        sortable: true,
+
+        // IMPORTANT: filter should see strings
+        valueGetter: (p: any) => statusToLabel(p.data?.status),
+
+        // ✅ dropdown filter with 3 values
+        filter: "agSetColumnFilter",
+        filterParams: {
+          values: ["Approved", "Rejected", "Pending"],
+          suppressMiniFilter: false,
+        },
+
+        cellRenderer: (p: any) => getStatusBadge(p.data?.status),
+      },
 
       {
         headerName: "View",
         field: "upload_certificate",
-        cellRenderer: ViewRenderer, // ONLY VIEW BUTTON
+        cellRenderer: ViewRenderer,
+        sortable: false,
+        filter: false,
       },
 
       {
         headerName: "Action",
         field: "Action",
         cellRenderer: ActionCellRenderer,
+        sortable: false,
+        filter: false,
       },
     ];
   }, [rowData]);
@@ -1428,15 +390,59 @@ const UpdateCertificate = () => {
 
   return (
     <>
+      {/* Header + Bulk button */}
+      <div style={{ padding: "12px 0" }}>
+        <h2 style={{ margin: 0, fontWeight: 700 }}>Student Certificates</h2>
+
+        <div
+          style={{
+            marginTop: 10,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 12,
+          }}
+        >
+          <div style={{ fontSize: 18 }}>
+            Selected: <b>{selectedCount}</b>
+          </div>
+
+          <button
+            className="btn btn-success"
+            onClick={handleApproveSelected}
+            disabled={selectedCount === 0 || isApproving}
+            style={{
+              borderRadius: 10,
+              padding: "10px 16px",
+              fontSize: 18,
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              opacity: selectedCount === 0 ? 0.6 : 1,
+            }}
+          >
+            ✅ Approve Selected ({selectedCount})
+          </button>
+        </div>
+      </div>
+
       <div className="ag-theme-alpine" style={{ height: 500 }}>
         <AgGridReact
+          ref={gridRef}
           rowData={rowData}
           columnDefs={colDefs}
           defaultColDef={defaultColDef}
           pagination={true}
           paginationPageSize={10}
           animateRows={true}
+          rowSelection="multiple"
+          suppressRowClickSelection={true}
           context={{ handleUpdate, handleViewPdf }}
+          onSelectionChanged={() => {
+            const api = gridRef.current?.api;
+            if (!api) return;
+            setSelectedCount(api.getSelectedRows()?.length || 0);
+          }}
         />
       </div>
 
@@ -1487,5 +493,3 @@ const UpdateCertificate = () => {
 };
 
 export default UpdateCertificate;
-
-
