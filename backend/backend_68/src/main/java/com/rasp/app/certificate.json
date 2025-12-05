@@ -71,7 +71,13 @@
      "name" : "course_url",
      "required" : "false",
      "type" : "String"
-      }
+      },
+    "logs": {
+
+      "name": "logs",
+      "required": "false",
+      "type": "String"
+    }
    
   }
  }

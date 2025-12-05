@@ -46,6 +46,7 @@ import com.rasp.app.service.*;
 	private Boolean status = null;
 	private String student_id = null;
 	private String course_url = null;
+	private String logs = null;
 	private Map<String, Object> extra_data = null;
 
 	public static String FIELD_ID = "id";
@@ -68,6 +69,7 @@ import com.rasp.app.service.*;
 	public static String FIELD_STATUS = "status";
 	public static String FIELD_STUDENT_ID = "student_id";
 	public static String FIELD_COURSE_URL = "course_url";
+	public static String FIELD_LOGS = "logs";
 	public static String FIELD_EXTRA_DATA = "extra_data";
 
 	private static final long serialVersionUID = 1L;
@@ -161,6 +163,9 @@ import com.rasp.app.service.*;
 		Field course_urlField = new Field("course_url", "String");
 		metaData.addField(course_urlField);
 
+		Field logsField = new Field("logs", "String");
+		metaData.addField(logsField);
+
 		Field extra_dataField = new Field("extra_data", "Map");
 		extra_dataField.setValueType("Object");
 		metaData.addField(extra_dataField);
@@ -195,6 +200,7 @@ import com.rasp.app.service.*;
 		this.status = obj.status;
 		this.student_id = obj.student_id;
 		this.course_url = obj.course_url;
+		this.logs = obj.logs;
 		this.extra_data = obj.extra_data;
 	}
 
@@ -250,6 +256,8 @@ import com.rasp.app.service.*;
 			map.put("student_id", student_id);
 		if(course_url != null)
 			map.put("course_url", course_url);
+		if(logs != null)
+			map.put("logs", logs);
 		if(extra_data != null)
 			map.put("extra_data", extra_data);
 		return map;
@@ -296,6 +304,8 @@ import com.rasp.app.service.*;
 			map.put("student_id", student_id);
 		if(course_url != null)
 			map.put("course_url", course_url);
+		if(logs != null)
+			map.put("logs", logs);
 		if(extra_data != null)
 			map.put("extra_data", extra_data);
 		return map;
@@ -327,6 +337,7 @@ import com.rasp.app.service.*;
 		status = (Boolean) map.get("status");
 		student_id = (String) map.get("student_id");
 		course_url = (String) map.get("course_url");
+		logs = (String) map.get("logs");
 		extra_data = (Map<String, Object>) map.get("extra_data");
 	}
 
@@ -411,6 +422,10 @@ import com.rasp.app.service.*;
 		Object course_urlObj = map.get("course_url");
 		if(course_urlObj != null)
 			course_url = course_urlObj.toString();
+
+		Object logsObj = map.get("logs");
+		if(logsObj != null)
+			logs = logsObj.toString();
 
 		extra_data = (Map<String, Object>) map.get("extra_data");
 	}
@@ -782,6 +797,22 @@ import com.rasp.app.service.*;
 
 	public void unSetCourse_url() {
 		this.course_url = null;
+	}
+
+	public String getLogs() {
+		return logs;
+	}
+
+	public String getLogsEx() {
+		return logs != null ? logs : "";
+	}
+
+	public void setLogs(String logs) {
+		this.logs = logs;
+	}
+
+	public void unSetLogs() {
+		this.logs = null;
 	}
 
 	public Map<String, Object> getExtra_data() {
