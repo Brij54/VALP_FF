@@ -1,7 +1,7 @@
 // src/components/Utils/Sidebar.tsx
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { UserPlus, Home, ClipboardCheck, FileBadge2, Award } from "lucide-react";
+import { UserPlus, Home, ClipboardCheck, FileBadge2, Award, Layers, FileCheck, PenLine, Settings, FolderOpen } from "lucide-react";
 
 // CSS is global; you can import here OR rely on CreateStudent importing Upload.css
 // import "../Upload.css";
@@ -30,13 +30,13 @@ export default function Sidebar({
 ];
 
 const iconMap: Record<string, JSX.Element> = {
-  "Add Student": <UserPlus size={24} color="#007bff" />,  // Blue
-  "Batch Configuration": <Home size={24} color="#ff9800" />, // Orange
-  "Approve Reject Certificate": <ClipboardCheck size={24} color="#28a745" />, // Green
-  "VALP Certificate Generate": <Award size={24} color="#28a745" />, // Green
-  "Dean Signature": <FileBadge2 size={24} color="#28a745" />, // Green
-  "Program Configuration": <FileBadge2 size={24} color="#28a745" />, // Green
-  "Program Records": <FileBadge2 size={24} color="#28a745" />, // Green
+  "Add Student": <UserPlus size={24} color="#007bff" />,               // Blue
+  "Batch Configuration": <Layers size={24} color="#ff9800" />,        // Orange
+  "Approve Reject Certificate": <FileCheck size={24} color="#28a745" />, // Green
+  "VALP Certificate Generate": <Award size={24} color="#28a745" />,     // Green
+  "Dean Signature": <PenLine size={24} color="#28a745" />,              // Green
+  "Program Configuration": <Settings size={24} color="#007bff" />,      // Blue
+  "Program Records": <FolderOpen size={24} color="#007bff" />,          // Blue
 };
 
   return (

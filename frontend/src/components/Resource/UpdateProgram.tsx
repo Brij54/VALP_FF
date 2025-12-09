@@ -65,7 +65,7 @@ const getCookie = (name: string): string | null => {
    const [currentUrl, setCurrentUrl] = useState('');
     // Fetch resource data
     const {data:dataRes,isLoading:isLoadingDataRes,error:errorDataRes}= useQuery({
-    queryKey: ['resourceData', 'program'],
+    queryKey: ['resourceData', 'programUpdate'],
      queryFn: async () => {
       const params = new URLSearchParams();
     
@@ -105,7 +105,7 @@ const getCookie = (name: string): string | null => {
   
     // Fetch metadata
     const {data: dataResMeta,isLoading:isLoadingDataResMeta,error:errorDataResMeta} = useQuery({
-    queryKey: ['resourceMetaData', 'program'],
+    queryKey: ['resourceMetaData', 'programUpdate'],
    queryFn: async () => {
       const response = await fetch(
         `${apiConfig.getResourceMetaDataUrl('program')}?`,

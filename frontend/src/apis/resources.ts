@@ -105,6 +105,7 @@ export const saveResource = async (data: {
 
 export const fetchForeignResource = async (foreignResource: string) => {
   const params = new URLSearchParams();
+  console.log("foreignResource", foreignResource);
   // const ssid: any = sessionStorage.getItem("key");
   const accessToken = getCookie("access_token");
 

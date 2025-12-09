@@ -1,9 +1,7 @@
 // src/components/Utils/Sidebar.tsx
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Home, FileSpreadsheet } from "lucide-react";
-// CSS is global; you can import here OR rely on CreateStudent importing Upload.css
-// import "../Upload.css";
+import { Home, FileSpreadsheet, BookOpen } from "lucide-react";
 
 type SidebarProps = {
   sidebarCollapsed: boolean;
@@ -11,9 +9,11 @@ type SidebarProps = {
   activeSection: "dashboard" | "settings";
 };
 
+// ✅ Updated iconMap with separate icon for Offline Course Registration
 const iconMap: Record<string, JSX.Element> = {
   Home: <Home size={22} color="#007bff" />,
   "Student Records": <FileSpreadsheet size={22} color="#28a745" />,
+  "Offline Course Registration": <BookOpen size={22} color="#28a745" />,
 };
 
 export default function Sidebar({
@@ -27,9 +27,7 @@ export default function Sidebar({
     <>
       {/* Sidebar Toggle Button */}
       <button
-        className={`menuToggleBtn ${
-          sidebarCollapsed ? "sidebarCollapsed" : ""
-        }`}
+        className={`menuToggleBtn ${sidebarCollapsed ? "sidebarCollapsed" : ""}`}
         onClick={toggleSidebar}
         aria-label="Toggle sidebar"
       >
@@ -40,23 +38,20 @@ export default function Sidebar({
         </div>
       </button>
 
-      {/* Sidebar Container */}
+      {/* Sidebar */}
       <div className={`sidebar ${sidebarCollapsed ? "collapsed" : ""}`}>
         {/* Logo Section */}
         <div className="logoSection">
           <div
             className="logoCircle d-flex justify-content-center align-items-center shadow-sm mx-auto"
             style={{
-              width: "95px", // larger circle
+              width: "95px",
               height: "95px",
               borderRadius: "50%",
               backgroundColor: "#fff",
               border: "2px solid #ddd",
               overflow: "hidden",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              padding: "10px", // 🟢 adds inner breathing space to prevent edge cutting
+              padding: "10px",
             }}
           >
             <img
@@ -65,11 +60,12 @@ export default function Sidebar({
               style={{
                 width: "90%",
                 height: "90%",
-                objectFit: "contain", // 🟢 shows full image, no cropping
-                objectPosition: "center", // 🟢 ensures it stays centered horizontally
+                objectFit: "contain",
+                objectPosition: "center",
               }}
             />
           </div>
+
           <div
             className="instituteName text-center"
             style={{
@@ -79,8 +75,7 @@ export default function Sidebar({
               color: "#161e27ff",
               lineHeight: "1.4",
               letterSpacing: "0.5px",
-              whiteSpace: "pre-line", // 👈 this ensures line breaks are respected
-              maxWidth: "100%", // prevent tight wrapping
+              whiteSpace: "pre-line",
             }}
           >
             {`International Institute of
@@ -88,8 +83,10 @@ Information Technology
 Bangalore`}
           </div>
         </div>
+
         {/* Navigation Menu */}
         <div className="navMenu">
+
           {/* Home */}
           <button
             className="navItem"
@@ -105,10 +102,7 @@ Bangalore`}
             }}
           >
             <span className="navIcon">{iconMap["Home"]}</span>
-            <span
-              className="navText"
-              style={{ fontSize: "17px", fontWeight: 600 }}
-            >
+            <span className="navText" style={{ fontSize: "17px", fontWeight: 600 }}>
               Home
             </span>
           </button>
@@ -128,14 +122,12 @@ Bangalore`}
             }}
           >
             <span className="navIcon">{iconMap["Student Records"]}</span>
-            <span
-              className="navText"
-              style={{ fontSize: "17px", fontWeight: 600 }}
-            >
+            <span className="navText" style={{ fontSize: "17px", fontWeight: 600 }}>
               Student Records
             </span>
           </button>
 
+          {/* Offline Course Registration */}
           <button
             className="navItem"
             onClick={() => navigate("/offline_course_registration")}
@@ -149,17 +141,32 @@ Bangalore`}
               width: "100%",
             }}
           >
-            <span className="navIcon">{iconMap["Student Records"]}</span>
-            <span
-              className="navText"
-              style={{ fontSize: "17px", fontWeight: 600 }}
-            >
+            <span className="navIcon">{iconMap["Offline Course Registration"]}</span>
+            <span className="navText" style={{ fontSize: "17px", fontWeight: 600 }}>
               Offline Course Registration
             </span>
           </button>
 
+          <button
+            className="navItem"
+            onClick={() => navigate("/offline_course_records")}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "14px",
+              padding: "12px 14px",
+              marginBottom: "12px",
+              borderRadius: "8px",
+              width: "100%",
+            }}
+          >
+            <span className="navIcon">{iconMap["Student Records"]}</span>
+            <span className="navText" style={{ fontSize: "17px", fontWeight: 600 }}>
+              Offline Course Records
+            </span>
+          </button>
 
-          
+
         </div>
       </div>
     </>

@@ -57,6 +57,7 @@ import Offline_Course_Registration from "./components/Offline_Course_Registratio
 import Program_Config from "./components/Program_Config";
 import ProgramEdit from "./components/Edit/ProgramEdit";
 import Program_Records from "./components/Program_Records";
+import Offline_Course_Records from "./components/Offline_Course_Records";
 function App() {
   return (
     <Routes>
@@ -94,6 +95,14 @@ function App() {
         }
       />
 
+      <Route
+        path="/offline_course_records"
+        element={
+          <ProtectedRoute requiredRoles={["student"]}>
+            <Offline_Course_Records />
+          </ProtectedRoute>
+        }
+      />
 
       {/* ADMIN ROUTES */}
       <Route

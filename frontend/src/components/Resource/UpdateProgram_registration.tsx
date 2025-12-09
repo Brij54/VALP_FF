@@ -232,4 +232,4 @@ return (
 
 };
 
-export default UpdateProgram_registration
+export default UpdateProgram_registration;
