@@ -423,60 +423,323 @@
 // export default CreateProgram_registration;
 
 
-import React, { useState } from "react";
+// import React, { useState } from "react";
+// import apiConfig from "../../config/apiConfig";
+// import { useQuery, useQueryClient } from "@tanstack/react-query";
+// import { fetchForeignResource } from "../../apis/resources";
+
+// export type resourceMetaData = {
+//   resource: string;
+//   fieldValues: any[];
+// };
+
+// const getCookie = (name: string): string | null => {
+//   const value = `; ${document.cookie}`;
+//   const parts = value.split(`; ${name}=`);
+//   if (parts.length === 2) return parts.pop()?.split(";").shift() || null;
+//   return null;
+// };
+
+// const CreateProgram_registration = () => {
+//   const queryClient = useQueryClient();
+
+//   const [dataToSave, setDataToSave] = useState<any>({});
+//   const [showToast, setShowToast] = useState(false);
+//   const [searchQueries, setSearchQueries] = useState<Record<string, string>>({});
+
+//   const apiUrl = apiConfig.getResourceUrl("Program_registration");
+//   const metadataUrl = apiConfig.getResourceMetaDataUrl("Program_registration");
+
+//   // ---------------------------------------------------
+//   // FETCH METADATA
+//   // ---------------------------------------------------
+//   useQuery({
+//     queryKey: ["ProgramRegMeta"],
+//     queryFn: async () => {
+//       const res = await fetch(metadataUrl);
+//       return res.json();
+//     },
+//   });
+
+//   // ---------------------------------------------------
+//   // FETCH STUDENT RESOURCE & store in cache
+//   // ---------------------------------------------------
+
+//   useQuery({
+//     queryKey: ["StudentList"],
+//     queryFn: async () => {
+//       const data = await fetchForeignResource("Student"); // your API helper
+//       const formatted = Array.isArray(data) ? data : data.resource || [];
+//       return formatted;
+//     },
+//     staleTime: 5 * 60 * 1000, // cache 5 min
+//   });
+
+//   // ---------------------------------------------------
+//   // UNIVERSAL DROPDOWN FOR ALL RESOURCES
+//   // ---------------------------------------------------
+//   const Dropdown = ({ label, field, cacheKey }: any) => {
+//     const [open, setOpen] = useState(false);
+
+//     // GET FROM CACHE
+//     const cachedList = queryClient.getQueryData([cacheKey]) || [];
+//     const options = Array.isArray(cachedList) ? cachedList : [];
+
+//     const filtered = options.filter((o: any) =>
+//       (o.name || o.id)
+//         ?.toLowerCase()
+//         .includes((searchQueries[field] || "").toLowerCase())
+//     );
+
+//     return (
+//       <div style={{ marginBottom: "20px", position: "relative" }}>
+//         <label style={{ fontSize: "15px", fontWeight: 600, marginBottom: "6px" }}>
+//           {label} *
+//         </label>
+
+//         {/* Dropdown box */}
+//         <div
+//           onClick={() => setOpen(!open)}
+//           style={{
+//             width: "100%",
+//             padding: "10px 12px",
+//             borderRadius: "8px",
+//             border: "1px solid #ccc",
+//             backgroundColor: "#fff",
+//             cursor: "pointer",
+//           }}
+//         >
+//           {dataToSave[field]
+//             ? options.find((x: any) => x.id === dataToSave[field])?.name ||
+//               options.find((x: any) => x.id === dataToSave[field])?.id
+//             : `Select ${label}`}
+//         </div>
+
+//         {/* Dropdown menu */}
+//         {open && (
+//           <div
+//             style={{
+//               width: "100%",
+//               maxHeight: "180px",
+//               overflowY: "auto",
+//               background: "#fff",
+//               border: "1px solid #ccc",
+//               borderRadius: "6px",
+//               padding: "8px",
+//               position: "absolute",
+//               zIndex: 20,
+//             }}
+//           >
+//             {/* Search box */}
+//             <input
+//               placeholder="Search..."
+//               value={searchQueries[field] || ""}
+//               onChange={(e) =>
+//                 setSearchQueries({ ...searchQueries, [field]: e.target.value })
+//               }
+//               style={{
+//                 width: "100%",
+//                 padding: "8px",
+//                 marginBottom: "8px",
+//                 borderRadius: "6px",
+//                 border: "1px solid #ccc",
+//               }}
+//             />
+
+//             {filtered.map((opt: any, i: number) => (
+//               <div
+//                 key={i}
+//                 onClick={() => {
+//                   setDataToSave({ ...dataToSave, [field]: opt.id });
+//                   setOpen(false);
+//                 }}
+//                 style={{ padding: "8px 10px", cursor: "pointer" }}
+//               >
+//                 {opt.name || opt.id}
+//               </div>
+//             ))}
+//           </div>
+//         )}
+//       </div>
+//     );
+//   };
+
+//   // ---------------------------------------------------
+//   // SUBMIT HANDLER
+//   // ---------------------------------------------------
+//   const handleCreate = async () => {
+//     const params = new FormData();
+//     params.append("resource", btoa(JSON.stringify(dataToSave)));
+
+//     const res = await fetch(apiUrl, {
+//       method: "POST",
+//       headers: { Authorization: `Bearer ${getCookie("access_token")}` },
+//       credentials: "include",
+//       body: params,
+//     });
+
+//     if (res.ok) {
+//       setShowToast(true);
+//       setTimeout(() => setShowToast(false), 3000);
+//       setDataToSave({});
+//     }
+//   };
+
+//   return (
+//     <div className="d-flex justify-content-center align-items-start mt-5">
+//       <form
+//         style={{
+//           width: "100%",
+//           maxWidth: "550px",
+//           backgroundColor: "#fff",
+//           borderRadius: "12px",
+//           padding: "30px",
+//           boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+//         }}
+//       >
+//         <div
+//           style={{
+//             background: "linear-gradient(135deg, #007bff, #0056d2)",
+//             color: "white",
+//             textAlign: "center",
+//             padding: "14px",
+//             borderRadius: "10px",
+//             fontSize: "22px",
+//             marginBottom: "25px",
+//           }}
+//         >
+//           Program Registration
+//         </div>
+
+//         {/* Program dropdown */}
+//         <Dropdown label="Program" field="program_id" cacheKey="ProgramList" />
+
+//         {/* Student dropdown (now works) */}
+//         <Dropdown label="Student" field="student_id" cacheKey="StudentList" />
+
+//         <button
+//           type="button"
+//           onClick={handleCreate}
+//           style={{
+//             width: "100%",
+//             padding: "12px",
+//             backgroundColor: "#007bff",
+//             color: "white",
+//             border: "none",
+//             borderRadius: "8px",
+//             fontWeight: 600,
+//             fontSize: "16px",
+//             cursor: "pointer",
+//           }}
+//         >
+//           Submit
+//         </button>
+
+//         {showToast && (
+//           <div className="toast-container position-fixed top-20 start-50 translate-middle p-3">
+//             <div className="toast show shadow">
+//               <div className="toast-header">
+//                 <strong className="me-auto">Success</strong>
+//               </div>
+//               <div className="toast-body text-success text-center">
+//                 Created Successfully!
+//               </div>
+//             </div>
+//           </div>
+//         )}
+//       </form>
+//     </div>
+//   );
+// };
+
+// export default CreateProgram_registration;
+
+import React, { useContext, useEffect, useState } from "react";
 import apiConfig from "../../config/apiConfig";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchForeignResource } from "../../apis/resources";
+import { LoginContext } from "../../context/LoginContext";
+import { authFetch } from "../../apis/authFetch";
 
-export type resourceMetaData = {
-  resource: string;
-  fieldValues: any[];
-};
-
-const getCookie = (name: string): string | null => {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop()?.split(";").shift() || null;
-  return null;
-};
+// safer base64 for unicode
+const base64Encode = (str: string) => window.btoa(unescape(encodeURIComponent(str)));
 
 const CreateProgram_registration = () => {
   const queryClient = useQueryClient();
+  const { user } = useContext(LoginContext);
+
+  const userEmail = user?.email_id?.toLowerCase() || "";
+  const isStudent = String(user?.role || "").toLowerCase() === "student";
 
   const [dataToSave, setDataToSave] = useState<any>({});
   const [showToast, setShowToast] = useState(false);
   const [searchQueries, setSearchQueries] = useState<Record<string, string>>({});
 
+  // ✅ keep same endpoints you were using
   const apiUrl = apiConfig.getResourceUrl("Program_registration");
   const metadataUrl = apiConfig.getResourceMetaDataUrl("Program_registration");
 
   // ---------------------------------------------------
-  // FETCH METADATA
+  // FETCH METADATA (kept as-is; optional)
   // ---------------------------------------------------
   useQuery({
     queryKey: ["ProgramRegMeta"],
     queryFn: async () => {
-      const res = await fetch(metadataUrl);
+      const res = await authFetch(metadataUrl, { method: "GET" });
       return res.json();
     },
   });
 
   // ---------------------------------------------------
-  // FETCH STUDENT RESOURCE & store in cache
+  // ✅ FETCH PROGRAM LIST (you were missing this earlier)
   // ---------------------------------------------------
-
   useQuery({
-    queryKey: ["StudentList"],
+    queryKey: ["ProgramList"],
     queryFn: async () => {
-      const data = await fetchForeignResource("Student"); // your API helper
+      const data = await fetchForeignResource("Program");
       const formatted = Array.isArray(data) ? data : data.resource || [];
       return formatted;
     },
-    staleTime: 5 * 60 * 1000, // cache 5 min
+    staleTime: 5 * 60 * 1000,
   });
 
   // ---------------------------------------------------
-  // UNIVERSAL DROPDOWN FOR ALL RESOURCES
+  // FETCH STUDENT LIST (cache)
+  // ---------------------------------------------------
+  const { data: studentList } = useQuery({
+    queryKey: ["StudentList"],
+    queryFn: async () => {
+      const data = await fetchForeignResource("Student");
+      const formatted = Array.isArray(data) ? data : data.resource || [];
+      return formatted;
+    },
+    staleTime: 5 * 60 * 1000,
+    enabled: !!userEmail, // only when logged in
+  });
+
+  // ---------------------------------------------------
+  // ✅ AUTO SET student_id FOR LOGGED-IN STUDENT
+  // ---------------------------------------------------
+  useEffect(() => {
+    if (!isStudent) return;
+    if (!studentList || !userEmail) return;
+
+    const match = (studentList as any[]).find(
+      (s: any) => s.email?.toLowerCase() === userEmail
+    );
+
+    if (match?.id) {
+      setDataToSave((prev: any) => ({
+        ...prev,
+        student_id: match.id,
+      }));
+    } else {
+      console.warn("No Student found for logged-in email:", userEmail);
+    }
+  }, [isStudent, studentList, userEmail]);
+
+  // ---------------------------------------------------
+  // UNIVERSAL DROPDOWN (same as yours)
   // ---------------------------------------------------
   const Dropdown = ({ label, field, cacheKey }: any) => {
     const [open, setOpen] = useState(false);
@@ -486,10 +749,16 @@ const CreateProgram_registration = () => {
     const options = Array.isArray(cachedList) ? cachedList : [];
 
     const filtered = options.filter((o: any) =>
-      (o.name || o.id)
+      (o.name || o.program_name || o.id)
         ?.toLowerCase()
         .includes((searchQueries[field] || "").toLowerCase())
     );
+
+    const selectedLabel =
+      dataToSave[field] &&
+      (options.find((x: any) => x.id === dataToSave[field])?.name ||
+        options.find((x: any) => x.id === dataToSave[field])?.program_name ||
+        options.find((x: any) => x.id === dataToSave[field])?.id);
 
     return (
       <div style={{ marginBottom: "20px", position: "relative" }}>
@@ -497,7 +766,6 @@ const CreateProgram_registration = () => {
           {label} *
         </label>
 
-        {/* Dropdown box */}
         <div
           onClick={() => setOpen(!open)}
           style={{
@@ -509,13 +777,9 @@ const CreateProgram_registration = () => {
             cursor: "pointer",
           }}
         >
-          {dataToSave[field]
-            ? options.find((x: any) => x.id === dataToSave[field])?.name ||
-              options.find((x: any) => x.id === dataToSave[field])?.id
-            : `Select ${label}`}
+          {selectedLabel || `Select ${label}`}
         </div>
 
-        {/* Dropdown menu */}
         {open && (
           <div
             style={{
@@ -530,7 +794,6 @@ const CreateProgram_registration = () => {
               zIndex: 20,
             }}
           >
-            {/* Search box */}
             <input
               placeholder="Search..."
               value={searchQueries[field] || ""}
@@ -555,7 +818,7 @@ const CreateProgram_registration = () => {
                 }}
                 style={{ padding: "8px 10px", cursor: "pointer" }}
               >
-                {opt.name || opt.id}
+                {opt.name || opt.program_name || opt.id}
               </div>
             ))}
           </div>
@@ -568,20 +831,38 @@ const CreateProgram_registration = () => {
   // SUBMIT HANDLER
   // ---------------------------------------------------
   const handleCreate = async () => {
-    const params = new FormData();
-    params.append("resource", btoa(JSON.stringify(dataToSave)));
+    if (!dataToSave.program_id) {
+      alert("Please select a program");
+      return;
+    }
 
-    const res = await fetch(apiUrl, {
+    if (!dataToSave.student_id) {
+      alert("Student id not set. Please login again.");
+      return;
+    }
+
+    const params = new FormData();
+    params.append("resource", base64Encode(JSON.stringify(dataToSave)));
+
+    const res = await authFetch(apiUrl, {
       method: "POST",
-      headers: { Authorization: `Bearer ${getCookie("access_token")}` },
-      credentials: "include",
       body: params,
+      // authFetch already adds credentials + token (if your authFetch is set that way)
     });
 
     if (res.ok) {
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
-      setDataToSave({});
+
+      // Keep student_id for student user; reset only program
+      setDataToSave((prev: any) => ({
+        student_id: prev.student_id,
+        program_id: "",
+      }));
+    } else {
+      const t = await res.text();
+      console.error("Create failed:", res.status, t);
+      alert("Failed to register. Check console.");
     }
   };
 
@@ -614,8 +895,31 @@ const CreateProgram_registration = () => {
         {/* Program dropdown */}
         <Dropdown label="Program" field="program_id" cacheKey="ProgramList" />
 
-        {/* Student dropdown (now works) */}
-        <Dropdown label="Student" field="student_id" cacheKey="StudentList" />
+        {/* ✅ Student: auto for student role, dropdown only for non-student */}
+        {isStudent ? (
+          <>
+            <input type="hidden" value={dataToSave.student_id || ""} />
+            <div style={{ marginBottom: "20px" }}>
+              <label style={{ fontSize: "15px", fontWeight: 600, marginBottom: "6px" }}>
+                Student *
+              </label>
+              <div
+                style={{
+                  width: "100%",
+                  padding: "10px 12px",
+                  borderRadius: "8px",
+                  border: "1px solid #ccc",
+                  backgroundColor: "#f6f7f9",
+                  color: "#333",
+                }}
+              >
+                Auto selected (logged in user)
+              </div>
+            </div>
+          </>
+        ) : (
+          <Dropdown label="Student" field="student_id" cacheKey="StudentList" />
+        )}
 
         <button
           type="button"
@@ -631,6 +935,7 @@ const CreateProgram_registration = () => {
             fontSize: "16px",
             cursor: "pointer",
           }}
+          disabled={isStudent && !dataToSave.student_id}
         >
           Submit
         </button>
@@ -653,4 +958,3 @@ const CreateProgram_registration = () => {
 };
 
 export default CreateProgram_registration;
-
