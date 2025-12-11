@@ -346,4 +346,3 @@ const ReadCertificate = () => {
 
 export default ReadCertificate;
 
-
