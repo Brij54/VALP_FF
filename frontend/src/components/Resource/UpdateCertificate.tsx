@@ -494,8 +494,6 @@
 
 // export default UpdateCertificate;
 
-
-
 // import React, { useEffect, useMemo, useRef, useState } from "react";
 // import { useNavigate } from "react-router-dom";
 // import apiConfig from "../../config/apiConfig";
@@ -895,7 +893,6 @@
 
 // export default UpdateCertificate;
 
-
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import apiConfig from "../../config/apiConfig";
@@ -1115,7 +1112,9 @@ const UpdateCertificate = () => {
           });
 
           const studentRes = await authFetch(
-            `${apiConfig.getResourceUrl("certificate")}?${studentParams.toString()}`,
+            `${apiConfig.getResourceUrl(
+              "certificate"
+            )}?${studentParams.toString()}`,
             {
               method: "GET",
               headers: { "Content-Type": "application/json" },
@@ -1213,10 +1212,30 @@ const UpdateCertificate = () => {
         resizable: false,
       },
 
-      { headerName: "Roll Number", field: "roll_no", sortable: true, filter: true },
-      { headerName: "Student Name", field: "student_name", sortable: true, filter: true },
-      { headerName: "Course", field: "course_name", sortable: true, filter: true },
-      { headerName: "Platform", field: "platform", sortable: true, filter: true },
+      {
+        headerName: "Roll Number",
+        field: "roll_no",
+        sortable: true,
+        filter: true,
+      },
+      {
+        headerName: "Student Name",
+        field: "student_name",
+        sortable: true,
+        filter: true,
+      },
+      {
+        headerName: "Course",
+        field: "course_name",
+        sortable: true,
+        filter: true,
+      },
+      {
+        headerName: "Platform",
+        field: "platform",
+        sortable: true,
+        filter: true,
+      },
 
       {
         headerName: "Completion Date",
@@ -1248,28 +1267,59 @@ const UpdateCertificate = () => {
       },
 
       // ⭐ LOGS COLUMN (Added after status)
+      // {
+      //   headerName: "Logs",
+      //   field: "logs",
+      //   sortable: false,
+      //   filter: false,
+      //   cellRenderer: (params: any) => {
+      //     if (!params.value) return "No logs";
+      //     try {
+      //       const logs = JSON.parse(params.value);
+      //       return (
+      //         <div style={{ lineHeight: "1.4", fontSize: "13px" }}>
+      //           {logs.uploaded_at && <div>📤 <b>Uploaded:</b> {logs.uploaded_at}</div>}
+      //           {logs.approved_by && <div>✅ <b>Approved By:</b> {logs.approved_by}</div>}
+      //           {logs.approved_date && <div>📅 <b>Approved:</b> {logs.approved_date}</div>}
+      //           {logs.rejected_by && <div>❌ <b>Rejected By:</b> {logs.rejected_by}</div>}
+      //           {logs.rejected_date && <div>📅 <b>Rejected:</b> {logs.rejected_date}</div>}
+      //         </div>
+      //       );
+      //     } catch {
+      //       return "Invalid logs";
+      //     }
+      //   }
+      // },
+
       {
         headerName: "Logs",
         field: "logs",
         sortable: false,
         filter: false,
         cellRenderer: (params: any) => {
-          if (!params.value) return "No logs";
-          try {
-            const logs = JSON.parse(params.value);
-            return (
-              <div style={{ lineHeight: "1.4", fontSize: "13px" }}>
-                {logs.uploaded_at && <div>📤 <b>Uploaded:</b> {logs.uploaded_at}</div>}
-                {logs.approved_by && <div>✅ <b>Approved By:</b> {logs.approved_by}</div>}
-                {logs.approved_date && <div>📅 <b>Approved:</b> {logs.approved_date}</div>}
-                {logs.rejected_by && <div>❌ <b>Rejected By:</b> {logs.rejected_by}</div>}
-                {logs.rejected_date && <div>📅 <b>Rejected:</b> {logs.rejected_date}</div>}
-              </div>
-            );
-          } catch {
-            return "Invalid logs";
+          const logsStr = params.value;
+
+          if (
+            !logsStr ||
+            typeof logsStr !== "string" ||
+            logsStr.trim() === ""
+          ) {
+            return "No logs";
           }
-        }
+
+          const lines = logsStr
+            .split("\n")
+            .map((l: string) => l.trim())
+            .filter((l: string) => l.length > 0);
+
+          return (
+            <div style={{ lineHeight: "1.4", fontSize: "13px" }}>
+              {lines.map((line: string, idx: number) => (
+                <div key={idx}>{line}</div>
+              ))}
+            </div>
+          );
+        },
       },
 
       {
