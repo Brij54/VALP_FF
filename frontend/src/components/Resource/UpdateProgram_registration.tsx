@@ -238,20 +238,20 @@ import { useNavigate } from "react-router-dom";
 import apiConfig from "../../config/apiConfig";
 import { AllCommunityModule, ModuleRegistry, ColDef } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { authFetch } from "../../apis/authFetch";
 import { fetchForeignResource } from "../../apis/resources";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
-// -------------------- ACTION RENDERER --------------------
+// -------------------- ACTION RENDERER (DELETE) --------------------
 const ActionCellRenderer = (props: any) => {
-  const handleEdit = () => props.context.handleUpdate(props.data.id);
+  const handleDelete = () => props.context.handleDelete(props.data.id);
 
   return (
     <button
-      onClick={handleEdit}
-      className="btn btn-primary"
+      onClick={handleDelete}
+      className="btn btn-danger"
       style={{
         fontSize: "14px",
         padding: "6px 16px",
@@ -259,13 +259,14 @@ const ActionCellRenderer = (props: any) => {
         fontWeight: 600,
       }}
     >
-      Edit
+      Delete
     </button>
   );
 };
 
 const UpdateProgram_registration = () => {
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // (kept in case you later add edit navigation)
+  const queryClient = useQueryClient();
 
   // 1) Fetch registrations
   const regQuery = useQuery({
@@ -304,52 +305,107 @@ const UpdateProgram_registration = () => {
   // 4) Build enriched rowData (program_id -> program_name, student_id -> student_name/roll_no)
   type StudentInfo = { name: string; roll_no: string };
 
-const rowData = useMemo(() => {
-  const json = regQuery.data;
-  const regs: any[] = Array.isArray(json) ? json : json?.resource || [];
+  const rowData = useMemo(() => {
+    const json = regQuery.data;
+    const regs: any[] = Array.isArray(json) ? json : json?.resource || [];
 
-  const programs: any[] = (programQuery.data as any[]) || [];
-  const students: any[] = (studentQuery.data as any[]) || [];
+    const programs: any[] = (programQuery.data as any[]) || [];
+    const students: any[] = (studentQuery.data as any[]) || [];
 
-  const programMap = new Map<string, string>(
-    programs.map((p: any) => [String(p.id), String(p.program_name || p.name || p.id)])
-  );
+    const programMap = new Map<string, string>(
+      programs.map((p: any) => [
+        String(p.id),
+        String(p.program_name || p.name || p.id),
+      ])
+    );
 
-  const studentMap = new Map<string, StudentInfo>(
-    students.map((s: any) => [
-      String(s.id),
-      {
-        name: String(s.name || s.id),
-        roll_no: String(s.roll_no || ""),
-      },
-    ])
-  );
+    const studentMap = new Map<string, StudentInfo>(
+      students.map((s: any) => [
+        String(s.id),
+        {
+          name: String(s.name || s.id),
+          roll_no: String(s.roll_no || ""),
+        },
+      ])
+    );
 
-  return regs.map((r: any) => {
-    const stu = studentMap.get(String(r.student_id)); // StudentInfo | undefined
+    return regs.map((r: any) => {
+      const stu = studentMap.get(String(r.student_id)); // StudentInfo | undefined
 
-    return {
-      ...r,
-      program_name: programMap.get(String(r.program_id)) || r.program_id,
-      student_name: stu?.name || r.student_id,
-      roll_no: stu?.roll_no || "",
-    };
-  });
-}, [regQuery.data, programQuery.data, studentQuery.data]);
+      return {
+        ...r,
+        program_name: programMap.get(String(r.program_id)) || r.program_id,
+        student_name: stu?.name || r.student_id,
+        roll_no: stu?.roll_no || "",
+      };
+    });
+  }, [regQuery.data, programQuery.data, studentQuery.data]);
 
+  // -------------------- DELETE HANDLER --------------------
+  const handleDelete = async (id: any) => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to remove this student from this program?"
+    );
+    if (!confirmDelete) return;
 
-  const handleUpdate = (id: any) => navigate(`/edit/program_registration/${id}`);
+    try {
+      const payload = { id };
+
+      const formData = new FormData();
+      const jsonString = JSON.stringify(payload);
+      const base64 = btoa(unescape(encodeURIComponent(jsonString)));
+
+      formData.append("resource", base64);
+      formData.append("action", "DELETE");
+
+      const res = await authFetch(
+        `${apiConfig.getResourceUrl("program_registration")}?`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      if (!res.ok) {
+        throw new Error("Delete failed: " + res.status);
+      }
+
+      // Refresh list from backend
+      await queryClient.invalidateQueries({
+        queryKey: ["resourceData", "program_registration"],
+      });
+
+      alert("Registration deleted successfully.");
+    } catch (err) {
+      console.error("Delete error:", err);
+      alert("Failed to delete registration. Please try again.");
+    }
+  };
 
   // 5) Column definitions (manual and stable)
   const colDefs: ColDef[] = useMemo(() => {
     return [
-      { headerName: "Program", field: "program_name", sortable: true, filter: true, resizable: true },
-      { headerName: "Roll No", field: "roll_no", sortable: true, filter: true, resizable: true },
-      { headerName: "Student", field: "student_name", sortable: true, filter: true, resizable: true },
-      // If you want IDs also, uncomment:
-      // { headerName: "Program Id", field: "program_id", sortable: true, filter: true, resizable: true },
-      // { headerName: "Student Id", field: "student_id", sortable: true, filter: true, resizable: true },
-
+      {
+        headerName: "Program",
+        field: "program_name",
+        sortable: true,
+        filter: true,
+        resizable: true,
+      },
+      {
+        headerName: "Roll No",
+        field: "roll_no",
+        sortable: true,
+        filter: true,
+        resizable: true,
+      },
+      {
+        headerName: "Student",
+        field: "student_name",
+        sortable: true,
+        filter: true,
+        resizable: true,
+      },
       {
         headerName: "Action",
         field: "action",
@@ -382,10 +438,11 @@ const rowData = useMemo(() => {
         pagination
         paginationPageSize={10}
         animateRows
-        context={{ handleUpdate }}
+        context={{ handleDelete }}
       />
     </div>
   );
 };
 
 export default UpdateProgram_registration;
+
