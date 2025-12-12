@@ -9,6 +9,7 @@ import com.rasp.app.resource.Batch;
 import com.rasp.app.resource.Certificate;
 import com.rasp.app.resource.Student;
 import net.bytebuddy.implementation.bind.annotation.Super;
+import org.json.JSONObject;
 import platform.db.Expression;
 import platform.db.REL_OP;
 import platform.db.ResourceMetaData;
@@ -24,12 +25,55 @@ import platform.webservice.ServletContext;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDate;
 import java.util.*;
 
 public class CertificateDecorator extends BaseDecorator {
     public CertificateDecorator() {
         super(new Certificate());
     }
+
+    @Override
+    public void preAddDecorator(ServletContext ctx, BaseResource _resource) throws ApplicationException {
+
+        Certificate cert = (Certificate) _resource;
+
+        String logs = cert.getLogs();
+        if (logs == null) logs = "";
+
+        // Append uploaded log
+        logs += "uploaded_at: " + LocalDate.now().toString() + "\n";
+
+        cert.setLogs(logs);
+    }
+
+    @Override
+    public void preModifyDecorator(ServletContext ctx, BaseResource _resource) throws ApplicationException {
+
+        Certificate cert = (Certificate) _resource;
+
+        Boolean status = cert.getStatus(); // Approved = true, Rejected = false
+
+        String logs = cert.getLogs();
+        if (logs == null) logs = "";
+
+        if (status != null) {
+
+            if (status == true) {
+                logs += "approved_by: Admin on " + LocalDate.now().toString() + "\n";
+            }
+
+            if (status == false) {
+                logs += "rejected_by: Admin on " + LocalDate.now().toString() + "\n";
+            }
+        }
+
+        cert.setLogs(logs);
+    }
+
+
+
+
 
     @Override
     public BaseResource[] getQuery(ServletContext ctx,
@@ -102,10 +146,10 @@ public class CertificateDecorator extends BaseDecorator {
                         "Failed to save certificate: " + e.getMessage());
             }
         }
+
+
         // fallback -> default behaviour for all other queries
         return super.getQuery(ctx, queryId, map, service);
     }
-
-
 
 }

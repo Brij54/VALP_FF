@@ -421,6 +421,9 @@
 // };
 
 // export default CreateCertificate;
+
+
+
 import React, { useState, useEffect, useRef, useContext } from "react";
 import apiConfig from "../../config/apiConfig";
 
@@ -465,11 +468,7 @@ const CreateCertificate = () => {
   );
   const [enums, setEnums] = useState<Record<string, any[]>>({});
 
-  // ✅ NEW: platform UI states for Online mode
-  const [onlinePlatform, setOnlinePlatform] = useState<string>("");
-  const [otherPlatform, setOtherPlatform] = useState<string>("");
-
-  const apiUrl = apiConfig.getResourceUrl("certificate"); // use same casing pattern as your other components
+  const apiUrl = apiConfig.getResourceUrl("certificate"); // use lowercase
   const metadataUrl = apiConfig.getResourceMetaDataUrl("Certificate");
 
   const fetchedResources = useRef(new Set<string>());
@@ -477,11 +476,7 @@ const CreateCertificate = () => {
   const queryClient = useQueryClient();
 
   // ---- Foreign data loader ----
-  const fetchForeignData = async (
-    foreignResource: string,
-    fieldName: string,
-    foreignField: string
-  ) => {
+  const fetchForeignData = async (foreignResource: string, fieldName: string, foreignField: string) => {
     try {
       const data = await fetchForeignResource(foreignResource);
       setForeignKeyData((prev) => ({
@@ -526,9 +521,7 @@ const CreateCertificate = () => {
       if (Array.isArray(data) && data.length > 0) {
         setFields(data[0].fieldValues);
 
-        const foreignFields = data[0].fieldValues.filter(
-          (field: any) => field.foreign
-        );
+        const foreignFields = data[0].fieldValues.filter((field: any) => field.foreign);
 
         for (const field of foreignFields) {
           if (!fetchedResources.current.has(field.foreign)) {
@@ -539,17 +532,11 @@ const CreateCertificate = () => {
               queryFn: () => fetchForeignResource(field.foreign),
             });
 
-            await fetchForeignData(
-              field.foreign,
-              field.name,
-              field.foreign_field
-            );
+            await fetchForeignData(field.foreign, field.name, field.foreign_field);
           }
         }
 
-        const enumFields = data[0].fieldValues.filter(
-          (field: any) => field.isEnum === true
-        );
+        const enumFields = data[0].fieldValues.filter((field: any) => field.isEnum === true);
 
         for (const field of enumFields) {
           if (!fetchedEnum.current.has(field.possible_value)) {
@@ -576,8 +563,7 @@ const CreateCertificate = () => {
     if (!students.length) return;
 
     const match = students.find(
-      (s: any) =>
-        s.email && s.email.toLowerCase() === user.email_id.toLowerCase()
+      (s: any) => s.email && s.email.toLowerCase() === user.email_id.toLowerCase()
     );
 
     if (match && match.id) {
@@ -586,29 +572,9 @@ const CreateCertificate = () => {
         student_id: match.id,
       }));
     } else {
-      console.warn(
-        "No matching student found for logged-in user email:",
-        user.email_id
-      );
+      console.warn("No matching student found for logged-in user email:", user.email_id);
     }
   }, [user, foreignKeyData]);
-
-  // ✅ NEW: keep dataToSave.platform in sync with Online dropdown + Other textbox
-  useEffect(() => {
-    if (dataToSave.course_mode !== "Online") {
-      // Not online: clear online-specific states (don't touch platform because user might type it manually)
-      setOnlinePlatform("");
-      setOtherPlatform("");
-      return;
-    }
-
-    // Online: platform comes from dropdown (or Other textbox)
-    if (onlinePlatform === "Other") {
-      setDataToSave((prev: any) => ({ ...prev, platform: otherPlatform || "" }));
-    } else {
-      setDataToSave((prev: any) => ({ ...prev, platform: onlinePlatform || "" }));
-    }
-  }, [dataToSave.course_mode, onlinePlatform, otherPlatform]);
 
   useEffect(() => {
     console.log("data to save", dataToSave);
@@ -616,7 +582,6 @@ const CreateCertificate = () => {
 
   const handleCreate = async () => {
     const accessToken = getCookie("access_token");
-    console.log("access_token from cookie:", accessToken);
 
     if (!accessToken) {
       alert("Access token not found. Please login again.");
@@ -626,18 +591,6 @@ const CreateCertificate = () => {
     if (!dataToSave.student_id) {
       alert("Student mapping not found. Please contact admin.");
       return;
-    }
-
-    // ✅ Extra validation for Online platform selection
-    if (dataToSave.course_mode === "Online") {
-      if (!onlinePlatform) {
-        alert("Please select a platform (Coursera/Udemy/NPTEL/Other).");
-        return;
-      }
-      if (onlinePlatform === "Other" && !otherPlatform.trim()) {
-        alert("Please enter the platform name.");
-        return;
-      }
     }
 
     const params = new FormData();
@@ -659,17 +612,17 @@ const CreateCertificate = () => {
       params.append("tags", "t1,t2,attend");
     }
 
+    // ⭐⭐⭐ ADD THIS NECESSARY FIX ⭐⭐⭐
+    payload.id = crypto.randomUUID();
+
     const jsonString = JSON.stringify(payload);
     const base64Encoded = base64Encode(jsonString);
     params.append("resource", base64Encoded);
 
     try {
-      console.log("POSTing to:", apiUrl);
       const response = await fetch(apiUrl, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
+        headers: { Authorization: `Bearer ${accessToken}` },
         credentials: "include",
         body: params,
       });
@@ -677,11 +630,7 @@ const CreateCertificate = () => {
       if (response.ok) {
         setShowToast(true);
         setTimeout(() => setShowToast(false), 3000);
-
-        // reset form
-        setDataToSave((prev: any) => ({ student_id: prev.student_id })); // keep student_id
-        setOnlinePlatform("");
-        setOtherPlatform("");
+        setDataToSave({});
       } else {
         const text = await response.text();
         console.error("Backend returned error:", response.status, text);
@@ -689,9 +638,7 @@ const CreateCertificate = () => {
       }
     } catch (err) {
       console.error("❌ Network / CORS error in handleCreate:", err);
-      alert(
-        "Failed to reach server. Check if backend is running and CORS is configured."
-      );
+      alert("Failed to reach server. Check if backend is running and CORS is configured.");
     }
   };
 
@@ -704,11 +651,9 @@ const CreateCertificate = () => {
         <h4 className={styles.sectionTitle}>Add Course Certificate</h4>
 
         <div className={styles.formGrid}>
-          {/* course_name */}
           <div className={styles.formGroup}>
             <label className={styles.formLabel}>
-              Course Name
-              <span className={styles.required}>*</span>
+              <span className={styles.required}>*</span>Course Name
             </label>
             <input
               type="text"
@@ -722,11 +667,9 @@ const CreateCertificate = () => {
             />
           </div>
 
-          {/* course_duration */}
           <div className={styles.formGroup}>
             <label className={styles.formLabel}>
-              Course Duration
-              <span className={styles.required}>*</span>
+              <span className={styles.required}>*</span>Course Duration
             </label>
             <input
               type="text"
@@ -735,35 +678,23 @@ const CreateCertificate = () => {
               required
               value={dataToSave.course_duration || ""}
               onChange={(e) =>
-                setDataToSave({
-                  ...dataToSave,
-                  course_duration: e.target.value,
-                })
+                setDataToSave({ ...dataToSave, course_duration: e.target.value })
               }
             />
           </div>
 
-          {/* course_mode */}
           <div className={styles.formGroup}>
             <label className={styles.formLabel}>
-              Course Mode
-              <span className={styles.required}>*</span>
+              <span className={styles.required}>*</span>Course Mode
             </label>
             <select
               className={styles.formControl}
               name="course_mode"
               required
               value={dataToSave.course_mode || ""}
-              onChange={(e) => {
-                const mode = e.target.value;
-                setDataToSave({ ...dataToSave, course_mode: mode });
-
-                // if switching away from Online, keep whatever platform user typed; but clear online UI states
-                if (mode !== "Online") {
-                  setOnlinePlatform("");
-                  setOtherPlatform("");
-                }
-              }}
+              onChange={(e) =>
+                setDataToSave({ ...dataToSave, course_mode: e.target.value })
+              }
             >
               <option value="">Select course mode</option>
               {enums["Course_mode"]?.map((val, idx) => (
@@ -774,64 +705,25 @@ const CreateCertificate = () => {
             </select>
           </div>
 
-          {/* platform (dynamic) */}
           <div className={styles.formGroup}>
             <label className={styles.formLabel}>
-              Platform
-              <span className={styles.required}>*</span>
+              <span className={styles.required}>*</span>Platform
             </label>
-
-            {dataToSave.course_mode === "Online" ? (
-              <>
-                <select
-                  className={styles.formControl}
-                  name="platform_select"
-                  required
-                  value={onlinePlatform}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    setOnlinePlatform(val);
-                    if (val !== "Other") setOtherPlatform("");
-                  }}
-                >
-                  <option value="">Select platform</option>
-                  <option value="Coursera">Coursera</option>
-                  <option value="Udemy">Udemy</option>
-                  <option value="NPTEL">NPTEL</option>
-                  <option value="Other">Other</option>
-                </select>
-
-                {onlinePlatform === "Other" && (
-                  <input
-                    type="text"
-                    className={styles.formControl}
-                    style={{ marginTop: "10px" }}
-                    placeholder="Enter platform name"
-                    value={otherPlatform}
-                    onChange={(e) => setOtherPlatform(e.target.value)}
-                    required
-                  />
-                )}
-              </>
-            ) : (
-              <input
-                type="text"
-                className={styles.formControl}
-                name="platform"
-                required
-                value={dataToSave.platform || ""}
-                onChange={(e) =>
-                  setDataToSave({ ...dataToSave, platform: e.target.value })
-                }
-              />
-            )}
+            <input
+              type="text"
+              className={styles.formControl}
+              name="platform"
+              required
+              value={dataToSave.platform || ""}
+              onChange={(e) =>
+                setDataToSave({ ...dataToSave, platform: e.target.value })
+              }
+            />
           </div>
 
-          {/* completion date */}
           <div className={styles.formGroup}>
             <label className={styles.formLabel}>
-              Completion Date
-              <span className={styles.required}>*</span>
+              <span className={styles.required}>*</span>Completion Date
             </label>
             <input
               type="date"
@@ -848,11 +740,9 @@ const CreateCertificate = () => {
             />
           </div>
 
-          {/* upload_certificate */}
           <div className={styles.formGroup}>
             <label className={styles.formLabel}>
-              Upload Certificate
-              <span className={styles.required}>*</span>
+              <span className={styles.required}>*</span>Upload Certificate
             </label>
             <input
               className={styles.formControl}
@@ -868,7 +758,6 @@ const CreateCertificate = () => {
             />
           </div>
 
-          {/* course_url */}
           <div className={styles.formGroup}>
             <label className={styles.formLabel}>Course URL</label>
             <input
@@ -883,25 +772,15 @@ const CreateCertificate = () => {
           </div>
         </div>
 
-        {/* hidden */}
-        <input
-          type="hidden"
-          name="student_id"
-          value={dataToSave.student_id || ""}
-        />
+        <input type="hidden" name="student_id" value={dataToSave.student_id || ""} />
 
         <div className={styles.buttonRow}>
-          <button
-            className={styles.primaryBtn}
-            type="button"
-            onClick={handleCreate}
-          >
+          <button className={styles.primaryBtn} onClick={handleCreate}>
             Submit
           </button>
         </div>
       </div>
 
-      {/* Toast */}
       {showToast && (
         <div
           className="toast-container position-fixed top-0 start-50 translate-middle-x p-3"
