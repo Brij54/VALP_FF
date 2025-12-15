@@ -1355,7 +1355,7 @@ const UpdateCertificate = () => {
     <>
       {/* Header */}
       <div style={{ padding: "12px 0" }}>
-        <h2 style={{ margin: 0, fontWeight: 700 }}>Student Certificates</h2>
+        {/* <h2 style={{ margin: 0, fontWeight: 700 }}>Student Certificates</h2> */}
 
         <div
           style={{
