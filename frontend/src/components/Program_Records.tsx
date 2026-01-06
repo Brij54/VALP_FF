@@ -37,7 +37,7 @@ export default function Program_Records() {
           >
             {/* Blue header bar */}
             <header className="contentHeader">
-              <h1 className="pageTitle">Student Program Records</h1>
+              <h1 className="pageTitle">Ongoing courses Records</h1>
               <div className="userProfile" style={{ position: "relative" }}>
                 <div className="profileCircle"
                   onClick={() => setShowDropdown((prev) => !prev)}

@@ -37,7 +37,7 @@ export default function Program_Config() {
           }`}
         >
           <header className="contentHeader">
-            <h1 className="pageTitle">Approve / Reject Certificate</h1>
+            <h1 className="pageTitle">Valp Courses</h1>
             <div className="userProfile" style={{ position: "relative" }}>
               <div
                 className="profileCircle"
@@ -85,7 +85,7 @@ export default function Program_Config() {
             <section className="createStudentSection">
               <CreateProgram />
               <div className="pageFormContainer">
-                <h2 className={styles.sectionTitle1}>Update Program</h2>
+                <h2 className={styles.sectionTitle1}>Update Course</h2>
                 <UpdateProgram />
               </div>
             </section>

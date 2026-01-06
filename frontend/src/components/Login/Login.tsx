@@ -214,7 +214,7 @@ const Login = () => {
       localStorage.setItem("isLoggedIn", "true");
 
       // Navigate by role
-      navigate(role === "admin" ? "/approve_reject_certificate" : "/upload");
+      navigate(role === "admin" ? "/valp_certificate" : "/upload");
     } catch (err) {
       console.error("Error during login:", err);
       setError("An error occurred during login.");

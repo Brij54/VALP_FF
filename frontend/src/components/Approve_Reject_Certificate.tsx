@@ -42,7 +42,7 @@ export default function Approve_Reject_Certificate() {
       >
         {/* Blue header bar */}
         <header className="contentHeader">
-          <h1 className="pageTitle">Approve / Reject Certificate</h1>
+          <h1 className="pageTitle">VALP Certificates</h1>
           <div className="userProfile" style={{ position: "relative" }}>
             <div className="profileCircle"
               onClick={() => setShowDropdown((prev) => !prev)}
@@ -89,7 +89,7 @@ export default function Approve_Reject_Certificate() {
         <div className="contentBody">
           <section className="createStudentSection">
             <div className="pageFormContainer">
-              <h2 className={styles.sectionTitle1}>Student Certificates</h2>
+              {/* <h2 className={styles.sectionTitle1}>Student Certificates</h2> */}
 
               {/* Your AG-Grid table for students */}
               <UpdateCertificate />

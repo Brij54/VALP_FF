@@ -418,7 +418,7 @@ const Edit = () => {
 
       <main className="mainContent">
         <header className="contentHeader">
-          <h1 className="pageTitle">Edit Program</h1>
+          <h1 className="pageTitle">Edit Course</h1>
         </header>
 
         {!loadingEditComp && (
@@ -444,11 +444,11 @@ const Edit = () => {
                   letterSpacing: "0.5px",
                 }}
               >
-                Edit Program Details
+                Edit Course Details
               </div>
 
               <div className="card-body p-4">
-                <label className="fw-bold mb-1">Program Name *</label>
+                <label className="fw-bold mb-1">Course Name *</label>
                 <input
                   type="text"
                   className="form-control mb-3 rounded-3"

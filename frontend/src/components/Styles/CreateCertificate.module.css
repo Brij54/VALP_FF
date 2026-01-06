@@ -58,7 +58,8 @@
   border-radius: 0 0 12px 12px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
   margin: 0;
-  overflow-y: auto; /* scroll only inside the form if needed */
+  overflow-y: hidden !important;
+  height: auto !important; /* scroll only inside the form if needed */
 
 }
 

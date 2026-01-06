@@ -123,7 +123,7 @@ function App() {
         }
       />
       <Route
-        path="/approve_reject_certificate"
+        path="/valp_certificate"
         element={
           <ProtectedRoute requiredRoles={["admin"]}>
             <Approve_Reject_Certificate />
@@ -132,7 +132,7 @@ function App() {
       />
 
       <Route
-        path="/program_config"
+        path="/valpcourses"
         element={
           <ProtectedRoute requiredRoles={["admin"]}>
             <Program_Config/>
@@ -175,7 +175,7 @@ function App() {
       />
 
       <Route
-        path="/program_records"
+        path="/course_records"
         element={
           <ProtectedRoute requiredRoles={["admin"]}>
             <Program_Records />
