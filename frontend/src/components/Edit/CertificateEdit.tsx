@@ -1122,7 +1122,7 @@ const Edit = () => {
       if (response.ok) {
         setShowToast(true);
         setTimeout(() => setShowToast(false), 1000);
-        navigate("/approve_reject_certificate");
+        navigate("/valp_certificate");
       }
     } catch (error) {
       console.error(error);

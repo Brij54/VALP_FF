@@ -386,7 +386,7 @@ const UpdateProgram_registration = () => {
   const colDefs: ColDef[] = useMemo(() => {
     return [
       {
-        headerName: "Program",
+        headerName: "Course",
         field: "program_name",
         sortable: true,
         filter: true,

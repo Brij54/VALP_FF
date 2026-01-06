@@ -423,7 +423,7 @@ export default function ValpCertificateGenerator() {
         className={`mainContent ${sidebarCollapsed ? "sidebarCollapsed" : ""}`}
       >
         <header className="contentHeader">
-          <h1 className="pageTitle">Certificate Generator</h1>
+          <h1 className="pageTitle">VALP Transcript Generator</h1>
 
           <div className="userProfile" style={{ position: "relative" }}>
             <div

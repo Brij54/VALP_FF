@@ -22,21 +22,21 @@ export default function Sidebar({
   const menuItems = [
   { text: "Add Student", path: "/bulkUpload" },
   { text: "Batch Configuration", path: "/batch_config" },
-  { text: "Approve Reject Certificate", path: "/approve_reject_certificate" },
-  { text: "VALP Certificate Generate", path: "/valp/generate" },
+  { text: "VALP Certificate", path: "/valp_certificate" },
+  { text: "VALP Transcript", path: "/valp/generate" },
   { text: "Dean Signature", path: "/DeanSignature" },
-  { text: "Program Configuration", path: "/program_config" },
-  { text: "Program Records", path: "/program_records" },
+  { text: "VALP Courses", path: "/valpcourses" },
+  { text: "Ongoing VALP Courses", path: "/course_records" },
 ];
 
 const iconMap: Record<string, JSX.Element> = {
   "Add Student": <UserPlus size={24} color="#007bff" />,               // Blue
   "Batch Configuration": <Layers size={24} color="#ff9800" />,        // Orange
-  "Approve Reject Certificate": <FileCheck size={24} color="#28a745" />, // Green
-  "VALP Certificate Generate": <Award size={24} color="#28a745" />,     // Green
-  "Dean Signature": <PenLine size={24} color="#28a745" />,              // Green
-  "Program Configuration": <Settings size={24} color="#007bff" />,      // Blue
-  "Program Records": <FolderOpen size={24} color="#007bff" />,          // Blue
+  "VALP Certificate": <FileCheck size={24} color="#28a745" />, // Green
+  "VALP Transcript": <Award size={24} color="#28a745" />,     // Green
+  "Dean Signature": <Settings size={24} color="#007bff" />,              // Green
+  "VALP Courses": <Settings size={24} color="#007bff" />,      // Blue
+  "Ongoing VALP Courses": <FolderOpen size={24} color="#007bff" />,          // Blue
 };
 
   return (
