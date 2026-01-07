@@ -403,7 +403,7 @@ const Edit = () => {
 
       // WAIT 1 second, then navigate → /program_config
       setTimeout(() => {
-        navigate("/program_config");  // ✅ navigate added
+        navigate("/valpcourses");  // ✅ navigate added
       }, 1000);
     }
   };
