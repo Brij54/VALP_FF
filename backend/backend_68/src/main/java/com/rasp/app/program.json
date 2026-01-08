@@ -30,6 +30,7 @@
      "required" : "true",
      "type" : "String"
      },
+
     "syllabus": {
 
      "name" : "syllabus",

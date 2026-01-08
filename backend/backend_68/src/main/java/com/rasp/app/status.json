@@ -1,0 +1,19 @@
+{
+
+  "status": {
+
+    "purpose" : "POSSIBLE_VALUE",
+    "values" : {
+      "Ongoing": {
+
+        "id":"Ongoing",
+        "name":"Ongoing"
+      },
+      "Completed": {
+
+        "id":"Completed",
+        "name":"Completed"
+      }
+    }
+  }
+}

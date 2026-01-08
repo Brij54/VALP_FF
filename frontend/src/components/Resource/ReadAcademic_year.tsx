@@ -1,6 +1,5 @@
 // import React, { useState } from "react";
 // import { useEffect } from "react";
-// import { useNavigate } from "react-router-dom";
 // import apiConfig from "../../config/apiConfig";
 // import {
 //   AllCommunityModule,
@@ -8,38 +7,19 @@
 //   themeAlpine,
 //   themeBalham,
 // } from "ag-grid-community";
+// import { useRaspStore } from "../../store/raspStore";
+// import Cookies from "js-cookie";
+// import { jwtDecode } from "jwt-decode";
 // import { AgGridReact } from "ag-grid-react";
 // import { useQuery } from "@tanstack/react-query";
-
+// // ADDED: Import your generated model file dynamically
+// import Academic_yearModel from "../../models/Academic_yearModel";
 // ModuleRegistry.registerModules([AllCommunityModule]);
-
-// interface ColumnDef {
-//   field: string;
-//   headerName: string;
-//   editable: boolean;
-//   resizable: boolean;
-//   sortable: boolean;
-//   filter: boolean;
-//   cellRenderer?: (params: any) => React.ReactNode;
-// }
-
-// // Define the custom cell renderer for the action column
-// const ActionCellRenderer = (props: any) => {
-//   const handleEdit = () => {
-//     props.context.handleUpdate(props.data.id);
-//   };
-
-//   return (
-//     <button onClick={handleEdit} className="btn btn-primary">
-//       Edit
-//     </button>
-//   );
-// };
-
 // export type ResourceMetaData = {
 //   resource: string;
 //   fieldValues: any[];
 // };
+
 // const getCookie = (name: string): string | null => {
 //   const value = `; ${document.cookie}`;
 //   const parts = value.split(`; ${name}=`);
@@ -47,34 +27,48 @@
 //   return null;
 // };
 
-// const UpdateProgram = () => {
+// const ReadAcademic_year = () => {
 //   const [rowData, setRowData] = useState<any[]>([]);
 //   const [colDef1, setColDef1] = useState<any[]>([]);
 //   const [resMetaData, setResMetaData] = useState<ResourceMetaData[]>([]);
 //   const [fields, setFields] = useState<any[]>([]);
+//   const [dataToSave, setDataToSave] = useState<any>({});
 //   const [requiredFields, setRequiredFields] = useState<string[]>([]);
 //   const [fetchData, setFetchedData] = useState<any[]>([]);
-//   const [editedData, setEditedData] = useState<any>({});
 //   const [showToast, setShowToast] = useState<any>(false);
-//   const navigate = useNavigate();
-//   const apiUrl = `${apiConfig.getResourceUrl("program")}?`;
-//   const metadataUrl = `${apiConfig.getResourceMetaDataUrl("Program")}?`;
-//   const BaseUrl = `${apiConfig.API_BASE_URL}`;
-//   const regex = /^(g_|archived|extra_data)/;
 
-//   const [currentUrl, setCurrentUrl] = useState("");
+//   const regex = /^(g_|archived|extra_data)/;
+//   const apiUrl = `${apiConfig.getResourceUrl("academic_year")}?`;
+//   const metadataUrl = `${apiConfig.getResourceMetaDataUrl("Academic_year")}?`;
+//   const BaseUrl = "${apiConfig.API_BASE_URL}";
+//   const getUserAllData = useRaspStore((s:any) => s.getUserAllData);
+//   const getUserIdFromJWT = (): any => {
+//     try {
+//       const token = Cookies.get("access_token"); // adjust cookie name if different
+//       if (!token) return null;
+
+//       const decoded: any = jwtDecode(token);
+//       console.log("all the resource but selected decoded", decoded);
+//       // assuming your token payload has "userId" or "sub" field
+//       return decoded.userId || decoded.sub || null;
+//     } catch {
+//       return null;
+//     }
+//   };
 //   // Fetch resource data
+
 //   const {
 //     data: dataRes,
 //     isLoading: isLoadingDataRes,
 //     error: errorDataRes,
 //   } = useQuery({
-//     queryKey: ["resourceData", "programUpdate"],
+//     queryKey: ["resourceData", "academic_yearRead"],
 //     queryFn: async () => {
 //       const params = new URLSearchParams();
 
 //       const queryId: any = "GET_ALL";
 //       params.append("queryId", queryId);
+
 //       const accessToken = getCookie("access_token");
 
 //       if (!accessToken) {
@@ -82,7 +76,7 @@
 //       }
 
 //       const response = await fetch(
-//         `${apiConfig.getResourceUrl("program")}?` + params.toString(),
+//         `${apiConfig.getResourceUrl("academic_year")}?` + params.toString(),
 //         {
 //           method: "GET",
 //           headers: {
@@ -98,25 +92,42 @@
 //       }
 
 //       const data = await response.json();
-//       setFetchedData(data.resource || []);
-//       const initialEditedData = fetchData.reduce((acc: any, item: any) => {
-//         acc[item.id] = { ...item };
-//         return acc;
-//       }, {});
-//       return data;
+
+//       return data.resource;
 //     },
 //   });
 
-//   // Fetch metadata
+//   // --- Transform API data into model objects and then JSON ---
+//   useEffect(() => {
+//     if (dataRes) {
+//       let dataToStore = { resource: "academic_year", records: dataRes };
+//       useRaspStore.getState().initializeStore(getUserIdFromJWT(), dataToStore);
+//       //ADDED: Convert array of plain objects → array of model instances
+//       const modelObjects = dataRes.map((obj: any) =>
+//         Academic_yearModel.fromJson(obj)
+//       );
+
+//       // ADDED: Convert array of model instances → array of JSON objects (for ag-grid)
+//       const jsonObjects = modelObjects.map((model: any) => model.toJson());
+
+//       // ADDED: Set final array for AgGrid
+//       setRowData(jsonObjects);
+//     }
+//     console.log(
+//       "data initialized in store",
+//       getUserAllData(getUserIdFromJWT())
+//     );
+//   }, [dataRes]);
+
 //   const {
 //     data: dataResMeta,
 //     isLoading: isLoadingDataResMeta,
 //     error: errorDataResMeta,
 //   } = useQuery({
-//     queryKey: ["resourceMetaData", "programUpdate"],
+//     queryKey: ["resourceMetaData", "academic_yearRead"],
 //     queryFn: async () => {
 //       const response = await fetch(
-//         `${apiConfig.getResourceMetaDataUrl("program")}?`,
+//         `${apiConfig.getResourceMetaDataUrl("academic_year")}?`,
 //         {
 //           method: "GET",
 //           headers: { "Content-Type": "application/json" },
@@ -138,25 +149,10 @@
 //     },
 //   });
 
-//   const handleEdit = (id: any, field: string, value: string) => {
-//     setEditedData((prevData: any) => ({
-//       ...prevData,
-//       [id]: {
-//         ...(prevData[id] || {}),
-//         [field]: value,
-//       },
-//     }));
-//   };
-
-//   const handleUpdate = async (id: any) => {
-//     navigate(`/edit/program/${id}`);
-//   };
-
 //   useEffect(() => {
-//     const data = fetchData || [];
-//     const fields = requiredFields.filter((field) => field !== "id") || [];
+//     const fields = requiredFields.filter((field: any) => field !== "id") || [];
 
-//     const columns = fields.map((field) => ({
+//     const columns = fields.map((field: any) => ({
 //       field: field,
 //       headerName: field,
 //       editable: false,
@@ -165,20 +161,8 @@
 //       filter: true,
 //     }));
 
-//     // Add the Action column with the custom cell renderer
-//     columns.push({
-//       headerName: "Action",
-//       field: "Action",
-//       cellRenderer: ActionCellRenderer,
-//       editable: false,
-//       resizable: true,
-//       sortable: false,
-//       filter: false,
-//       width: 120,
-//     } as ColumnDef);
 //     setColDef1(columns);
-//     setRowData(data);
-//   }, [fetchData, requiredFields]);
+//   }, [requiredFields]);
 
 //   const defaultColDef = {
 //     flex: 1,
@@ -188,7 +172,7 @@
 
 //   return (
 //     <div>
-//       <div className="">
+//       <div>
 //         {rowData.length === 0 && colDef1.length === 0 ? (
 //           <div>No data available. Please add a resource attribute.</div>
 //         ) : (
@@ -204,14 +188,10 @@
 //               paginationPageSize={10}
 //               animateRows={true}
 //               rowSelection="multiple"
-//               context={{
-//                 handleUpdate: handleUpdate,
-//               }}
 //             />
 //           </div>
 //         )}
 //       </div>
-
 //       {showToast && (
 //         <div
 //           className="toast-container position-fixed top-20 start-50 translate-middle p-3"
@@ -243,20 +223,21 @@
 //   );
 // };
 
-// export default UpdateProgram;
+// export default ReadAcademic_year;
 
 
-import React, { useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
 import apiConfig from "../../config/apiConfig";
-
-import { AllCommunityModule, ModuleRegistry, ColDef } from "ag-grid-community";
+import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
+import { useRaspStore } from "../../store/raspStore";
+import Cookies from "js-cookie";
+import { jwtDecode } from "jwt-decode";
 import { useQuery } from "@tanstack/react-query";
+import Academic_yearModel from "../../models/Academic_yearModel";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
-// -------------------- COOKIE --------------------
 const getCookie = (name: string): string | null => {
   const value = `; ${document.cookie}`;
   const parts = value.split(`; ${name}=`);
@@ -264,133 +245,121 @@ const getCookie = (name: string): string | null => {
   return null;
 };
 
-// -------------------- FORMAT HEADER --------------------
-const formatHeaderName = (field: string) =>
-  field
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, (c) => c.toUpperCase());
-
-// -------------------- ACTION RENDERER --------------------
-const ActionCellRenderer = (props: any) => {
-  const handleEdit = () => props.context.handleUpdate(props.data.id);
-
-  return (
-    <button
-      className="btn btn-outline-primary"
-      style={{
-        fontSize: "13px",
-        padding: "6px 14px",
-        borderRadius: "8px",
-        fontWeight: 600,
-      }}
-      onClick={handleEdit}
-    >
-      Edit
-    </button>
-  );
-};
-
-const UpdateProgram = () => {
-  const navigate = useNavigate();
-  const gridRef = useRef<AgGridReact>(null);
-
+const ReadAcademic_year = () => {
   const [rowData, setRowData] = useState<any[]>([]);
+  const [colDef1, setColDef1] = useState<any[]>([]);
+  const [requiredFields, setRequiredFields] = useState<string[]>([]);
+
   const regex = /^(g_|archived|extra_data)/;
+  const getUserAllData = useRaspStore((s: any) => s.getUserAllData);
 
-  // ---------------- FETCH METADATA ----------------
-  const { data: metaData } = useQuery({
-    queryKey: ["programMetaData"],
-    queryFn: async () => {
-      const res = await fetch(
-        apiConfig.getResourceMetaDataUrl("program")
-      );
-      if (!res.ok) throw new Error("Metadata load failed");
-      return res.json();
-    },
-  });
+  const getUserIdFromJWT = () => {
+    try {
+      const token = Cookies.get("access_token");
+      if (!token) return null;
+      const decoded: any = jwtDecode(token);
+      return decoded.userId || decoded.sub || null;
+    } catch {
+      return null;
+    }
+  };
 
-  // ---------------- FETCH PROGRAM DATA ----------------
-  useQuery({
-    queryKey: ["programData"],
+  /* ================= RESOURCE DATA ================= */
+  const { data: dataRes, isLoading: dataLoading } = useQuery({
+    queryKey: ["resourceData", "academic_yearRead"],
     queryFn: async () => {
-      const params = new URLSearchParams({ queryId: "GET_ALL" });
       const token = getCookie("access_token");
+      if (!token) throw new Error("Token missing");
 
       const res = await fetch(
-        `${apiConfig.getResourceUrl("program")}?${params.toString()}`,
+        `${apiConfig.getResourceUrl("academic_year")}?queryId=GET_ALL`,
         {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
 
-      if (!res.ok) throw new Error("Program load failed");
-
       const json = await res.json();
-      setRowData(json.resource || []);
       return json.resource;
     },
   });
 
-  const handleUpdate = (id: any) => navigate(`/edit/program/${id}`);
+  useEffect(() => {
+    if (!dataRes) return;
 
-  // ============================================================
-  //            COLUMN DEFINITIONS (REFERENCE STYLE)
-  // ============================================================
-  const colDefs = useMemo<ColDef[]>(() => {
-    if (!metaData?.[0]?.fieldValues) return [];
+    useRaspStore.getState().initializeStore(getUserIdFromJWT(), {
+      resource: "academic_year",
+      records: dataRes,
+    });
 
-    const fields = metaData[0].fieldValues
-      .filter((f: any) => !regex.test(f.name))
-      .map((f: any) => f.name)
-      .filter((f: string) => f !== "id");
+    const models = dataRes.map((obj: any) =>
+      Academic_yearModel.fromJson(obj)
+    );
 
-    const dynamicCols: ColDef[] = fields.map((field:any) => ({
-      headerName: formatHeaderName(field),
-      field,
-      sortable: true,
-      filter: true,
-    }));
+    setRowData(models.map((m: any) => m.toJson()));
 
-    return [
-      ...dynamicCols,
-      {
-        headerName: "Action",
-        field: "action",
-        cellRenderer: ActionCellRenderer,
-        sortable: false,
-        filter: false,
-        width: 120,
-      },
-    ];
-  }, [metaData]);
+    console.log("store data", getUserAllData(getUserIdFromJWT()));
+  }, [dataRes]);
 
-  const defaultColDef: ColDef = {
+  /* ================= METADATA ================= */
+  const { isLoading: metaLoading } = useQuery({
+    queryKey: ["resourceMetaData", "academic_yearRead"],
+    queryFn: async () => {
+      const res = await fetch(
+        apiConfig.getResourceMetaDataUrl("Academic_year") // ✅ FIXED CASE
+      );
+
+      const data = await res.json();
+
+      const fields =
+        data?.[0]?.fieldValues
+          ?.filter((f: any) => !regex.test(f.name))
+          .map((f: any) => f.name) || [];
+
+      setRequiredFields(fields);
+      return data;
+    },
+  });
+
+  /* ================= GRID COLUMNS ================= */
+  useEffect(() => {
+    if (!requiredFields.length) return;
+
+    setColDef1(
+      requiredFields
+        .filter((f) => f !== "id")
+        .map((field) => ({
+          field,
+          headerName: field,
+          sortable: true,
+          filter: true,
+          resizable: true,
+        }))
+    );
+  }, [requiredFields]);
+
+  const defaultColDef = {
     flex: 1,
     minWidth: 120,
-    resizable: true,
-    editable: false,
-    cellStyle: { display: "flex", alignItems: "center" },
   };
 
+  /* ================= RENDER ================= */
+  if (dataLoading || metaLoading) {
+    return <div>Loading Academic Year...</div>;
+  }
+
   return (
-    <>
-      <div className="ag-theme-alpine" style={{ height: 500 }}>
+    <div style={{ height: 500 }}>
+      <div className="ag-theme-alpine" style={{ height: "100%" }}>
         <AgGridReact
-          ref={gridRef}
           rowData={rowData}
-          columnDefs={colDefs}
+          columnDefs={colDef1}
           defaultColDef={defaultColDef}
           pagination
           paginationPageSize={10}
-          animateRows
-          context={{ handleUpdate }}
         />
       </div>
-    </>
+    </div>
   );
 };
 
-export default UpdateProgram;
+export default ReadAcademic_year;

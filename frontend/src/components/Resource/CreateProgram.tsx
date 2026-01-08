@@ -371,37 +371,7 @@ const CreateProgram = () => {
           />
         </div>
 
-        <div className={styles.formGroup}>
-          <label className={styles.formLabel}>
-            Term Name <span className={styles.required}>*</span> 
-          </label>
-          <input
-            type="text"
-            className={styles.formControl}
-            name="term_name"
-            required
-            value={dataToSave["term_name"] || ""}
-            onChange={(e) =>
-              setDataToSave({ ...dataToSave, term_name: e.target.value })
-            }
-          />
-        </div>
-
-        <div className={styles.formGroup}>
-          <label className={styles.formLabel}>
-            Acedemic Year <span className={styles.required}>*</span> 
-          </label>
-          <input
-            type="text"
-            className={styles.formControl}
-            name="academic_year"
-            required
-            value={dataToSave["academic_year"] || ""}
-            onChange={(e) =>
-              setDataToSave({ ...dataToSave, academic_year: e.target.value })
-            }
-          />
-        </div>
+      
 
         {/* Syllabus Upload */}
         <div className={styles.formGroup}>

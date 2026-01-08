@@ -1307,11 +1307,11 @@ const CreateProgram_registration = () => {
             marginBottom: "25px",
           }}
         >
-          Program Registration
+          Course Registration
         </div>
 
         {/* Program dropdown */}
-        <ProgramDropdown label="Program" field="program_id" />
+        <ProgramDropdown label="Course" field="program_id" />
 
         {/* Live availability text */}
         {dataToSave.program_id && selectedAvailable !== null && (
