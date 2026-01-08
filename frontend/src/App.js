@@ -58,6 +58,7 @@ import Program_Config from "./components/Program_Config";
 import ProgramEdit from "./components/Edit/ProgramEdit";
 import Program_Records from "./components/Program_Records";
 import Offline_Course_Records from "./components/Offline_Course_Records";
+import Terms from "./components/Terms";
 function App() {
   return (
     <Routes>
@@ -197,6 +198,15 @@ function App() {
         element={
           <ProtectedRoute requiredRoles={["admin"]}>
             <ProgramEdit/>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/terms"
+        element={
+          <ProtectedRoute requiredRoles={["admin"]}>
+            <Terms />
           </ProtectedRoute>
         }
       />

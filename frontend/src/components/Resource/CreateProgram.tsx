@@ -314,13 +314,13 @@ const CreateProgram = () => {
   return (
   <div className={styles.batchformCard}>
     <div className={styles.certificateFormWrapper}>
-      <h2 className={styles.sectionTitle}>Add Program</h2>
+      <h2 className={styles.sectionTitle}>Add Courses</h2>
 
       <div className={styles.formGrid}>
         {/* Program Name */}
         <div className={styles.formGroup}>
           <label className={styles.formLabel}>
-            Program Name <span className={styles.required}>*</span> 
+            Course Name <span className={styles.required}>*</span> 
           </label>
           <input
             type="text"
@@ -370,6 +370,8 @@ const CreateProgram = () => {
             }
           />
         </div>
+
+      
 
         {/* Syllabus Upload */}
         <div className={styles.formGroup}>
