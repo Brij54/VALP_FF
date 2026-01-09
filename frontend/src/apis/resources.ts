@@ -1,20 +1,53 @@
 import apiConfig from "../config/apiConfig";
 import { getCookie } from "./enum";
 
+// export const fetchResources = async (appName: string) => {
+//   const params = new URLSearchParams();
+//   const accessToken = getCookie("access_token");
+//   if(!accessToken) throw new Error("Access token not found");
+//   params.append("appName", appName);
+//   const response = await fetch(
+//     `${apiConfig.API_BASE_URL}/getResources/${appName}`,
+//     {
+//       method: "GET",
+//       headers: { "Content-Type": "application/json",
+//         Authorization: `Bearer ${accessToken}`,
+//        },
+//       credentials: "include",
+//     }
+//   );
+
+//   if (!response.ok) throw new Error("Failed to fetch resources");
+
+//   return response.json();
+// };
+
 export const fetchResources = async (appName: string) => {
+  const accessToken = getCookie("access_token");
+  if (!accessToken) {
+    throw new Error("Access token not found");
+  }
+
+  const params = new URLSearchParams({ appName });
+
   const response = await fetch(
-    `${apiConfig.API_BASE_URL}/getResources/${appName}`,
+    `${apiConfig.API_BASE_URL}/getResources?${params.toString()}`,
     {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
       credentials: "include",
     }
   );
 
-  if (!response.ok) throw new Error("Failed to fetch resources");
+  if (!response.ok) {
+    throw new Error("Failed to fetch resources");
+  }
 
   return response.json();
 };
+
 
 // export const fetchResourceData = async ({ queryKey }: { queryKey: [string, string] }) => {
 //   const [_key, resName] = queryKey;

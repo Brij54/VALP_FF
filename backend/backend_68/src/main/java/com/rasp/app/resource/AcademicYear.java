@@ -37,7 +37,7 @@ import com.rasp.app.service.*;
 	private String g_status = null;
 	private String archived = null;
 	private Long archived_time = null;
-	private String term_name = null;
+	private String academic_name = null;
 	private Date start_date = null;
 	private Date end_date = null;
 	private String details = null;
@@ -54,7 +54,7 @@ import com.rasp.app.service.*;
 	public static String FIELD_G_STATUS = "g_status";
 	public static String FIELD_ARCHIVED = "archived";
 	public static String FIELD_ARCHIVED_TIME = "archived_time";
-	public static String FIELD_TERM_NAME = "term_name";
+	public static String FIELD_ACADEMIC_NAME = "academic_name";
 	public static String FIELD_START_DATE = "start_date";
 	public static String FIELD_END_DATE = "end_date";
 	public static String FIELD_DETAILS = "details";
@@ -113,9 +113,9 @@ import com.rasp.app.service.*;
 		Field archived_timeField = new Field("archived_time", "long");
 		metaData.addField(archived_timeField);
 
-		Field term_nameField = new Field("term_name", "String");
-		term_nameField.setRequired(true);
-		metaData.addField(term_nameField);
+		Field academic_nameField = new Field("academic_name", "String");
+		academic_nameField.setRequired(true);
+		metaData.addField(academic_nameField);
 
 		Field start_dateField = new Field("start_date", "Date");
 		start_dateField.setRequired(true);
@@ -153,7 +153,7 @@ import com.rasp.app.service.*;
 		this.g_status = obj.g_status;
 		this.archived = obj.archived;
 		this.archived_time = obj.archived_time;
-		this.term_name = obj.term_name;
+		this.academic_name = obj.academic_name;
 		this.start_date = obj.start_date;
 		this.end_date = obj.end_date;
 		this.details = obj.details;
@@ -194,8 +194,8 @@ import com.rasp.app.service.*;
 			map.put("archived", archived);
 		if(archived_time != null)
 			map.put("archived_time", archived_time);
-		if(term_name != null)
-			map.put("term_name", term_name);
+		if(academic_name != null)
+			map.put("academic_name", academic_name);
 		if(start_date != null)
 			map.put("start_date", start_date);
 		if(end_date != null)
@@ -230,8 +230,8 @@ import com.rasp.app.service.*;
 			map.put("archived", archived);
 		if(archived_time != null)
 			map.put("archived_time", archived_time);
-		if(validateTerm_name(add))
-			map.put("term_name", term_name);
+		if(validateAcademic_name(add))
+			map.put("academic_name", academic_name);
 		if(validateStart_date(add))
 			map.put("start_date", start_date);
 		if(validateEnd_date(add))
@@ -260,7 +260,7 @@ import com.rasp.app.service.*;
 		g_status = (String) map.get("g_status");
 		archived = (String) map.get("archived");
 		archived_time = (map.get("archived_time") == null ? null : ((Number) map.get("archived_time")).longValue());
-		term_name = (String) map.get("term_name");
+		academic_name = (String) map.get("academic_name");
 		start_date = (Date) map.get("start_date");
 		end_date = (Date) map.get("end_date");
 		details = (String) map.get("details");
@@ -313,9 +313,9 @@ import com.rasp.app.service.*;
 		if(archived_timeObj != null)
 			archived_time = new Long(archived_timeObj.toString());
 
-		Object term_nameObj = map.get("term_name");
-		if(term_nameObj != null)
-			term_name = term_nameObj.toString();
+		Object academic_nameObj = map.get("academic_name");
+		if(academic_nameObj != null)
+			academic_name = academic_nameObj.toString();
 
 		Object start_dateObj = map.get("start_date");
 		if(start_dateObj != null)
@@ -527,26 +527,26 @@ import com.rasp.app.service.*;
 		this.archived_time = null;
 	}
 
-	public String getTerm_name() {
-		return term_name;
+	public String getAcademic_name() {
+		return academic_name;
 	}
 
-	public String getTerm_nameEx() {
-		return term_name != null ? term_name : "";
+	public String getAcademic_nameEx() {
+		return academic_name != null ? academic_name : "";
 	}
 
-	public void setTerm_name(String term_name) {
-		this.term_name = term_name;
+	public void setAcademic_name(String academic_name) {
+		this.academic_name = academic_name;
 	}
 
-	public void unSetTerm_name() {
-		this.term_name = null;
+	public void unSetAcademic_name() {
+		this.academic_name = null;
 	}
 
-	public boolean validateTerm_name(boolean add) throws ApplicationException {
-		if(add && term_name == null)
-			throw new ApplicationException(ExceptionSeverity.ERROR, "Requierd validation Failed[term_name]");
-		return term_name != null;
+	public boolean validateAcademic_name(boolean add) throws ApplicationException {
+		if(add && academic_name == null)
+			throw new ApplicationException(ExceptionSeverity.ERROR, "Requierd validation Failed[academic_name]");
+		return academic_name != null;
 	}
 
 	public Date getStart_date() {

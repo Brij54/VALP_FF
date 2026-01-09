@@ -305,10 +305,11 @@ const ReadAcademic_year = () => {
     queryKey: ["resourceMetaData", "academic_yearRead"],
     queryFn: async () => {
       const res = await fetch(
-        apiConfig.getResourceMetaDataUrl("Academic_year") // ✅ FIXED CASE
+        apiConfig.getResourceMetaDataUrl("AcademicYear") // ✅ FIXED CASE
       );
 
       const data = await res.json();
+      console.log("metadata", data);
 
       const fields =
         data?.[0]?.fieldValues
@@ -323,6 +324,7 @@ const ReadAcademic_year = () => {
   /* ================= GRID COLUMNS ================= */
   useEffect(() => {
     if (!requiredFields.length) return;
+    console.log("requiredFields", requiredFields);
 
     setColDef1(
       requiredFields
