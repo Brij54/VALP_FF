@@ -2,7 +2,7 @@ class Academic_yearModelModel {
 
   private _id: any;
 
-  private _term_name: any;
+  private _academic_name: any;
 
   private _start_date: any;
 
@@ -15,7 +15,7 @@ class Academic_yearModelModel {
 
     this._id = data["id"];
 
-    this._term_name = data["term_name"];
+    this._academic_name = data["academic_name"];
 
     this._start_date = data["start_date"];
 
@@ -35,12 +35,12 @@ class Academic_yearModelModel {
   }
 
 
-  public getTerm_name(): any {
-    return this._term_name;
+  public getacademic_name(): any {
+    return this._academic_name;
   }
 
-  public setTerm_name(value: any) {
-    this._term_name = value;
+  public setacademic_name(value: any) {
+    this._academic_name = value;
   }
 
 
@@ -77,7 +77,7 @@ class Academic_yearModelModel {
 
       "id": this._id,
 
-      "term_name": this._term_name,
+      "academic_name": this._academic_name,
 
       "start_date": this._start_date,
 

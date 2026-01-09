@@ -12,9 +12,9 @@
         "required" : "true",
         "type" : "String"
       },
-      "term_name": {
+      "academic_name": {
 
-        "name" : "term_name",
+        "name" : "academic_name",
         "required" : "true",
         "type" : "String"
       },

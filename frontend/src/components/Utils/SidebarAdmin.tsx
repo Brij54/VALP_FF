@@ -1,7 +1,7 @@
 // src/components/Utils/Sidebar.tsx
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { UserPlus, Home, ClipboardCheck, FileBadge2, Award, Layers, FileCheck, PenLine, Settings, FolderOpen } from "lucide-react";
+import { UserPlus, Home, ClipboardCheck, FileBadge2, Award, Layers, FileCheck, PenLine, Settings, FolderOpen, CalendarPlus, BookOpen, FolderClock, PenTool, FileText } from "lucide-react";
 
 // CSS is global; you can import here OR rely on CreateStudent importing Upload.css
 // import "../Upload.css";
@@ -25,18 +25,31 @@ export default function Sidebar({
   { text: "VALP Certificate", path: "/valp_certificate" },
   { text: "VALP Transcript", path: "/valp/generate" },
   { text: "Dean Signature", path: "/DeanSignature" },
+  { text: "Add Academic Year", path: "/terms"},
   { text: "VALP Courses", path: "/valpcourses" },
   { text: "Ongoing VALP Courses", path: "/course_records" },
 ];
 
 const iconMap: Record<string, JSX.Element> = {
-  "Add Student": <UserPlus size={24} color="#007bff" />,               // Blue
-  "Batch Configuration": <Layers size={24} color="#ff9800" />,        // Orange
-  "VALP Certificate": <FileCheck size={24} color="#28a745" />, // Green
-  "VALP Transcript": <Award size={24} color="#28a745" />,     // Green
-  "Dean Signature": <Settings size={24} color="#007bff" />,              // Green
-  "VALP Courses": <Settings size={24} color="#007bff" />,      // Blue
-  "Ongoing VALP Courses": <FolderOpen size={24} color="#007bff" />,          // Blue
+  // Student
+  "Add Student": <UserPlus size={22} color="#1e88e5" />,          // Blue
+
+  // Batch
+  "Batch Configuration": <Layers size={22} color="#fb8c00" />,   // Orange
+
+  // Certificates & Transcript
+  "VALP Certificate": <FileCheck size={22} color="#43a047" />,   // Green
+  "VALP Transcript": <FileText size={22} color="#43a047" />,     // Green
+
+  // Dean
+  "Dean Signature": <PenTool size={22} color="#6d4c41" />,        // Brown
+
+  // Academic
+  "Add Academic Year": <CalendarPlus size={22} color="#2e7d32" />,// Dark Green
+
+  // Courses
+  "VALP Courses": <BookOpen size={22} color="#1565c0" />,         // Deep Blue
+  "Ongoing VALP Courses": <FolderClock size={22} color="#1565c0" />,// Deep Blue
 };
 
   return (
