@@ -1,50 +1,69 @@
+/* ✅ SEARCH CARD (Responsive + stable border shape) */
 .pageFormContainer2 {
-  display: flex; /* Arranges children side-by-side */
-  gap: 10px; /* Adds space between the input and the button */
+  display: grid;
+  grid-template-columns: 1fr 1fr auto; /* select | input | button */
+  gap: 12px;
   padding: 20px;
   border: 1px solid #ccc;
-  border-radius: 8px;
+  border-radius: 12px;
   background-color: #f9f9f9;
-  align-items: center; /* Vertically aligns the items in the center */
-  width: 30%;
+  align-items: center;
+
+  /* ✅ important: responsive width */
+  width: 100%;
+  max-width: 720px;
 }
 
-/* You would also style the children using their classes: */
-.form-control {
-  flex-grow: 1; /* Makes the input field take up available space */
+/* inputs */
+.pageFormContainer2 .form-control {
+  width: 100%;
+  min-width: 0; /* ✅ prevents overflow in grid */
 }
 
-.btn-primary {
-  /* Basic button styling */
+/* button */
+.pageFormContainer2 .btn {
+  white-space: nowrap;
+  padding-left: 18px;
+  padding-right: 18px;
 }
 
-/* Styling for the Container Div */
+/* ✅ Tablet/Mobile: stack everything */
+@media (max-width: 768px) {
+  .pageFormContainer2 {
+    grid-template-columns: 1fr;
+    max-width: 100%;
+    border-radius: 12px;
+    padding: 16px;
+  }
+
+  .pageFormContainer2 .btn {
+    width: 100%;
+  }
+}
+
+/* ✅ keep your existing table wrapper CSS */
 .table-wrapper {
-  /* Create the card-like effect */
-  padding: 15px; 
-  border: 1px solid #dee2e6; 
-  border-radius: 8px; 
-  background-color: #ffffff; 
+  padding: 15px;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  background-color: #ffffff;
   margin-top: 20px;
-  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05); /* Subtle Shadow */
-  
-  /* Ensure no padding on the inner table */
-  overflow-x: auto; /* Handles horizontal scrolling if the table is too wide */
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05);
+  overflow-x: auto;
 }
 
-/* Styling for the Table Header */
 .table-wrapper .table thead th {
-  background-color: #f8f9fa; /* Light background for the header row */
-  color: #343a40; /* Darker text */
+  background-color: #f8f9fa;
+  color: #343a40;
   font-weight: 700;
-  vertical-align: middle; /* Center header text vertically */
+  vertical-align: middle;
 }
 
-/* Ensure the table itself fits well within the wrapper */
 .table-wrapper .table {
-  margin-bottom: 0; /* Remove default table margin inside the wrapper */
+  margin-bottom: 0;
 }
 
+/* ✅ keep your progress modal css */
 .progress-modal-overlay {
   position: fixed;
   top: 0;
