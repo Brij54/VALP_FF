@@ -808,7 +808,7 @@ const ReadProgram = () => {
       },
       {
         headerName: prettifyHeader("academic_year"),
-        field: "academic_year",
+        field: "academic_year_id",
         sortable: true,
         filter: true,
         width: 160,
