@@ -32,6 +32,23 @@
      "type" : "String"
      },
 
+    "term_name": {
+
+      "name" : "term_name",
+      "required" : "true",
+      "type" : "String"
+    },
+
+    "academic_year_id": {
+
+      "name" : "academic_year_id",
+      "required" : "true",
+      "foreign" : {
+        "resource" : "Academic_year"
+      },
+      "type" : "String"
+    },
+
     "syllabus": {
 
      "name" : "syllabus",

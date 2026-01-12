@@ -39,6 +39,7 @@ import com.rasp.app.service.*;
 	private Long archived_time = null;
 	private String program_id = null;
 	private String student_id = null;
+	private String status = null;
 	private Map<String, Object> extra_data = null;
 
 	public static String FIELD_ID = "id";
@@ -54,6 +55,7 @@ import com.rasp.app.service.*;
 	public static String FIELD_ARCHIVED_TIME = "archived_time";
 	public static String FIELD_PROGRAM_ID = "program_id";
 	public static String FIELD_STUDENT_ID = "student_id";
+	public static String FIELD_STATUS = "status";
 	public static String FIELD_EXTRA_DATA = "extra_data";
 
 	private static final long serialVersionUID = 1L;
@@ -119,6 +121,11 @@ import com.rasp.app.service.*;
 		student_idField.setForeign(new Foreign("Student"));
 		metaData.addField(student_idField);
 
+		Field statusField = new Field("status", "String");
+		statusField.setEnum(true);
+		statusField.setPossible_value("Status");
+		metaData.addField(statusField);
+
 		Field extra_dataField = new Field("extra_data", "Map");
 		extra_dataField.setValueType("Object");
 		metaData.addField(extra_dataField);
@@ -146,6 +153,7 @@ import com.rasp.app.service.*;
 		this.archived_time = obj.archived_time;
 		this.program_id = obj.program_id;
 		this.student_id = obj.student_id;
+		this.status = obj.status;
 		this.extra_data = obj.extra_data;
 	}
 
@@ -187,6 +195,8 @@ import com.rasp.app.service.*;
 			map.put("program_id", program_id);
 		if(student_id != null)
 			map.put("student_id", student_id);
+		if(status != null)
+			map.put("status", status);
 		if(extra_data != null)
 			map.put("extra_data", extra_data);
 		return map;
@@ -219,6 +229,8 @@ import com.rasp.app.service.*;
 			map.put("program_id", program_id);
 		if(validateStudent_id(add))
 			map.put("student_id", student_id);
+		if(status != null)
+			map.put("status", status);
 		if(extra_data != null)
 			map.put("extra_data", extra_data);
 		return map;
@@ -243,6 +255,7 @@ import com.rasp.app.service.*;
 		archived_time = (map.get("archived_time") == null ? null : ((Number) map.get("archived_time")).longValue());
 		program_id = (String) map.get("program_id");
 		student_id = (String) map.get("student_id");
+		status = (String) map.get("status");
 		extra_data = (Map<String, Object>) map.get("extra_data");
 	}
 
@@ -299,6 +312,10 @@ import com.rasp.app.service.*;
 		Object student_idObj = map.get("student_id");
 		if(student_idObj != null)
 			student_id = student_idObj.toString();
+
+		Object statusObj = map.get("status");
+		if(statusObj != null)
+			status = statusObj.toString();
 
 		extra_data = (Map<String, Object>) map.get("extra_data");
 	}
@@ -540,6 +557,22 @@ import com.rasp.app.service.*;
 		if(add && student_id == null)
 			throw new ApplicationException(ExceptionSeverity.ERROR, "Requierd validation Failed[student_id]");
 		return student_id != null;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public String getStatusEx() {
+		return status != null ? status : "";
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	public void unSetStatus() {
+		this.status = null;
 	}
 
 	public Map<String, Object> getExtra_data() {

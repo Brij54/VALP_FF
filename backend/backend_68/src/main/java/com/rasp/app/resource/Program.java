@@ -40,6 +40,8 @@ import com.rasp.app.service.*;
 	private String name = null;
 	private Long seats = null;
 	private String instructor_name = null;
+	private String term_name = null;
+	private String academic_year_id = null;
 	private String syllabus = null;
 	private Map<String, Object> extra_data = null;
 
@@ -57,6 +59,8 @@ import com.rasp.app.service.*;
 	public static String FIELD_NAME = "name";
 	public static String FIELD_SEATS = "seats";
 	public static String FIELD_INSTRUCTOR_NAME = "instructor_name";
+	public static String FIELD_TERM_NAME = "term_name";
+	public static String FIELD_ACADEMIC_YEAR_ID = "academic_year_id";
 	public static String FIELD_SYLLABUS = "syllabus";
 	public static String FIELD_EXTRA_DATA = "extra_data";
 
@@ -125,6 +129,15 @@ import com.rasp.app.service.*;
 		instructor_nameField.setRequired(true);
 		metaData.addField(instructor_nameField);
 
+		Field term_nameField = new Field("term_name", "String");
+		term_nameField.setRequired(true);
+		metaData.addField(term_nameField);
+
+		Field academic_year_idField = new Field("academic_year_id", "String");
+		academic_year_idField.setRequired(true);
+		academic_year_idField.setForeign(new Foreign("Academic_year"));
+		metaData.addField(academic_year_idField);
+
 		Field syllabusField = new Field("syllabus", "String");
 		syllabusField.setFile(true);
 		metaData.addField(syllabusField);
@@ -157,6 +170,8 @@ import com.rasp.app.service.*;
 		this.name = obj.name;
 		this.seats = obj.seats;
 		this.instructor_name = obj.instructor_name;
+		this.term_name = obj.term_name;
+		this.academic_year_id = obj.academic_year_id;
 		this.syllabus = obj.syllabus;
 		this.extra_data = obj.extra_data;
 	}
@@ -201,6 +216,10 @@ import com.rasp.app.service.*;
 			map.put("seats", seats);
 		if(instructor_name != null)
 			map.put("instructor_name", instructor_name);
+		if(term_name != null)
+			map.put("term_name", term_name);
+		if(academic_year_id != null)
+			map.put("academic_year_id", academic_year_id);
 		if(syllabus != null)
 			map.put("syllabus", syllabus);
 		if(extra_data != null)
@@ -237,6 +256,10 @@ import com.rasp.app.service.*;
 			map.put("seats", seats);
 		if(validateInstructor_name(add))
 			map.put("instructor_name", instructor_name);
+		if(validateTerm_name(add))
+			map.put("term_name", term_name);
+		if(validateAcademic_year_id(add))
+			map.put("academic_year_id", academic_year_id);
 		if(syllabus != null)
 			map.put("syllabus", syllabus);
 		if(extra_data != null)
@@ -264,6 +287,8 @@ import com.rasp.app.service.*;
 		name = (String) map.get("name");
 		seats = (map.get("seats") == null ? null : ((Number) map.get("seats")).longValue());
 		instructor_name = (String) map.get("instructor_name");
+		term_name = (String) map.get("term_name");
+		academic_year_id = (String) map.get("academic_year_id");
 		syllabus = (String) map.get("syllabus");
 		extra_data = (Map<String, Object>) map.get("extra_data");
 	}
@@ -325,6 +350,14 @@ import com.rasp.app.service.*;
 		Object instructor_nameObj = map.get("instructor_name");
 		if(instructor_nameObj != null)
 			instructor_name = instructor_nameObj.toString();
+
+		Object term_nameObj = map.get("term_name");
+		if(term_nameObj != null)
+			term_name = term_nameObj.toString();
+
+		Object academic_year_idObj = map.get("academic_year_id");
+		if(academic_year_idObj != null)
+			academic_year_id = academic_year_idObj.toString();
 
 		Object syllabusObj = map.get("syllabus");
 		if(syllabusObj != null)
@@ -588,6 +621,50 @@ import com.rasp.app.service.*;
 		if(add && instructor_name == null)
 			throw new ApplicationException(ExceptionSeverity.ERROR, "Requierd validation Failed[instructor_name]");
 		return instructor_name != null;
+	}
+
+	public String getTerm_name() {
+		return term_name;
+	}
+
+	public String getTerm_nameEx() {
+		return term_name != null ? term_name : "";
+	}
+
+	public void setTerm_name(String term_name) {
+		this.term_name = term_name;
+	}
+
+	public void unSetTerm_name() {
+		this.term_name = null;
+	}
+
+	public boolean validateTerm_name(boolean add) throws ApplicationException {
+		if(add && term_name == null)
+			throw new ApplicationException(ExceptionSeverity.ERROR, "Requierd validation Failed[term_name]");
+		return term_name != null;
+	}
+
+	public String getAcademic_year_id() {
+		return academic_year_id;
+	}
+
+	public String getAcademic_year_idEx() {
+		return academic_year_id != null ? academic_year_id : "";
+	}
+
+	public void setAcademic_year_id(String academic_year_id) {
+		this.academic_year_id = academic_year_id;
+	}
+
+	public void unSetAcademic_year_id() {
+		this.academic_year_id = null;
+	}
+
+	public boolean validateAcademic_year_id(boolean add) throws ApplicationException {
+		if(add && academic_year_id == null)
+			throw new ApplicationException(ExceptionSeverity.ERROR, "Requierd validation Failed[academic_year_id]");
+		return academic_year_id != null;
 	}
 
 	public String getSyllabus() {

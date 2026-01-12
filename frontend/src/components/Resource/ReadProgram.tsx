@@ -697,115 +697,176 @@
 
 // export default ReadProgram;
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useMemo } from "react";
 import apiConfig from "../../config/apiConfig";
 import { AllCommunityModule, ModuleRegistry, ColDef } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
-import { useRaspStore } from "../../store/raspStore";
-import Cookies from "js-cookie";
-import { jwtDecode } from "jwt-decode";
 import { useQuery } from "@tanstack/react-query";
-import Academic_yearModel from "../../models/Academic_yearModel";
+import { authFetch } from "../../apis/authFetch";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
-/* -------------------- HELPERS -------------------- */
-const getCookie = (name: string): string | null => {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop()?.split(";").shift() || null;
-  return null;
+// -------------------- TYPES --------------------
+type Program = {
+  id: string;
+  name?: string;
+  seats?: number;
+  instructor_name?: string;
+  syllabus?: string;
+  term_name?: string;
+  academic_year?: string;
 };
 
+type ProgramRegistration = {
+  id: string;
+  program_id: string;
+  student_id: string;
+};
+
+// -------------------- HEADER FORMATTER --------------------
 const prettifyHeader = (str: string) =>
   (str || "")
     .replace(/_/g, " ")
     .replace(/\b\w/g, (c) => c.toUpperCase());
 
-/* -------------------- COMPONENT -------------------- */
-const ReadAcademic_year = () => {
-  const [rowData, setRowData] = useState<any[]>([]);
-  const [requiredFields, setRequiredFields] = useState<string[]>([]);
-
-  const regex = /^(g_|archived|extra_data)/;
-  const getUserAllData = useRaspStore((s: any) => s.getUserAllData);
-
-  const getUserIdFromJWT = () => {
-    try {
-      const token = Cookies.get("access_token");
-      if (!token) return null;
-      const decoded: any = jwtDecode(token);
-      return decoded.userId || decoded.sub || null;
-    } catch {
-      return null;
-    }
-  };
-
-  /* ================= RESOURCE DATA ================= */
-  const { data: dataRes, isLoading: dataLoading } = useQuery({
-    queryKey: ["resourceData", "academic_yearRead"],
+const ReadProgram = () => {
+  // -------------------- FETCH PROGRAMS --------------------
+  const programQuery = useQuery({
+    queryKey: ["ProgramList"],
     queryFn: async () => {
-      const token = getCookie("access_token");
-      if (!token) throw new Error("Token missing");
+      const params = new URLSearchParams({ queryId: "GET_ALL" });
 
-      const res = await fetch(
-        `${apiConfig.getResourceUrl("academic_year")}?queryId=GET_ALL`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+      const res = await authFetch(
+        `${apiConfig.getResourceUrl("program")}?${params.toString()}`,
+        { method: "GET", headers: { "Content-Type": "application/json" } }
       );
+
+      if (!res.ok) throw new Error("Failed to load programs");
 
       const json = await res.json();
-      return json.resource;
+      return (json.resource || []) as Program[];
     },
   });
 
-  useEffect(() => {
-    if (!dataRes) return;
-
-    useRaspStore.getState().initializeStore(getUserIdFromJWT(), {
-      resource: "academic_year",
-      records: dataRes,
-    });
-
-    const models = dataRes.map((obj: any) =>
-      Academic_yearModel.fromJson(obj)
-    );
-
-    setRowData(models.map((m: any) => m.toJson()));
-  }, [dataRes]);
-
-  /* ================= METADATA ================= */
-  const { isLoading: metaLoading } = useQuery({
-    queryKey: ["resourceMetaData", "academic_yearRead"],
+  // -------------------- FETCH REGISTRATIONS --------------------
+  const regQuery = useQuery({
+    queryKey: ["ProgramRegistrationList"],
     queryFn: async () => {
-      const res = await fetch(
-        apiConfig.getResourceMetaDataUrl("AcademicYear")
+      const params = new URLSearchParams({ queryId: "GET_ALL" });
+
+      const res = await authFetch(
+        `${apiConfig.getResourceUrl("program_registration")}?${params.toString()}`,
+        { method: "GET", headers: { "Content-Type": "application/json" } }
       );
 
-      const data = await res.json();
+      if (!res.ok) throw new Error("Failed to load registrations");
 
-      const fields =
-        data?.[0]?.fieldValues
-          ?.filter((f: any) => !regex.test(f.name))
-          .map((f: any) => f.name) || [];
-
-      setRequiredFields(fields);
-      return data;
+      const json = await res.json();
+      return (json.resource || []) as ProgramRegistration[];
     },
+    refetchInterval: 5000,
   });
 
-  /* ================= COLUMN DEFINITIONS (STYLE SAME AS ReadProgram) ================= */
+  // -------------------- COMPUTE SEATS --------------------
+  const rowData = useMemo(() => {
+    const programs = programQuery.data || [];
+    const regs = regQuery.data || [];
+
+    const filledMap = new Map<string, number>();
+    regs.forEach((r) =>
+      filledMap.set(r.program_id, (filledMap.get(r.program_id) || 0) + 1)
+    );
+
+    return programs.map((p) => {
+      const total = Number(p.seats ?? 0);
+      const filled = filledMap.get(p.id) || 0;
+      const available = Math.max(0, total - filled);
+
+      return {
+        ...p,
+        filled_seats: filled,
+        available_seats: available,
+      };
+    });
+  }, [programQuery.data, regQuery.data]);
+
+  // -------------------- COLUMN DEFINITIONS --------------------
   const colDefs = useMemo<ColDef[]>(() => {
-    return requiredFields
-      .filter((f) => f !== "id")
-      .map((field) => ({
-        headerName: prettifyHeader(field),
-        field,
+    return [
+      {
+        headerName: prettifyHeader("name"),
+        field: "name",
         sortable: true,
         filter: true,
-      }));
-  }, [requiredFields]);
+      },
+      {
+        headerName: prettifyHeader("term_name"),
+        field: "term_name",
+        sortable: true,
+        filter: true,
+        width: 140,
+      },
+      {
+        headerName: prettifyHeader("academic_year"),
+        field: "academic_year",
+        sortable: true,
+        filter: true,
+        width: 160,
+      },
+      {
+        headerName: prettifyHeader("seats"),
+        field: "seats",
+        sortable: true,
+        filter: true,
+        width: 110,
+      },
+      {
+        headerName: "Filled Seats",
+        field: "filled_seats",
+        sortable: true,
+        filter: true,
+        width: 130,
+      },
+      {
+        headerName: "Available Seats",
+        field: "available_seats",
+        sortable: true,
+        filter: true,
+        width: 160,
+        cellRenderer: (p: any) => {
+          const available = Number(p.value ?? 0);
+          const total = Number(p.data?.seats ?? 0);
+          const isFull = available <= 0;
+
+          return (
+            <span
+              style={{
+                fontWeight: 700,
+                padding: "4px 10px",
+                borderRadius: 10,
+                background: isFull ? "#ffe5e5" : "#e8f5e9",
+                color: isFull ? "#b71c1c" : "#1b5e20",
+              }}
+            >
+              {isFull ? "FULL" : `${available}/${total}`}
+            </span>
+          );
+        },
+      },
+      {
+        headerName: prettifyHeader("instructor_name"),
+        field: "instructor_name",
+        sortable: true,
+        filter: true,
+      },
+      {
+        headerName: prettifyHeader("syllabus"),
+        field: "syllabus",
+        sortable: true,
+        filter: true,
+      },
+    ];
+  }, []);
 
   const defaultColDef: ColDef = {
     flex: 1,
@@ -814,17 +875,16 @@ const ReadAcademic_year = () => {
     editable: false,
   };
 
-  /* ================= UI STATES ================= */
-  if (dataLoading || metaLoading) {
-    return <div>Loading Academic Year...</div>;
-  }
+  // -------------------- UI STATES --------------------
+  if (programQuery.isLoading || regQuery.isLoading)
+    return <div>Loading...</div>;
 
-  /* ================= RENDER (SAME STYLE AS ReadProgram) ================= */
+  if (programQuery.isError || regQuery.isError)
+    return <div>Error loading data</div>;
+
+  // -------------------- RENDER --------------------
   return (
-    <div
-      className="ag-theme-alpine"
-      style={{ height: 360, width: "100%" }}
-    >
+    <div className="ag-theme-alpine" style={{ height: 360, width: "100%" }}>
       <AgGridReact
         rowData={rowData}
         columnDefs={colDefs}
@@ -837,5 +897,5 @@ const ReadAcademic_year = () => {
   );
 };
 
-export default ReadAcademic_year;
+export default ReadProgram;
 
