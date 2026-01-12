@@ -29,7 +29,17 @@
       "resource" : "Student" 
       },
      "type" : "String"
-      }
+      },
+
+
+    "status": {
+
+      "name" : "status",
+      "required" : "false",
+      "is_enum" : "true",
+      "possible_value" : "Status",
+      "type" : "String"
+    }
    
   }
  }
