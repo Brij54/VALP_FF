@@ -245,7 +245,6 @@
 
 // export default UpdateProgram;
 
-
 // import React, { useMemo, useRef, useState } from "react";
 // import { useNavigate } from "react-router-dom";
 // import apiConfig from "../../config/apiConfig";
@@ -395,7 +394,6 @@
 
 // export default UpdateProgram;
 
-
 // import React, { useState } from 'react';
 // import { useEffect } from 'react';
 // import { useNavigate } from "react-router-dom";
@@ -444,7 +442,7 @@
 //     if (parts.length === 2) return parts.pop()?.split(";").shift() || null;
 //     return null;
 //   };
-  
+
 //   const UpdateProgram = () => {
 //    const [rowData, setRowData] = useState<any[]>([]);
 //   const [colDef1, setColDef1] = useState<any[]>([]);
@@ -466,7 +464,7 @@
 //     queryKey: ['resourceData', 'programUpdate'],
 //      queryFn: async () => {
 //       const params = new URLSearchParams();
-    
+
 //       const queryId: any = "GET_ALL";
 //       params.append("queryId", queryId);
 //        const accessToken = getCookie("access_token");
@@ -500,7 +498,7 @@
 //       return data;
 //     },
 //   })
-  
+
 //     // Fetch metadata
 //     const {data: dataResMeta,isLoading:isLoadingDataResMeta,error:errorDataResMeta} = useQuery({
 //     queryKey: ['resourceMetaData', 'programUpdate'],
@@ -527,7 +525,7 @@
 //       return data;
 //     },
 //   });
-  
+
 //     const handleEdit = (id: any, field: string, value: any) => {
 //       setEditedData((prevData: any) => ({
 //         ...prevData,
@@ -537,16 +535,16 @@
 //         },
 //       }));
 //     };
-  
+
 //     const handleUpdate = async (id: any) => {
 
 //     navigate(`/edit/program/${id}`);
 // };
-    
+
 //   useEffect(() => {
 //     const data = fetchData || [];
 //     const fields = requiredFields.filter(field => field !== 'id') || [];
-    
+
 //     const columns = fields.map(field => ({
 //       field: field,
 //       headerName: field,
@@ -555,7 +553,7 @@
 //       sortable: true,
 //       filter: true
 //     }));
-    
+
 //     // Add the Action column with the custom cell renderer
 //     columns.push({
 //       headerName: 'Action',
@@ -575,12 +573,10 @@
 //     flex: 1,
 //     minWidth: 100,
 //     editable: false,
-//   }; 
-   
+//   };
 
 // return (
 //     <div>
-       
 
 // <div className="">
 //     {rowData.length === 0 && colDef1.length === 0 ? (
@@ -627,20 +623,15 @@
 // </div>
 // )
 
-
 // };
 
 // export default UpdateProgram
-
 
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import apiConfig from "../../config/apiConfig";
 
-import {
-  AllCommunityModule,
-  ModuleRegistry,
-} from "ag-grid-community";
+import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
 import { useQuery } from "@tanstack/react-query";
 
@@ -737,9 +728,7 @@ const UpdateProgram = () => {
   useQuery({
     queryKey: ["resourceMetaData", "programUpdate"],
     queryFn: async () => {
-      const response = await fetch(
-        apiConfig.getResourceMetaDataUrl("program")
-      );
+      const response = await fetch(apiConfig.getResourceMetaDataUrl("program"));
 
       if (!response.ok) throw new Error("Error: " + response.status);
 
@@ -768,7 +757,9 @@ const UpdateProgram = () => {
 
     const columns = visibleFields.map((field) => ({
       field,
-      headerName: field.replace(/_/g, " ").toUpperCase(),
+      headerName: field
+        .replace(/_/g, " ")
+        .replace(/\b\w/g, (c) => c.toUpperCase()),
       editable: false,
       resizable: true,
       sortable: true,
@@ -800,7 +791,6 @@ const UpdateProgram = () => {
   // ---------------- UI ONLY UPDATED ----------------
   return (
     <div style={{ padding: "16px" }}>
-
       {rowData.length === 0 && colDef1.length === 0 ? (
         <div>No data available. Please add a resource attribute.</div>
       ) : (
@@ -851,4 +841,3 @@ const UpdateProgram = () => {
 };
 
 export default UpdateProgram;
-

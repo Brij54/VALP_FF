@@ -958,16 +958,465 @@
 // };
 
 // export default CreateProgram_registration;
+// import React, { useEffect, useMemo, useState, useContext } from "react";
+// import apiConfig from "../../config/apiConfig";
+// import { useQuery, useQueryClient } from "@tanstack/react-query";
+// import { fetchForeignResource } from "../../apis/resources";
+// import { LoginContext } from "../../context/LoginContext";
+
+// type Program = {
+//   id: string;
+//   name?: string;
+//   seats?: number; // backend Long comes as number in JSON
+// };
+
+// type Student = {
+//   id: string;
+//   name?: string;
+//   roll_no?: string;
+//   email?: string;
+// };
+
+// type ProgramRegistration = {
+//   id: string;
+//   program_id: string;
+//   student_id: string;
+// };
+
+// const getCookie = (name: string): string | null => {
+//   const value = `; ${document.cookie}`;
+//   const parts = value.split(`; ${name}=`);
+//   if (parts.length === 2) return parts.pop()?.split(";").shift() || null;
+//   return null;
+// };
+
+// const CreateProgram_registration = () => {
+//   const queryClient = useQueryClient();
+//   const { user } = useContext(LoginContext);
+
+//   const userEmail = user?.email_id?.toLowerCase() || "";
+
+//   const [dataToSave, setDataToSave] = useState<{ program_id?: string; student_id?: string }>({});
+//   const [searchQueries, setSearchQueries] = useState<Record<string, string>>({});
+
+//   // Toast state
+//   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
+
+//   const apiUrl = apiConfig.getResourceUrl("Program_registration");
+//   const metadataUrl = apiConfig.getResourceMetaDataUrl("Program_registration");
+
+//   // -----------------------------
+//   // 1) Metadata (optional)
+//   // -----------------------------
+//   useQuery({
+//     queryKey: ["ProgramRegMeta"],
+//     queryFn: async () => {
+//       const res = await fetch(metadataUrl);
+//       return res.json();
+//     },
+//   });
+
+//   // -----------------------------
+//   // 2) Programs
+//   // -----------------------------
+//   const programQuery = useQuery<Program[]>({
+//     queryKey: ["ProgramList"],
+//     queryFn: async () => {
+//       const data = await fetchForeignResource("Program");
+//       const list = Array.isArray(data) ? data : data.resource || [];
+//       return list as Program[];
+//     },
+//     staleTime: 5 * 60 * 1000,
+//   });
+
+//   // -----------------------------
+//   // 3) Students (to find logged-in student_id)
+//   // -----------------------------
+//   const studentQuery = useQuery<Student[]>({
+//     queryKey: ["StudentList"],
+//     queryFn: async () => {
+//       const data = await fetchForeignResource("Student");
+//       const list = Array.isArray(data) ? data : data.resource || [];
+//       return list as Student[];
+//     },
+//     staleTime: 5 * 60 * 1000,
+//     enabled: !!userEmail,
+//   });
+
+//   const currentStudent = useMemo(() => {
+//     const students = studentQuery.data || [];
+//     return students.find((s) => (s.email || "").toLowerCase() === userEmail) || null;
+//   }, [studentQuery.data, userEmail]);
+
+//   // keep student_id always set (auto)
+//   useEffect(() => {
+//     if (currentStudent?.id) {
+//       setDataToSave((prev) => ({ ...prev, student_id: currentStudent.id }));
+//     }
+//   }, [currentStudent?.id]);
+
+//   // -----------------------------
+//   // 4) All registrations (to compute availability + prevent duplicates)
+//   // -----------------------------
+//   const regQuery = useQuery<ProgramRegistration[]>({
+//     queryKey: ["ProgramRegistrationList"],
+//     queryFn: async () => {
+//       const data = await fetchForeignResource("program_registration");
+//       const list = Array.isArray(data) ? data : data.resource || [];
+//       return list as ProgramRegistration[];
+//     },
+//     staleTime: 30 * 1000,
+//   });
+
+//   // Map: programId -> registration count
+//   const registrationCountMap = useMemo(() => {
+//     const map = new Map<string, number>();
+//     (regQuery.data || []).forEach((r) => {
+//       map.set(r.program_id, (map.get(r.program_id) || 0) + 1);
+//     });
+//     return map;
+//   }, [regQuery.data]);
+
+//   const programs = programQuery.data || [];
+
+//   const getAvailableSeats = (programId?: string) => {
+//     if (!programId) return null;
+//     const p = programs.find((x) => x.id === programId);
+//     if (!p) return null;
+//     const total = Number(p.seats ?? 0);
+//     const used = registrationCountMap.get(programId) || 0;
+//     return Math.max(0, total - used);
+//   };
+
+//   const selectedAvailable = getAvailableSeats(dataToSave.program_id);
+//   const selectedTotal = useMemo(() => {
+//     const p = programs.find((x) => x.id === dataToSave.program_id);
+//     return p ? Number(p.seats ?? 0) : null;
+//   }, [programs, dataToSave.program_id]);
+
+//   const alreadyRegistered = useMemo(() => {
+//     if (!dataToSave.program_id || !currentStudent?.id) return false;
+//     return (regQuery.data || []).some(
+//       (r) => r.program_id === dataToSave.program_id && r.student_id === currentStudent.id
+//     );
+//   }, [regQuery.data, dataToSave.program_id, currentStudent?.id]);
+
+//   // -----------------------------
+//   // Dropdown (Program)
+//   // -----------------------------
+//   const ProgramDropdown = ({ label, field }: { label: string; field: "program_id" }) => {
+//     const [open, setOpen] = useState(false);
+
+//     const filtered = programs.filter((p) =>
+//       (p.name || p.id)
+//         .toLowerCase()
+//         .includes((searchQueries[field] || "").toLowerCase())
+//     );
+
+//     const selectedProgram = programs.find((x) => x.id === dataToSave[field]);
+
+//     return (
+//       <div style={{ marginBottom: "18px", position: "relative" }}>
+//         <label style={{ fontSize: "15px", fontWeight: 600, marginBottom: "6px" }}>
+//           {label} *
+//         </label>
+
+//         <div
+//           onClick={() => setOpen(!open)}
+//           style={{
+//             width: "100%",
+//             padding: "10px 12px",
+//             borderRadius: "8px",
+//             border: "1px solid #ccc",
+//             backgroundColor: "#fff",
+//             cursor: "pointer",
+//           }}
+//         >
+//           {selectedProgram ? (selectedProgram.name || selectedProgram.id) : `Select ${label}`}
+//         </div>
+
+//         {open && (
+//           <div
+//             style={{
+//               width: "100%",
+//               maxHeight: "220px",
+//               overflowY: "auto",
+//               background: "#fff",
+//               border: "1px solid #ccc",
+//               borderRadius: "6px",
+//               padding: "8px",
+//               position: "absolute",
+//               zIndex: 20,
+//               marginTop: 6,
+//             }}
+//           >
+//             <input
+//               placeholder="Search..."
+//               value={searchQueries[field] || ""}
+//               onChange={(e) => setSearchQueries({ ...searchQueries, [field]: e.target.value })}
+//               style={{
+//                 width: "100%",
+//                 padding: "8px",
+//                 marginBottom: "8px",
+//                 borderRadius: "6px",
+//                 border: "1px solid #ccc",
+//               }}
+//             />
+
+//             {filtered.map((p) => {
+//               const total = Number(p.seats ?? 0);
+//               const used = registrationCountMap.get(p.id) || 0;
+//               const avail = Math.max(0, total - used);
+//               const isFull = avail <= 0;
+
+//               return (
+//                 <div
+//                   key={p.id}
+//                   onClick={() => {
+//                     if (isFull) return; // don't allow selecting full program
+//                     setDataToSave({ ...dataToSave, [field]: p.id });
+//                     setOpen(false);
+//                   }}
+//                   style={{
+//                     padding: "10px 10px",
+//                     cursor: isFull ? "not-allowed" : "pointer",
+//                     opacity: isFull ? 0.5 : 1,
+//                     display: "flex",
+//                     justifyContent: "space-between",
+//                     gap: 12,
+//                   }}
+//                   title={isFull ? "Program is full" : ""}
+//                 >
+//                   <span>{p.name || p.id}</span>
+//                   <span style={{ fontWeight: 700 }}>
+//                     {isFull ? "FULL" : `${avail}/${total}`}
+//                   </span>
+//                 </div>
+//               );
+//             })}
+//           </div>
+//         )}
+//       </div>
+//     );
+//   };
+
+//   // -----------------------------
+//   // Submit
+//   // -----------------------------
+//   const handleCreate = async () => {
+//     // basic validation
+//     if (!dataToSave.program_id) {
+//       setToast({ type: "error", message: "Please select a program." });
+//       return;
+//     }
+//     if (!currentStudent?.id) {
+//       setToast({ type: "error", message: "Student not found for logged-in user." });
+//       return;
+//     }
+
+//     // client-side duplicate prevention (fast feedback)
+//     if (alreadyRegistered) {
+//       setToast({ type: "error", message: "You are already registered for this program." });
+//       return;
+//     }
+
+//     // client-side seat check (fast feedback)
+//     const avail = getAvailableSeats(dataToSave.program_id);
+//     if (avail !== null && avail <= 0) {
+//       const msg = `Registration failed: Program is full. Available seats: 0/${selectedTotal ?? "?"}`;
+//       setToast({ type: "error", message: msg });
+//       return;
+//     }
+
+//     const payload = {
+//       program_id: dataToSave.program_id,
+//       student_id: currentStudent.id, // force correct student_id
+//     };
+
+//     const params = new FormData();
+//     params.append("resource", btoa(JSON.stringify(payload)));
+
+//     const res = await fetch(apiUrl, {
+//       method: "POST",
+//       headers: { Authorization: `Bearer ${getCookie("access_token")}` },
+//       credentials: "include",
+//       body: params,
+//     });
+
+//     // backend may return JSON for both ok & error cases
+//     let json: any = null;
+//     try {
+//       json = await res.json();
+//     } catch {
+//       // ignore
+//     }
+
+//     const backendMessage = json?.message || (res.ok ? "Created Successfully!" : "Request failed.");
+
+//     // treat errCode -1 as error even if HTTP 200
+//     const isBackendError = json?.errCode === -1 || !res.ok;
+
+//     if (isBackendError) {
+//       // also show seats if we can compute them
+//       const availNow = getAvailableSeats(dataToSave.program_id) ?? "N/A";
+//       const totalNow = selectedTotal ?? "N/A";
+
+//       const msg =
+//         backendMessage.includes("Program is full")
+//           ? `${backendMessage} Available seats: ${availNow}/${totalNow}`
+//           : backendMessage;
+
+//       setToast({ type: "error", message: msg });
+//       return;
+//     }
+//     await queryClient.invalidateQueries({ queryKey: ["ProgramRegistrationList"] });
+//     await queryClient.invalidateQueries({ queryKey: ["ProgramList"] });
+
+//     setToast({ type: "success", message: "Registered successfully!" });
+//     setDataToSave({}); // will re-set student_id via effect
+
+//     // refresh availability + tables
+//     queryClient.invalidateQueries({ queryKey: ["ProgramRegistrationList"] });
+//     queryClient.invalidateQueries({ queryKey: ["resourceData", "program_registration"] });
+//     queryClient.invalidateQueries({ queryKey: ["ProgramList"] });
+
+//     // auto-hide toast
+//     setTimeout(() => setToast(null), 3000);
+//   };
+
+//   return (
+//     <div className="d-flex justify-content-center align-items-start mt-5">
+//       <form
+//         style={{
+//           width: "100%",
+//           maxWidth: "550px",
+//           backgroundColor: "#fff",
+//           borderRadius: "12px",
+//           padding: "30px",
+//           boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+//         }}
+//       >
+//         <div
+//           style={{
+//             background: "linear-gradient(135deg, #007bff, #0056d2)",
+//             color: "white",
+//             textAlign: "center",
+//             padding: "14px",
+//             borderRadius: "10px",
+//             fontSize: "22px",
+//             marginBottom: "25px",
+//           }}
+//         >
+//           Course Registration
+//         </div>
+
+//         {/* Program dropdown */}
+//         <ProgramDropdown label="Course" field="program_id" />
+
+//         {/* Live availability text */}
+//         {dataToSave.program_id && selectedAvailable !== null && (
+//           <div
+//             style={{
+//               marginTop: "-6px",
+//               marginBottom: "14px",
+//               padding: "10px 12px",
+//               borderRadius: "10px",
+//               background: selectedAvailable > 0 ? "#eef7ff" : "#fff0f0",
+//               border: selectedAvailable > 0 ? "1px solid #b9dcff" : "1px solid #ffb9b9",
+//               fontWeight: 700,
+//             }}
+//           >
+//             Seats available right now: {selectedAvailable}/{selectedTotal ?? "?"}
+//           </div>
+//         )}
+
+//         {/* Student auto-selected */}
+//         <div style={{ marginBottom: "20px" }}>
+//           <label style={{ fontSize: "15px", fontWeight: 600, marginBottom: "6px" }}>
+//             Student *
+//           </label>
+//           <input
+//             disabled
+//             value={
+//               currentStudent
+//                 ? `Auto selected (${currentStudent.roll_no || currentStudent.name || currentStudent.id})`
+//                 : "Auto selected (logged in user)"
+//             }
+//             style={{
+//               width: "100%",
+//               padding: "10px 12px",
+//               borderRadius: "8px",
+//               border: "1px solid #ccc",
+//               backgroundColor: "#f4f4f4",
+//               color: "#444",
+//             }}
+//           />
+//         </div>
+
+//         <button
+//           type="button"
+//           onClick={handleCreate}
+//           style={{
+//             width: "100%",
+//             padding: "12px",
+//             backgroundColor: "#007bff",
+//             color: "white",
+//             border: "none",
+//             borderRadius: "8px",
+//             fontWeight: 600,
+//             fontSize: "16px",
+//             cursor: "pointer",
+//           }}
+//         >
+//           Submit
+//         </button>
+
+//         {/* Toast popup */}
+//         {toast && (
+//           <div className="toast-container position-fixed top-20 start-50 translate-middle p-3">
+//             <div className="toast show shadow">
+//               <div className="toast-header">
+//                 <strong className="me-auto">
+//                   {toast.type === "success" ? "Success" : "Error"}
+//                 </strong>
+//                 <button
+//                   type="button"
+//                   className="btn-close"
+//                   onClick={() => setToast(null)}
+//                 />
+//               </div>
+//               <div
+//                 className="toast-body text-center"
+//                 style={{
+//                   color: toast.type === "success" ? "#198754" : "#dc3545",
+//                   fontWeight: 600,
+//                 }}
+//               >
+//                 {toast.message}
+//               </div>
+//             </div>
+//           </div>
+//         )}
+//       </form>
+//     </div>
+//   );
+// };
+
+// export default CreateProgram_registration;
+
+
 import React, { useEffect, useMemo, useState, useContext } from "react";
 import apiConfig from "../../config/apiConfig";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchForeignResource } from "../../apis/resources";
 import { LoginContext } from "../../context/LoginContext";
 
+/* ================= TYPES ================= */
 type Program = {
   id: string;
   name?: string;
-  seats?: number; // backend Long comes as number in JSON
+  seats?: number;
+  academic_year_id?: string;
 };
 
 type Student = {
@@ -983,6 +1432,7 @@ type ProgramRegistration = {
   student_id: string;
 };
 
+/* ================= UTILS ================= */
 const getCookie = (name: string): string | null => {
   const value = `; ${document.cookie}`;
   const parts = value.split(`; ${name}=`);
@@ -990,85 +1440,110 @@ const getCookie = (name: string): string | null => {
   return null;
 };
 
+/* ================= COMPONENT ================= */
 const CreateProgram_registration = () => {
   const queryClient = useQueryClient();
   const { user } = useContext(LoginContext);
 
   const userEmail = user?.email_id?.toLowerCase() || "";
 
-  const [dataToSave, setDataToSave] = useState<{ program_id?: string; student_id?: string }>({});
-  const [searchQueries, setSearchQueries] = useState<Record<string, string>>({});
+  const [dataToSave, setDataToSave] = useState<{
+    program_id?: string;
+    student_id?: string;
+  }>({});
 
-  // Toast state
-  const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [toast, setToast] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
 
   const apiUrl = apiConfig.getResourceUrl("Program_registration");
-  const metadataUrl = apiConfig.getResourceMetaDataUrl("Program_registration");
 
-  // -----------------------------
-  // 1) Metadata (optional)
-  // -----------------------------
-  useQuery({
-    queryKey: ["ProgramRegMeta"],
-    queryFn: async () => {
-      const res = await fetch(metadataUrl);
-      return res.json();
-    },
-  });
-
-  // -----------------------------
-  // 2) Programs
-  // -----------------------------
+  /* ================= PROGRAMS ================= */
   const programQuery = useQuery<Program[]>({
     queryKey: ["ProgramList"],
     queryFn: async () => {
       const data = await fetchForeignResource("Program");
-      const list = Array.isArray(data) ? data : data.resource || [];
-      return list as Program[];
+      return Array.isArray(data) ? data : data.resource || [];
     },
-    staleTime: 5 * 60 * 1000,
   });
 
-  // -----------------------------
-  // 3) Students (to find logged-in student_id)
-  // -----------------------------
+  const programs = programQuery.data || [];
+
+  /* ================= STUDENT ================= */
   const studentQuery = useQuery<Student[]>({
     queryKey: ["StudentList"],
     queryFn: async () => {
       const data = await fetchForeignResource("Student");
-      const list = Array.isArray(data) ? data : data.resource || [];
-      return list as Student[];
+      return Array.isArray(data) ? data : data.resource || [];
     },
-    staleTime: 5 * 60 * 1000,
     enabled: !!userEmail,
   });
 
   const currentStudent = useMemo(() => {
-    const students = studentQuery.data || [];
-    return students.find((s) => (s.email || "").toLowerCase() === userEmail) || null;
+    return (studentQuery.data || []).find(
+      (s) => (s.email || "").toLowerCase() === userEmail
+    );
   }, [studentQuery.data, userEmail]);
 
-  // keep student_id always set (auto)
   useEffect(() => {
     if (currentStudent?.id) {
-      setDataToSave((prev) => ({ ...prev, student_id: currentStudent.id }));
+      setDataToSave((prev) => ({
+        ...prev,
+        student_id: currentStudent.id,
+      }));
     }
   }, [currentStudent?.id]);
 
-  // -----------------------------
-  // 4) All registrations (to compute availability + prevent duplicates)
-  // -----------------------------
+  /* ================= REGISTRATIONS ================= */
   const regQuery = useQuery<ProgramRegistration[]>({
     queryKey: ["ProgramRegistrationList"],
     queryFn: async () => {
       const data = await fetchForeignResource("program_registration");
-      const list = Array.isArray(data) ? data : data.resource || [];
-      return list as ProgramRegistration[];
+      return Array.isArray(data) ? data : data.resource || [];
     },
-    staleTime: 30 * 1000,
   });
 
-  // Map: programId -> registration count
+  /* ================= ACADEMIC YEAR MAP ================= */
+  const programAcademicYearMap = useMemo(() => {
+    const map = new Map<string, string>();
+    programs.forEach((p) => {
+      if (p.id && p.academic_year_id) {
+        map.set(p.id, p.academic_year_id);
+      }
+    });
+    return map;
+  }, [programs]);
+
+  /* ================= DUPLICATE CHECK ================= */
+  const alreadyRegistered = useMemo(() => {
+    if (!dataToSave.program_id || !currentStudent?.id) return false;
+    return (regQuery.data || []).some(
+      (r) =>
+        r.program_id === dataToSave.program_id &&
+        r.student_id === currentStudent.id
+    );
+  }, [regQuery.data, dataToSave.program_id, currentStudent?.id]);
+
+  /* ===== SAME ACADEMIC YEAR RULE ===== */
+  const alreadyEnrolledSameAcademicYear = useMemo(() => {
+    if (!dataToSave.program_id || !currentStudent?.id) return false;
+
+    const selectedAY = programAcademicYearMap.get(dataToSave.program_id);
+    if (!selectedAY) return false;
+
+    return (regQuery.data || []).some((reg) => {
+      if (reg.student_id !== currentStudent.id) return false;
+      return programAcademicYearMap.get(reg.program_id) === selectedAY;
+    });
+  }, [
+    dataToSave.program_id,
+    currentStudent?.id,
+    regQuery.data,
+    programAcademicYearMap,
+  ]);
+
+  /* ================= SEATS ================= */
   const registrationCountMap = useMemo(() => {
     const map = new Map<string, number>();
     (regQuery.data || []).forEach((r) => {
@@ -1077,164 +1552,89 @@ const CreateProgram_registration = () => {
     return map;
   }, [regQuery.data]);
 
-  const programs = programQuery.data || [];
+  const selectedProgram = programs.find(
+    (p) => p.id === dataToSave.program_id
+  );
 
-  const getAvailableSeats = (programId?: string) => {
-    if (!programId) return null;
-    const p = programs.find((x) => x.id === programId);
-    if (!p) return null;
-    const total = Number(p.seats ?? 0);
-    const used = registrationCountMap.get(programId) || 0;
-    return Math.max(0, total - used);
-  };
+  const selectedTotal = selectedProgram
+    ? Number(selectedProgram.seats ?? 0)
+    : null;
 
-  const selectedAvailable = getAvailableSeats(dataToSave.program_id);
-  const selectedTotal = useMemo(() => {
-    const p = programs.find((x) => x.id === dataToSave.program_id);
-    return p ? Number(p.seats ?? 0) : null;
-  }, [programs, dataToSave.program_id]);
+  const selectedAvailable =
+    selectedProgram && selectedTotal !== null
+      ? Math.max(
+          0,
+          selectedTotal -
+            (registrationCountMap.get(selectedProgram.id) || 0)
+        )
+      : null;
 
-  const alreadyRegistered = useMemo(() => {
-    if (!dataToSave.program_id || !currentStudent?.id) return false;
-    return (regQuery.data || []).some(
-      (r) => r.program_id === dataToSave.program_id && r.student_id === currentStudent.id
-    );
-  }, [regQuery.data, dataToSave.program_id, currentStudent?.id]);
+  /* ================= DROPDOWN ================= */
+  const ProgramDropdown = ({
+    label,
+    field,
+  }: {
+    label: string;
+    field: "program_id";
+  }) => (
+    <select
+      className="form-control mb-3"
+      value={dataToSave[field] || ""}
+      onChange={(e) =>
+        setDataToSave({ ...dataToSave, [field]: e.target.value })
+      }
+    >
+      <option value="">Select {label}</option>
+      {programs.map((p) => (
+        <option key={p.id} value={p.id}>
+          {p.name}
+        </option>
+      ))}
+    </select>
+  );
 
-  // -----------------------------
-  // Dropdown (Program)
-  // -----------------------------
-  const ProgramDropdown = ({ label, field }: { label: string; field: "program_id" }) => {
-    const [open, setOpen] = useState(false);
-
-    const filtered = programs.filter((p) =>
-      (p.name || p.id)
-        .toLowerCase()
-        .includes((searchQueries[field] || "").toLowerCase())
-    );
-
-    const selectedProgram = programs.find((x) => x.id === dataToSave[field]);
-
-    return (
-      <div style={{ marginBottom: "18px", position: "relative" }}>
-        <label style={{ fontSize: "15px", fontWeight: 600, marginBottom: "6px" }}>
-          {label} *
-        </label>
-
-        <div
-          onClick={() => setOpen(!open)}
-          style={{
-            width: "100%",
-            padding: "10px 12px",
-            borderRadius: "8px",
-            border: "1px solid #ccc",
-            backgroundColor: "#fff",
-            cursor: "pointer",
-          }}
-        >
-          {selectedProgram ? (selectedProgram.name || selectedProgram.id) : `Select ${label}`}
-        </div>
-
-        {open && (
-          <div
-            style={{
-              width: "100%",
-              maxHeight: "220px",
-              overflowY: "auto",
-              background: "#fff",
-              border: "1px solid #ccc",
-              borderRadius: "6px",
-              padding: "8px",
-              position: "absolute",
-              zIndex: 20,
-              marginTop: 6,
-            }}
-          >
-            <input
-              placeholder="Search..."
-              value={searchQueries[field] || ""}
-              onChange={(e) => setSearchQueries({ ...searchQueries, [field]: e.target.value })}
-              style={{
-                width: "100%",
-                padding: "8px",
-                marginBottom: "8px",
-                borderRadius: "6px",
-                border: "1px solid #ccc",
-              }}
-            />
-
-            {filtered.map((p) => {
-              const total = Number(p.seats ?? 0);
-              const used = registrationCountMap.get(p.id) || 0;
-              const avail = Math.max(0, total - used);
-              const isFull = avail <= 0;
-
-              return (
-                <div
-                  key={p.id}
-                  onClick={() => {
-                    if (isFull) return; // don't allow selecting full program
-                    setDataToSave({ ...dataToSave, [field]: p.id });
-                    setOpen(false);
-                  }}
-                  style={{
-                    padding: "10px 10px",
-                    cursor: isFull ? "not-allowed" : "pointer",
-                    opacity: isFull ? 0.5 : 1,
-                    display: "flex",
-                    justifyContent: "space-between",
-                    gap: 12,
-                  }}
-                  title={isFull ? "Program is full" : ""}
-                >
-                  <span>{p.name || p.id}</span>
-                  <span style={{ fontWeight: 700 }}>
-                    {isFull ? "FULL" : `${avail}/${total}`}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  // -----------------------------
-  // Submit
-  // -----------------------------
+  /* ================= SUBMIT ================= */
   const handleCreate = async () => {
-    // basic validation
     if (!dataToSave.program_id) {
-      setToast({ type: "error", message: "Please select a program." });
-      return;
-    }
-    if (!currentStudent?.id) {
-      setToast({ type: "error", message: "Student not found for logged-in user." });
+      setToast({ type: "error", message: "Please select a course." });
       return;
     }
 
-    // client-side duplicate prevention (fast feedback)
     if (alreadyRegistered) {
-      setToast({ type: "error", message: "You are already registered for this program." });
+      setToast({
+        type: "error",
+        message: "You are already registered for this course.",
+      });
       return;
     }
 
-    // client-side seat check (fast feedback)
-    const avail = getAvailableSeats(dataToSave.program_id);
-    if (avail !== null && avail <= 0) {
-      const msg = `Registration failed: Program is full. Available seats: 0/${selectedTotal ?? "?"}`;
-      setToast({ type: "error", message: msg });
+    if (alreadyEnrolledSameAcademicYear) {
+      setToast({
+        type: "error",
+        message:
+          "You have already enrolled one course in this academic year.",
+      });
       return;
     }
 
-    const payload = {
-      program_id: dataToSave.program_id,
-      student_id: currentStudent.id, // force correct student_id
-    };
+    if (selectedAvailable !== null && selectedAvailable <= 0) {
+      setToast({
+        type: "error",
+        message: "Registration failed: Course is full.",
+      });
+      return;
+    }
 
     const params = new FormData();
-    params.append("resource", btoa(JSON.stringify(payload)));
+    params.append(
+      "resource",
+      btoa(
+        JSON.stringify({
+          program_id: dataToSave.program_id,
+          student_id: currentStudent?.id,
+        })
+      )
+    );
 
     const res = await fetch(apiUrl, {
       method: "POST",
@@ -1243,47 +1643,24 @@ const CreateProgram_registration = () => {
       body: params,
     });
 
-    // backend may return JSON for both ok & error cases
-    let json: any = null;
-    try {
-      json = await res.json();
-    } catch {
-      // ignore
-    }
+    const json = await res.json();
 
-    const backendMessage = json?.message || (res.ok ? "Created Successfully!" : "Request failed.");
-
-    // treat errCode -1 as error even if HTTP 200
-    const isBackendError = json?.errCode === -1 || !res.ok;
-
-    if (isBackendError) {
-      // also show seats if we can compute them
-      const availNow = getAvailableSeats(dataToSave.program_id) ?? "N/A";
-      const totalNow = selectedTotal ?? "N/A";
-
-      const msg =
-        backendMessage.includes("Program is full")
-          ? `${backendMessage} Available seats: ${availNow}/${totalNow}`
-          : backendMessage;
-
-      setToast({ type: "error", message: msg });
+    if (!res.ok || json?.errCode === -1) {
+      setToast({
+        type: "error",
+        message: json?.message || "Registration failed",
+      });
       return;
     }
-    await queryClient.invalidateQueries({ queryKey: ["ProgramRegistrationList"] });
-    await queryClient.invalidateQueries({ queryKey: ["ProgramList"] });
 
     setToast({ type: "success", message: "Registered successfully!" });
-    setDataToSave({}); // will re-set student_id via effect
+    setDataToSave({});
 
-    // refresh availability + tables
     queryClient.invalidateQueries({ queryKey: ["ProgramRegistrationList"] });
-    queryClient.invalidateQueries({ queryKey: ["resourceData", "program_registration"] });
     queryClient.invalidateQueries({ queryKey: ["ProgramList"] });
-
-    // auto-hide toast
-    setTimeout(() => setToast(null), 3000);
   };
 
+  /* ================= UI ================= */
   return (
     <div className="d-flex justify-content-center align-items-start mt-5">
       <form
@@ -1296,105 +1673,37 @@ const CreateProgram_registration = () => {
           boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
         }}
       >
-        <div
-          style={{
-            background: "linear-gradient(135deg, #007bff, #0056d2)",
-            color: "white",
-            textAlign: "center",
-            padding: "14px",
-            borderRadius: "10px",
-            fontSize: "22px",
-            marginBottom: "25px",
-          }}
-        >
-          Course Registration
-        </div>
+        <h3 className="text-center mb-4">Course Registration</h3>
 
-        {/* Program dropdown */}
         <ProgramDropdown label="Course" field="program_id" />
 
-        {/* Live availability text */}
-        {dataToSave.program_id && selectedAvailable !== null && (
-          <div
-            style={{
-              marginTop: "-6px",
-              marginBottom: "14px",
-              padding: "10px 12px",
-              borderRadius: "10px",
-              background: selectedAvailable > 0 ? "#eef7ff" : "#fff0f0",
-              border: selectedAvailable > 0 ? "1px solid #b9dcff" : "1px solid #ffb9b9",
-              fontWeight: 700,
-            }}
-          >
-            Seats available right now: {selectedAvailable}/{selectedTotal ?? "?"}
+        {selectedAvailable !== null && (
+          <div className="alert alert-info">
+            Seats available: {selectedAvailable}/{selectedTotal}
           </div>
         )}
 
-        {/* Student auto-selected */}
-        <div style={{ marginBottom: "20px" }}>
-          <label style={{ fontSize: "15px", fontWeight: 600, marginBottom: "6px" }}>
-            Student *
-          </label>
-          <input
-            disabled
-            value={
-              currentStudent
-                ? `Auto selected (${currentStudent.roll_no || currentStudent.name || currentStudent.id})`
-                : "Auto selected (logged in user)"
-            }
-            style={{
-              width: "100%",
-              padding: "10px 12px",
-              borderRadius: "8px",
-              border: "1px solid #ccc",
-              backgroundColor: "#f4f4f4",
-              color: "#444",
-            }}
-          />
-        </div>
+        <input
+          disabled
+          className="form-control mb-3"
+          value={`Auto selected (${currentStudent?.roll_no || ""})`}
+        />
 
         <button
           type="button"
+          className="btn btn-primary w-100"
           onClick={handleCreate}
-          style={{
-            width: "100%",
-            padding: "12px",
-            backgroundColor: "#007bff",
-            color: "white",
-            border: "none",
-            borderRadius: "8px",
-            fontWeight: 600,
-            fontSize: "16px",
-            cursor: "pointer",
-          }}
         >
           Submit
         </button>
 
-        {/* Toast popup */}
         {toast && (
-          <div className="toast-container position-fixed top-20 start-50 translate-middle p-3">
-            <div className="toast show shadow">
-              <div className="toast-header">
-                <strong className="me-auto">
-                  {toast.type === "success" ? "Success" : "Error"}
-                </strong>
-                <button
-                  type="button"
-                  className="btn-close"
-                  onClick={() => setToast(null)}
-                />
-              </div>
-              <div
-                className="toast-body text-center"
-                style={{
-                  color: toast.type === "success" ? "#198754" : "#dc3545",
-                  fontWeight: 600,
-                }}
-              >
-                {toast.message}
-              </div>
-            </div>
+          <div
+            className={`alert mt-3 alert-${
+              toast.type === "success" ? "success" : "danger"
+            }`}
+          >
+            {toast.message}
           </div>
         )}
       </form>
