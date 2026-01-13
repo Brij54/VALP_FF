@@ -42,6 +42,8 @@ import com.rasp.app.service.*;
 	private String instructor_name = null;
 	private String term_name = null;
 	private String academic_year_id = null;
+	private Date start_date = null;
+	private Date end_date = null;
 	private String syllabus = null;
 	private Map<String, Object> extra_data = null;
 
@@ -61,6 +63,8 @@ import com.rasp.app.service.*;
 	public static String FIELD_INSTRUCTOR_NAME = "instructor_name";
 	public static String FIELD_TERM_NAME = "term_name";
 	public static String FIELD_ACADEMIC_YEAR_ID = "academic_year_id";
+	public static String FIELD_START_DATE = "start_date";
+	public static String FIELD_END_DATE = "end_date";
 	public static String FIELD_SYLLABUS = "syllabus";
 	public static String FIELD_EXTRA_DATA = "extra_data";
 
@@ -138,6 +142,14 @@ import com.rasp.app.service.*;
 		academic_year_idField.setForeign(new Foreign("Academic_year"));
 		metaData.addField(academic_year_idField);
 
+		Field start_dateField = new Field("start_date", "Date");
+		start_dateField.setRequired(true);
+		metaData.addField(start_dateField);
+
+		Field end_dateField = new Field("end_date", "Date");
+		end_dateField.setRequired(true);
+		metaData.addField(end_dateField);
+
 		Field syllabusField = new Field("syllabus", "String");
 		syllabusField.setFile(true);
 		metaData.addField(syllabusField);
@@ -172,6 +184,8 @@ import com.rasp.app.service.*;
 		this.instructor_name = obj.instructor_name;
 		this.term_name = obj.term_name;
 		this.academic_year_id = obj.academic_year_id;
+		this.start_date = obj.start_date;
+		this.end_date = obj.end_date;
 		this.syllabus = obj.syllabus;
 		this.extra_data = obj.extra_data;
 	}
@@ -220,6 +234,10 @@ import com.rasp.app.service.*;
 			map.put("term_name", term_name);
 		if(academic_year_id != null)
 			map.put("academic_year_id", academic_year_id);
+		if(start_date != null)
+			map.put("start_date", start_date);
+		if(end_date != null)
+			map.put("end_date", end_date);
 		if(syllabus != null)
 			map.put("syllabus", syllabus);
 		if(extra_data != null)
@@ -260,6 +278,10 @@ import com.rasp.app.service.*;
 			map.put("term_name", term_name);
 		if(validateAcademic_year_id(add))
 			map.put("academic_year_id", academic_year_id);
+		if(validateStart_date(add))
+			map.put("start_date", start_date);
+		if(validateEnd_date(add))
+			map.put("end_date", end_date);
 		if(syllabus != null)
 			map.put("syllabus", syllabus);
 		if(extra_data != null)
@@ -289,6 +311,8 @@ import com.rasp.app.service.*;
 		instructor_name = (String) map.get("instructor_name");
 		term_name = (String) map.get("term_name");
 		academic_year_id = (String) map.get("academic_year_id");
+		start_date = (Date) map.get("start_date");
+		end_date = (Date) map.get("end_date");
 		syllabus = (String) map.get("syllabus");
 		extra_data = (Map<String, Object>) map.get("extra_data");
 	}
@@ -358,6 +382,14 @@ import com.rasp.app.service.*;
 		Object academic_year_idObj = map.get("academic_year_id");
 		if(academic_year_idObj != null)
 			academic_year_id = academic_year_idObj.toString();
+
+		Object start_dateObj = map.get("start_date");
+		if(start_dateObj != null)
+			start_date = new Date(start_dateObj.toString());
+
+		Object end_dateObj = map.get("end_date");
+		if(end_dateObj != null)
+			end_date = new Date(end_dateObj.toString());
 
 		Object syllabusObj = map.get("syllabus");
 		if(syllabusObj != null)
@@ -665,6 +697,42 @@ import com.rasp.app.service.*;
 		if(add && academic_year_id == null)
 			throw new ApplicationException(ExceptionSeverity.ERROR, "Requierd validation Failed[academic_year_id]");
 		return academic_year_id != null;
+	}
+
+	public Date getStart_date() {
+		return start_date;
+	}
+
+	public void setStart_date(Date start_date) {
+		this.start_date = start_date;
+	}
+
+	public void unSetStart_date() {
+		this.start_date = null;
+	}
+
+	public boolean validateStart_date(boolean add) throws ApplicationException {
+		if(add && start_date == null)
+			throw new ApplicationException(ExceptionSeverity.ERROR, "Requierd validation Failed[start_date]");
+		return start_date != null;
+	}
+
+	public Date getEnd_date() {
+		return end_date;
+	}
+
+	public void setEnd_date(Date end_date) {
+		this.end_date = end_date;
+	}
+
+	public void unSetEnd_date() {
+		this.end_date = null;
+	}
+
+	public boolean validateEnd_date(boolean add) throws ApplicationException {
+		if(add && end_date == null)
+			throw new ApplicationException(ExceptionSeverity.ERROR, "Requierd validation Failed[end_date]");
+		return end_date != null;
 	}
 
 	public String getSyllabus() {
