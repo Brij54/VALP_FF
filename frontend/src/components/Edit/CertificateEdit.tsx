@@ -946,6 +946,7 @@ const Edit = () => {
   const regex = /^(g_|archived|extra_data)/;
   const fetchedResources = useRef(new Set<string>());
   const fetchedEnum = useRef(new Set<string>());
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const queryClient = useQueryClient();
 
   const fetchDataById = async (id: string, resourceName: string) => {
@@ -1152,8 +1153,8 @@ const Edit = () => {
   return (
     <div className="page12Container">
       <Sidebar
-        sidebarCollapsed={false}
-        toggleSidebar={() => {}}
+        sidebarCollapsed={sidebarCollapsed}
+        toggleSidebar={() => setSidebarCollapsed((prev) => !prev)}
         activeSection="dashboard"
       />
 

@@ -24,6 +24,8 @@
   width: 100%;
 }
 
+
+
 .page12Container::after {
   content: '';
   position: absolute;

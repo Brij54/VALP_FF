@@ -263,8 +263,6 @@
 
 // export default Edit;
 
-
-
 // import React, { useEffect, useRef, useState } from "react";
 // import { useParams, useNavigate } from "react-router-dom";
 // import apiConfig from "../../config/apiConfig";
@@ -513,7 +511,6 @@
 
 // export default Edit;
 
-
 // import React, { useEffect,useRef, useState } from "react";
 // import { useLocation,useParams } from "react-router-dom";
 // import apiConfig from "../../config/apiConfig";
@@ -527,7 +524,6 @@
 //   const baseUrl = apiConfig.getResourceUrl("Program");
 //   const apiUrl = `${apiConfig.getResourceUrl("Program")}?`;
 //   const metadataUrl = `${apiConfig.getResourceMetaDataUrl("Program")}?`;
-
 
 //   const [editedRecord, setEditedRecord] = useState<any>( {});
 //   const [resMetaData, setResMetaData] = useState([]);
@@ -699,12 +695,11 @@
 //   }
 // };
 
-
 //   const handleEdit = (id: any, field: string, value: any) => {
 //     setEditedRecord((prevData: any) => ({
-//       ...prevData,        
+//       ...prevData,
 //         [field]: value,
-  
+
 //     }));
 //   };
 
@@ -714,7 +709,6 @@
 //   const base64EncodeFun = (str: string) => {
 //   return btoa(unescape(encodeURIComponent(str)));
 // };
-
 
 //   const handleUpdate = async ( e: React.FormEvent) => {
 //     e.preventDefault();
@@ -744,7 +738,6 @@
 //     if (!accessToken) {
 //       throw new Error("Access token not found");
 //     }
-   
 
 //     try {
 //       const response = await fetch(apiUrl, {
@@ -754,13 +747,13 @@
 //         },
 //         credentials: 'include', // include cookies if needed
 //         body: params,
-  
+
 //       });
 
 //       if (response.ok) {
 //         setShowToast(true);
 //         setTimeout(() => setShowToast(false), 3000);
-   
+
 //       } else {
 //         console.error("Error updating record:", response.statusText);
 //       }
@@ -804,19 +797,21 @@
 
 // export default ProgramEdit;
 
-
 import React, { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import apiConfig from "../../config/apiConfig";
 import { fetchForeignResource } from "../../apis/resources";
 import { fetchEnum, getCookie } from "../../apis/enum";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getUserIdFromJWT, useProgramViewModel } from "../viewModels/useProgramViewModel";
-import Sidebar from "../Utils/SidebarAdmin";   // ✅ SIDEBAR ADDED
-import "../Batch_Config.css";                 // ✅ SAME UI CSS
+import {
+  getUserIdFromJWT,
+  useProgramViewModel,
+} from "../viewModels/useProgramViewModel";
+import Sidebar from "../Utils/SidebarAdmin"; // ✅ SIDEBAR ADDED
+// import "../Batch_Config.css"; // ✅ SAME UI CSS
+import styles from "../Styles/CreateCertificate.module.css";
 
 const ProgramEdit = () => {
-
   const navigate = useNavigate();
   const { id }: any = useParams();
   const baseUrl = apiConfig.getResourceUrl("Program");
@@ -826,7 +821,10 @@ const ProgramEdit = () => {
   const [editedRecord, setEditedRecord] = useState<any>({});
   const [resMetaData, setResMetaData] = useState([]);
   const [showToast, setShowToast] = useState(false);
-  const [searchQueries, setSearchQueries] = useState<Record<string, string>>({});
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [searchQueries, setSearchQueries] = useState<Record<string, string>>(
+    {}
+  );
 
   const regex = /^(g_|archived|extra_data)/;
   const fetchedResources = useRef(new Set<string>());
@@ -943,7 +941,7 @@ const ProgramEdit = () => {
     if (response.ok) {
       setShowToast(true);
       setTimeout(() => {
-        navigate("/valpcourses");  // ✅ navigate added
+        navigate("/valpcourses"); // ✅ navigate added
       }, 1000);
     }
   };
@@ -952,102 +950,122 @@ const ProgramEdit = () => {
 
   return (
     <div className="page12Container">
-      {/* ✅ SIDEBAR */}
-      <Sidebar
-        sidebarCollapsed={false}
-        toggleSidebar={() => {}}
-        activeSection="dashboard"
-      />
+  {/* ✅ SIDEBAR */}
+  <Sidebar
+    sidebarCollapsed={sidebarCollapsed}
+    toggleSidebar={() => setSidebarCollapsed((prev) => !prev)}
+    activeSection="dashboard"
+  />
 
-      <main className="mainContent">
-        <header className="contentHeader">
-          <h1 className="pageTitle">Edit Course</h1>
-        </header>
+  <main className="mainContent">
+    <header className="contentHeader">
+      <h1 className="pageTitle">Edit Course</h1>
+    </header>
 
+    <div className="contentBody">
+      <div className="pageFormContainer">
         {!loadingEditComp && (
-          <form
-            className="w-100"
-            style={{
-              maxWidth: "500px",
-              backgroundColor: "#fff",
-              borderRadius: "10px",
-              padding: "60px 10px",
-              margin: "100px auto",
-            }}
-          >
-            <div className="card shadow-sm border-0 rounded">
-              <div
-                className="card-header text-white text-center fw-semibold"
-                style={{
-                  background: "linear-gradient(135deg, #007bff, #0056d2)",
-                  padding: "15px",
-                  fontSize: "20px",
-                }}
-              >
-                Edit Course Details
+          <form onSubmit={handleUpdate}>
+            <div className={styles.certificateFormWrapper}>
+              <h2 className={styles.sectionTitle}>Edit Course Information</h2>
+
+              <div className={styles.formGrid}>
+                {/* Course Name */}
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>
+                    <span className={styles.required}>*</span> Course Name
+                  </label>
+                  <input
+                    type="text"
+                    className={styles.formControl}
+                    value={editedRecord.name || ""}
+                    onChange={(e) => handleEdit("name", e.target.value)}
+                    required
+                  />
+                </div>
+
+                {/* Seats */}
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>
+                    <span className={styles.required}>*</span> Seats
+                  </label>
+                  <input
+                    type="number"
+                    className={styles.formControl}
+                    value={editedRecord.seats || ""}
+                    onChange={(e) => handleEdit("seats", e.target.value)}
+                    required
+                  />
+                </div>
+
+                {/* Instructor */}
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>
+                    <span className={styles.required}>*</span> Instructor Name
+                  </label>
+                  <input
+                    type="text"
+                    className={styles.formControl}
+                    value={editedRecord.instructor_name || ""}
+                    onChange={(e) =>
+                      handleEdit("instructor_name", e.target.value)
+                    }
+                    required
+                  />
+                </div>
+
+                {/* Term */}
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>
+                    <span className={styles.required}>*</span> Term Name
+                  </label>
+                  <input
+                    type="text"
+                    className={styles.formControl}
+                    value={editedRecord.term_name || ""}
+                    onChange={(e) => handleEdit("term_name", e.target.value)}
+                    required
+                  />
+                </div>
+
+                {/* Academic Year */}
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>
+                    <span className={styles.required}>*</span> Academic Year
+                  </label>
+                  <select
+                    className={styles.formControl}
+                    value={editedRecord.academic_year_id || ""}
+                    onChange={(e) =>
+                      handleEdit("academic_year_id", e.target.value)
+                    }
+                    required
+                  >
+                    <option value="">Select Academic Year</option>
+                    {(foreignKeyData["Academic_year"] || []).map((y:any) => (
+                      <option key={y.id} value={y.id}>
+                        {y.id}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Syllabus */}
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>Upload Syllabus</label>
+                  <input
+                    type="file"
+                    className={styles.formControl}
+                    onChange={(e) =>
+                      handleEdit("syllabus", e.target.files?.[0] || null)
+                    }
+                  />
+                </div>
               </div>
 
-              <div className="card-body p-4">
-                <label className="fw-bold mb-1">Course Name *</label>
-                <input
-                  className="form-control mb-3"
-                  value={editedRecord.name || ""}
-                  onChange={(e) => handleEdit("name", e.target.value)}
-                />
-
-                <label className="fw-bold mb-1">Seats *</label>
-                <input
-                  type="number"
-                  className="form-control mb-3"
-                  value={editedRecord.seats || ""}
-                  onChange={(e) => handleEdit("seats", e.target.value)}
-                />
-
-                <label className="fw-bold mb-1">Instructor Name *</label>
-                <input
-                  className="form-control mb-3"
-                  value={editedRecord.instructor_name || ""}
-                  onChange={(e) =>
-                    handleEdit("instructor_name", e.target.value)
-                  }
-                />
-
-                <label className="fw-bold mb-1">Term Name *</label>
-                <input
-                  className="form-control mb-3"
-                  value={editedRecord.term_name || ""}
-                  onChange={(e) => handleEdit("term_name", e.target.value)}
-                />
-
-                <label className="fw-bold mb-1">Academic Year *</label>
-                <select
-                  className="form-control mb-3"
-                  value={editedRecord.academic_year_id || ""}
-                  onChange={(e) =>
-                    handleEdit("academic_year_id", e.target.value)
-                  }
-                >
-                  <option value="">Select Academic Year</option>
-                  {(foreignKeyData["Academic_year"] || []).map((y: any) => (
-                    <option key={y.id} value={y.id}>
-                      {y.id}
-                    </option>
-                  ))}
-                </select>
-
-                <label className="fw-bold mb-1">Upload Syllabus</label>
-                <input
-                  type="file"
-                  className="form-control mb-4"
-                  onChange={(e) =>
-                    handleEdit("syllabus", e.target.files?.[0] || null)
-                  }
-                />
-
-                <button
-                  className="btn btn-success w-100 fw-semibold"
-                  onClick={handleUpdate}
-                >
+              {/* Button */}
+              <div className={styles.buttonRow}>
+                <button type="submit" className={styles.primaryBtn}>
                   Update
                 </button>
               </div>
@@ -1055,9 +1073,10 @@ const ProgramEdit = () => {
           </form>
         )}
 
+        {/* Toast */}
         {showToast && (
           <div className="toast-container position-fixed top-20 start-50 translate-middle p-3">
-            <div className="toast show shadow">
+            <div className="toast show">
               <div className="toast-header">
                 <strong className="me-auto">Success</strong>
               </div>
@@ -1067,8 +1086,11 @@ const ProgramEdit = () => {
             </div>
           </div>
         )}
-      </main>
+      </div>
     </div>
+  </main>
+</div>
+
   );
 };
 

@@ -384,6 +384,7 @@ const Edit = () => {
   const [fields, setFields] = useState<any[]>([]);
   const [resMetaData, setResMetaData] = useState<any[]>([]);
   const [requiredFields, setRequiredFields] = useState<string[]>([]);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [foreignKeyData, setForeignKeyData] = useState<Record<string, any[]>>(
     {}
@@ -585,8 +586,8 @@ const Edit = () => {
   return (
     <div className="page12Container">
       <Sidebar
-        sidebarCollapsed={false}
-        toggleSidebar={() => {}}
+        sidebarCollapsed={sidebarCollapsed}
+        toggleSidebar={() => setSidebarCollapsed((prev) => !prev)}
         activeSection="dashboard"
       />
 

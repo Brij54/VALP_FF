@@ -233,6 +233,7 @@ const Edit = () => {
   const [signaturePreview, setSignaturePreview] = useState<string>("");
   const [signatureFile, setSignatureFile] = useState<File | null>(null);
   const [showToast, setShowToast] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const apiUrl = `${apiConfig.getResourceUrl("dean")}?`;
 
@@ -368,8 +369,8 @@ const Edit = () => {
   return (
     <div className="page12Container">
       <Sidebar
-        sidebarCollapsed={false}
-        toggleSidebar={() => {}}
+        sidebarCollapsed={sidebarCollapsed}
+        toggleSidebar={() => setSidebarCollapsed((prev) => !prev)}
         activeSection="dashboard"
       />
 
