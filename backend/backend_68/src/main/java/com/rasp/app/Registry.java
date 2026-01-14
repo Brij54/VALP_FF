@@ -1,8 +1,5 @@
 package com.rasp.app;
-import com.rasp.app.decorator.BatchDecorator;
-import com.rasp.app.decorator.CertificateDecorator;
-import com.rasp.app.decorator.ProgramRegistrationDecorator;
-import com.rasp.app.decorator.StudentDecorator;
+import com.rasp.app.decorator.*;
 import platform.decorator.DecoratorManager;
 import platform.helper.HelperManager;
 import platform.webservice.ServiceManager;
@@ -38,6 +35,7 @@ public class Registry {
             DecoratorManager.getInstance().register(new StudentDecorator());
             DecoratorManager.getInstance().register(new ProgramRegistrationDecorator());
             DecoratorManager.getInstance().register(new CertificateDecorator());
+            DecoratorManager.getInstance().register(new ProgramDecorator());
 
 		}
 }
