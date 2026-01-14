@@ -627,7 +627,222 @@
 
 // export default UpdateProgram
 
-import React, { useState, useEffect } from "react";
+// import React, { useState, useEffect } from "react";
+// import { useNavigate } from "react-router-dom";
+// import apiConfig from "../../config/apiConfig";
+
+// import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
+// import { AgGridReact } from "ag-grid-react";
+// import { useQuery } from "@tanstack/react-query";
+
+// ModuleRegistry.registerModules([AllCommunityModule]);
+
+// interface ColumnDef {
+//   field: string;
+//   headerName: string;
+//   editable: boolean;
+//   resizable: boolean;
+//   sortable: boolean;
+//   filter: boolean;
+//   cellRenderer?: (params: any) => React.ReactNode;
+// }
+
+// // ---------------- ACTION CELL (UI ONLY CHANGE) ----------------
+// const ActionCellRenderer = (props: any) => {
+//   const handleEdit = () => {
+//     props.context.handleUpdate(props.data.id);
+//   };
+
+//   return (
+//     <button
+//       onClick={handleEdit}
+//       className="btn btn-outline-primary"
+//       style={{
+//         fontSize: "13px",
+//         padding: "6px 14px",
+//         borderRadius: "8px",
+//         fontWeight: 600,
+//       }}
+//     >
+//       Edit
+//     </button>
+//   );
+// };
+
+// export type ResourceMetaData = {
+//   resource: string;
+//   fieldValues: any[];
+// };
+
+// const getCookie = (name: string): string | null => {
+//   const value = `; ${document.cookie}`;
+//   const parts = value.split(`; ${name}=`);
+//   if (parts.length === 2) return parts.pop()?.split(";").shift() || null;
+//   return null;
+// };
+
+// const UpdateProgram = () => {
+//   const [rowData, setRowData] = useState<any[]>([]);
+//   const [colDef1, setColDef1] = useState<any[]>([]);
+//   const [resMetaData, setResMetaData] = useState<ResourceMetaData[]>([]);
+//   const [fields, setFields] = useState<any[]>([]);
+//   const [requiredFields, setRequiredFields] = useState<string[]>([]);
+//   const [fetchData, setFetchedData] = useState<any[]>([]);
+//   const [editedData, setEditedData] = useState<any>({});
+//   const [showToast, setShowToast] = useState<any>(false);
+
+//   const navigate = useNavigate();
+//   const regex = /^(g_|archived|extra_data)/;
+
+//   // ---------------- FETCH PROGRAM DATA ----------------
+//   useQuery({
+//     queryKey: ["resourceData", "programUpdate"],
+//     queryFn: async () => {
+//       const params = new URLSearchParams();
+//       params.append("queryId", "GET_ALL");
+
+//       const accessToken = getCookie("access_token");
+//       if (!accessToken) throw new Error("Access token not found");
+
+//       const response = await fetch(
+//         `${apiConfig.getResourceUrl("program")}?${params.toString()}`,
+//         {
+//           method: "GET",
+//           headers: {
+//             "Content-Type": "application/json",
+//             Authorization: `Bearer ${accessToken}`,
+//           },
+//           credentials: "include",
+//         }
+//       );
+
+//       if (!response.ok) throw new Error("Error: " + response.status);
+
+//       const data = await response.json();
+//       setFetchedData(data.resource || []);
+//       return data.resource;
+//     },
+//   });
+
+//   // ---------------- FETCH METADATA ----------------
+//   useQuery({
+//     queryKey: ["resourceMetaData", "programUpdate"],
+//     queryFn: async () => {
+//       const response = await fetch(apiConfig.getResourceMetaDataUrl("program"));
+
+//       if (!response.ok) throw new Error("Error: " + response.status);
+
+//       const data = await response.json();
+//       setResMetaData(data);
+//       setFields(data[0]?.fieldValues || []);
+
+//       const required = data[0]?.fieldValues
+//         .filter((field: any) => !regex.test(field.name))
+//         .map((field: any) => field.name);
+
+//       setRequiredFields(required || []);
+//       return data;
+//     },
+//   });
+
+//   const handleUpdate = (id: any) => {
+//     navigate(`/edit/program/${id}`);
+//   };
+
+//   // ---------------- BUILD GRID COLUMNS ----------------
+//   useEffect(() => {
+//     const data = fetchData || [];
+//     const visibleFields =
+//       requiredFields.filter((field) => field !== "id") || [];
+
+//     const columns = visibleFields.map((field) => ({
+//       field,
+//       headerName: field
+//         .replace(/_/g, " ")
+//         .replace(/\b\w/g, (c) => c.toUpperCase()),
+//       editable: false,
+//       resizable: true,
+//       sortable: true,
+//       filter: true,
+//     }));
+
+//     columns.push({
+//       headerName: "Action",
+//       field: "Action",
+//       cellRenderer: ActionCellRenderer,
+//       editable: false,
+//       resizable: true,
+//       sortable: false,
+//       filter: false,
+//       width: 120,
+//     } as ColumnDef);
+
+//     setColDef1(columns);
+//     console.log("qqqqqqqqqqqqqqqqq",data)
+//     setRowData(data);
+//   }, [fetchData, requiredFields]);
+
+//   const defaultColDef = {
+//     flex: 1,
+//     minWidth: 120,
+//     editable: false,
+//     resizable: true,
+//   };
+
+//   // ---------------- UI ONLY UPDATED ----------------
+//   return (
+//     <div style={{ padding: "16px" }}>
+//       {rowData.length === 0 && colDef1.length === 0 ? (
+//         <div>No data available. Please add a resource attribute.</div>
+//       ) : (
+//         <div
+//           className="ag-theme-alpine"
+//           style={{
+//             height: 500,
+//             width: "100%",
+//             borderRadius: "10px",
+//             overflow: "hidden",
+//           }}
+//         >
+//           <AgGridReact
+//             rowData={rowData}
+//             columnDefs={colDef1}
+//             defaultColDef={defaultColDef}
+//             pagination
+//             paginationPageSize={10}
+//             animateRows
+//             rowSelection="multiple"
+//             context={{ handleUpdate }}
+//           />
+//         </div>
+//       )}
+
+//       {showToast && (
+//         <div
+//           className="toast-container position-fixed top-20 start-50 translate-middle p-3"
+//           style={{ zIndex: 1550 }}
+//         >
+//           <div className="toast show" role="alert">
+//             <div className="toast-header">
+//               <strong className="me-auto">Success</strong>
+//               <button
+//                 type="button"
+//                 className="btn-close"
+//                 onClick={() => setShowToast(false)}
+//               />
+//             </div>
+//             <div className="toast-body text-success text-center">
+//               Created successfully!
+//             </div>
+//           </div>
+//         </div>
+//       )}
+//     </div>
+//   );
+// };
+
+// export default UpdateProgram;
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import apiConfig from "../../config/apiConfig";
 
@@ -645,13 +860,14 @@ interface ColumnDef {
   sortable: boolean;
   filter: boolean;
   cellRenderer?: (params: any) => React.ReactNode;
+  width?: number;
+  valueGetter?: (params: any) => any;
+  valueFormatter?: (params: any) => any;
 }
 
-// ---------------- ACTION CELL (UI ONLY CHANGE) ----------------
+// ---------------- ACTION CELL ----------------
 const ActionCellRenderer = (props: any) => {
-  const handleEdit = () => {
-    props.context.handleUpdate(props.data.id);
-  };
+  const handleEdit = () => props.context.handleUpdate(props.data.id);
 
   return (
     <button
@@ -681,6 +897,10 @@ const getCookie = (name: string): string | null => {
   return null;
 };
 
+// ✅ helper: label for academic year (as per your Java model -> academic_name)
+const getAcademicYearLabel = (ay: any) =>
+  ay?.academic_name || ay?.academicName || ay?.name || ay?.id || "";
+
 const UpdateProgram = () => {
   const [rowData, setRowData] = useState<any[]>([]);
   const [colDef1, setColDef1] = useState<any[]>([]);
@@ -688,7 +908,6 @@ const UpdateProgram = () => {
   const [fields, setFields] = useState<any[]>([]);
   const [requiredFields, setRequiredFields] = useState<string[]>([]);
   const [fetchData, setFetchedData] = useState<any[]>([]);
-  const [editedData, setEditedData] = useState<any>({});
   const [showToast, setShowToast] = useState<any>(false);
 
   const navigate = useNavigate();
@@ -720,16 +939,54 @@ const UpdateProgram = () => {
 
       const data = await response.json();
       setFetchedData(data.resource || []);
-      return data.resource;
+      return data.resource || [];
     },
   });
+
+  // ---------------- FETCH ACADEMIC YEAR DATA (for id -> name mapping) ----------------
+  const { data: academicYearRows } = useQuery({
+    queryKey: ["resourceData", "academicYearLookup"],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      params.append("queryId", "GET_ALL");
+
+      const accessToken = getCookie("access_token");
+      if (!accessToken) throw new Error("Access token not found");
+
+      // resource name in your Java class: "academic_year"
+      const response = await fetch(
+        `${apiConfig.getResourceUrl("academic_year")}?${params.toString()}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+          credentials: "include",
+        }
+      );
+
+      if (!response.ok) throw new Error("Error: " + response.status);
+
+      const data = await response.json();
+      return data.resource || [];
+    },
+  });
+
+  // ✅ Build map: academic_year_id -> academic_name
+  const academicYearMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    (academicYearRows || []).forEach((ay: any) => {
+      if (ay?.id) map[ay.id] = getAcademicYearLabel(ay);
+    });
+    return map;
+  }, [academicYearRows]);
 
   // ---------------- FETCH METADATA ----------------
   useQuery({
     queryKey: ["resourceMetaData", "programUpdate"],
     queryFn: async () => {
       const response = await fetch(apiConfig.getResourceMetaDataUrl("program"));
-
       if (!response.ok) throw new Error("Error: " + response.status);
 
       const data = await response.json();
@@ -752,19 +1009,37 @@ const UpdateProgram = () => {
   // ---------------- BUILD GRID COLUMNS ----------------
   useEffect(() => {
     const data = fetchData || [];
-    const visibleFields =
-      requiredFields.filter((field) => field !== "id") || [];
+    const visibleFields = requiredFields.filter((field) => field !== "id") || [];
 
-    const columns = visibleFields.map((field) => ({
-      field,
-      headerName: field
-        .replace(/_/g, " ")
-        .replace(/\b\w/g, (c) => c.toUpperCase()),
-      editable: false,
-      resizable: true,
-      sortable: true,
-      filter: true,
-    }));
+    const columns: any[] = visibleFields.map((field) => {
+      // ✅ Replace Academic Year Id column values with name
+      if (field === "academic_year_id") {
+        return {
+          field,
+          headerName: "Academic Year",
+          editable: false,
+          resizable: true,
+          sortable: true,
+          filter: true,
+          // valueGetter affects rendering + filter + sort
+          valueGetter: (params: any) => {
+            const id = params?.data?.academic_year_id;
+            return academicYearMap[id] || id || "";
+          },
+        };
+      }
+
+      return {
+        field,
+        headerName: field
+          .replace(/_/g, " ")
+          .replace(/\b\w/g, (c) => c.toUpperCase()),
+        editable: false,
+        resizable: true,
+        sortable: true,
+        filter: true,
+      };
+    });
 
     columns.push({
       headerName: "Action",
@@ -778,9 +1053,8 @@ const UpdateProgram = () => {
     } as ColumnDef);
 
     setColDef1(columns);
-    console.log("qqqqqqqqqqqqqqqqq",data)
     setRowData(data);
-  }, [fetchData, requiredFields]);
+  }, [fetchData, requiredFields, academicYearMap]);
 
   const defaultColDef = {
     flex: 1,
@@ -789,7 +1063,7 @@ const UpdateProgram = () => {
     resizable: true,
   };
 
-  // ---------------- UI ONLY UPDATED ----------------
+  // ---------------- UI ----------------
   return (
     <div style={{ padding: "16px" }}>
       {rowData.length === 0 && colDef1.length === 0 ? (
