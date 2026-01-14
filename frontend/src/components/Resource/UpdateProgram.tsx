@@ -778,6 +778,7 @@ const UpdateProgram = () => {
     } as ColumnDef);
 
     setColDef1(columns);
+    console.log("qqqqqqqqqqqqqqqqq",data)
     setRowData(data);
   }, [fetchData, requiredFields]);
 

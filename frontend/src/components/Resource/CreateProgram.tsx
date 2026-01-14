@@ -984,13 +984,15 @@ const CreateProgram = () => {
 
             {(() => {
               const options = foreignKeyData["Academic_year"] || [];
+              console.log("options", options);
               const filteredOptions = options.filter((option: any) =>
-                (option.academic_year || option.id)
+                (option.academic_name || option.id)
                   ?.toLowerCase()
                   .includes(
                     (searchQueries["academic_year_id"] || "").toLowerCase()
                   )
               );
+              console.log("foreign key data:", foreignKeyData);
 
               const selected = options.find(
                 (item: any) => item.id === dataToSave["academic_year_id"]
@@ -1011,10 +1013,10 @@ const CreateProgram = () => {
                     }
                   >
                     {selected
-                      ? selected.academic_year || selected.id
+                      ? selected.academic_name || selected.id
                       : "Select Academic Year"}
                   </div>
-
+                  
                   {searchQueries.__openAcademicYear && (
                     <div
                       style={{
@@ -1030,16 +1032,17 @@ const CreateProgram = () => {
                         padding: 8,
                       }}
                     >
+                      
                       <input
                         className="form-control mb-2"
                         placeholder="Search academic year"
-                        value={searchQueries["academic_year_id"] || ""}
+                        value={searchQueries["academic_name"] || ""}
                         onChange={(e) =>
                           handleSearchChange("academic_year_id", e.target.value)
                         }
                       />
-
                       {filteredOptions.length > 0 ? (
+                  
                         filteredOptions.map((option: any) => (
                           <div
                             key={option.id}
@@ -1055,14 +1058,16 @@ const CreateProgram = () => {
                               }));
                             }}
                           >
-                            {option.academic_year || option.id}
+                            {option.academic_name || option.id}
                           </div>
                         ))
                       ) : (
                         <div className="text-muted">No options available</div>
                       )}
                     </div>
+
                   )}
+                  
                 </>
               );
             })()}
