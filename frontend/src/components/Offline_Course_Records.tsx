@@ -10,6 +10,7 @@ import { LoginContext } from "../context/LoginContext";
 import { fetchForeignResource } from "../apis/resources";
 
 import ReadProgram_registration from "./Resource/ReadProgram_Registration";
+import UpdateProgram_registration from "./Resource/UpdateProgram_registration";
 
 export default function Offline_Course_Records() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -132,7 +133,7 @@ export default function Offline_Course_Records() {
               {/* <h2 className="fw-semibold mb-3">Program Registration Records</h2> */}
 
               {/* TABLE COMPONENT */}
-              <ReadProgram_registration />
+              <UpdateProgram_registration />
             </div>
 
           </section>

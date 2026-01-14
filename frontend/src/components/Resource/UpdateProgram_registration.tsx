@@ -233,56 +233,304 @@
 // };
 
 // export default UpdateProgram_registration;
+// import React, { useMemo } from "react";
+// import { useNavigate } from "react-router-dom";
+// import apiConfig from "../../config/apiConfig";
+// import { AllCommunityModule, ModuleRegistry, ColDef } from "ag-grid-community";
+// import { AgGridReact } from "ag-grid-react";
+// import { useQuery, useQueryClient } from "@tanstack/react-query";
+// import { authFetch } from "../../apis/authFetch";
+// import { fetchForeignResource } from "../../apis/resources";
+
+// ModuleRegistry.registerModules([AllCommunityModule]);
+
+// // -------------------- ACTION RENDERER (DELETE) --------------------
+// const ActionCellRenderer = (props: any) => {
+//   const handleDelete = () => props.context.handleDelete(props.data.id);
+
+//   return (
+//     <button
+//       onClick={handleDelete}
+//       className="btn btn-danger"
+//       style={{
+//         fontSize: "14px",
+//         padding: "6px 16px",
+//         borderRadius: "8px",
+//         fontWeight: 600,
+//       }}
+//     >
+//       Delete
+//     </button>
+//   );
+// };
+
+// const UpdateProgram_registration = () => {
+//   const navigate = useNavigate(); // (kept in case you later add edit navigation)
+//   const queryClient = useQueryClient();
+
+//   // 1) Fetch registrations
+//   const regQuery = useQuery({
+//     queryKey: ["resourceData", "program_registration"],
+//     queryFn: async () => {
+//       const params = new URLSearchParams({ queryId: "GET_ALL" });
+//       const res = await authFetch(
+//         `${apiConfig.getResourceUrl("program_registration")}?${params.toString()}`,
+//         { method: "GET", headers: { "Content-Type": "application/json" } }
+//       );
+//       if (!res.ok) throw new Error("Failed to fetch program registrations");
+//       return res.json();
+//     },
+//   });
+
+//   // 2) Fetch programs (for name mapping)
+//   const programQuery = useQuery({
+//     queryKey: ["foreign", "Program"],
+//     queryFn: async () => {
+//       const data: any = await fetchForeignResource("Program");
+//       return Array.isArray(data) ? data : data.resource || [];
+//     },
+//     staleTime: 5 * 60 * 1000,
+//   });
+
+//   // 3) Fetch students (for name/roll mapping)
+//   const studentQuery = useQuery({
+//     queryKey: ["foreign", "Student"],
+//     queryFn: async () => {
+//       const data: any = await fetchForeignResource("Student");
+//       return Array.isArray(data) ? data : data.resource || [];
+//     },
+//     staleTime: 5 * 60 * 1000,
+//   });
+
+//   // 4) Build enriched rowData (program_id -> program_name, student_id -> student_name/roll_no)
+//   type StudentInfo = { name: string; roll_no: string };
+
+//   const rowData = useMemo(() => {
+//     const json = regQuery.data;
+//     const regs: any[] = Array.isArray(json) ? json : json?.resource || [];
+
+//     const programs: any[] = (programQuery.data as any[]) || [];
+//     const students: any[] = (studentQuery.data as any[]) || [];
+
+//     const programMap = new Map<string, string>(
+//       programs.map((p: any) => [
+//         String(p.id),
+//         String(p.program_name || p.name || p.id),
+//       ])
+//     );
+
+//     const studentMap = new Map<string, StudentInfo>(
+//       students.map((s: any) => [
+//         String(s.id),
+//         {
+//           name: String(s.name || s.id),
+//           roll_no: String(s.roll_no || ""),
+//         },
+//       ])
+//     );
+
+//     return regs.map((r: any) => {
+//       const stu = studentMap.get(String(r.student_id)); // StudentInfo | undefined
+
+//       return {
+//         ...r,
+//         program_name: programMap.get(String(r.program_id)) || r.program_id,
+//         student_name: stu?.name || r.student_id,
+//         roll_no: stu?.roll_no || "",
+//       };
+//     });
+//   }, [regQuery.data, programQuery.data, studentQuery.data]);
+
+//   // -------------------- DELETE HANDLER --------------------
+//   const handleDelete = async (id: any) => {
+//     const confirmDelete = window.confirm(
+//       "Are you sure you want to remove this student from this program?"
+//     );
+//     if (!confirmDelete) return;
+
+//     try {
+//       const payload = { id };
+
+//       const formData = new FormData();
+//       const jsonString = JSON.stringify(payload);
+//       const base64 = btoa(unescape(encodeURIComponent(jsonString)));
+
+//       formData.append("resource", base64);
+//       formData.append("action", "DELETE");
+
+//       const res = await authFetch(
+//         `${apiConfig.getResourceUrl("program_registration")}?`,
+//         {
+//           method: "POST",
+//           body: formData,
+//         }
+//       );
+
+//       if (!res.ok) {
+//         throw new Error("Delete failed: " + res.status);
+//       }
+
+//       // Refresh list from backend
+//       await queryClient.invalidateQueries({
+//         queryKey: ["resourceData", "program_registration"],
+//       });
+
+//       alert("Registration deleted successfully.");
+//     } catch (err) {
+//       console.error("Delete error:", err);
+//       alert("Failed to delete registration. Please try again.");
+//     }
+//   };
+
+//   // 5) Column definitions (manual and stable)
+//   const colDefs: ColDef[] = useMemo(() => {
+//     return [
+//       {
+//         headerName: "Course",
+//         field: "program_name",
+//         sortable: true,
+//         filter: true,
+//         resizable: true,
+//       },
+//       {
+//         headerName: "Roll No",
+//         field: "roll_no",
+//         sortable: true,
+//         filter: true,
+//         resizable: true,
+//       },
+//       {
+//         headerName: "Student",
+//         field: "student_name",
+//         sortable: true,
+//         filter: true,
+//         resizable: true,
+//       },
+//       {
+//         headerName: "Action",
+//         field: "action",
+//         cellRenderer: ActionCellRenderer,
+//         sortable: false,
+//         filter: false,
+//         width: 140,
+//       },
+//     ];
+//   }, []);
+
+//   const defaultColDef: ColDef = {
+//     flex: 1,
+//     minWidth: 150,
+//     editable: false,
+//   };
+
+//   if (regQuery.isLoading || programQuery.isLoading || studentQuery.isLoading) {
+//     return <div>Loading...</div>;
+//   }
+
+//   if (regQuery.isError) return <div>Error loading registrations.</div>;
+
+//   return (
+//     <div className="ag-theme-alpine" style={{ height: 500, width: "100%" }}>
+//       <AgGridReact
+//         rowData={rowData}
+//         columnDefs={colDefs}
+//         defaultColDef={defaultColDef}
+//         pagination
+//         paginationPageSize={10}
+//         animateRows
+//         context={{ handleDelete }}
+//       />
+//     </div>
+//   );
+// };
+
+// export default UpdateProgram_registration;
+
+
 import React, { useMemo } from "react";
-import { useNavigate } from "react-router-dom";
 import apiConfig from "../../config/apiConfig";
 import { AllCommunityModule, ModuleRegistry, ColDef } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { authFetch } from "../../apis/authFetch";
 import { fetchForeignResource } from "../../apis/resources";
+import Cookies from "js-cookie";
+import { jwtDecode } from "jwt-decode";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
-// -------------------- ACTION RENDERER (DELETE) --------------------
+/* ===================== TOKEN + ROLE UTILS ===================== */
+
+const getAccessToken = (): string | null =>
+  Cookies.get("access_token") || Cookies.get("token") || null;
+
+const getUserRoles = (): string[] => {
+  const token = getAccessToken();
+  if (!token) return [];
+
+  const decoded: any = jwtDecode(token);
+  const roles =
+    decoded?.resource_access?.["backend-api"]?.roles || [];
+
+  return roles.map((r: string) => r.toUpperCase());
+};
+
+/* ===================== ACTION CELL ===================== */
+
 const ActionCellRenderer = (props: any) => {
-  const handleDelete = () => props.context.handleDelete(props.data.id);
+  const { handleDelete, isAdmin } = props.context;
+  const { id, courseStarted } = props.data;
+
+  const canDrop = isAdmin || !courseStarted;
 
   return (
     <button
-      onClick={handleDelete}
+      onClick={() => handleDelete(id)}
+      disabled={!canDrop}
       className="btn btn-danger"
       style={{
         fontSize: "14px",
         padding: "6px 16px",
         borderRadius: "8px",
         fontWeight: 600,
+        opacity: canDrop ? 1 : 0.4,
+        cursor: canDrop ? "pointer" : "not-allowed",
       }}
+      title={
+        canDrop
+          ? "Un-enrol from course"
+          : "Course has already started. Students cannot drop."
+      }
     >
-      Delete
+      Drop
     </button>
   );
 };
 
+/* ===================== MAIN COMPONENT ===================== */
+
 const UpdateProgram_registration = () => {
-  const navigate = useNavigate(); // (kept in case you later add edit navigation)
   const queryClient = useQueryClient();
 
-  // 1) Fetch registrations
+  const roles = getUserRoles();
+  const isAdmin = roles.includes("ADMIN");
+  const isStudent = roles.includes("STUDENT");
+
+  /* ---------- FETCH REGISTRATIONS ---------- */
   const regQuery = useQuery({
     queryKey: ["resourceData", "program_registration"],
     queryFn: async () => {
       const params = new URLSearchParams({ queryId: "GET_ALL" });
       const res = await authFetch(
         `${apiConfig.getResourceUrl("program_registration")}?${params.toString()}`,
-        { method: "GET", headers: { "Content-Type": "application/json" } }
+        { method: "GET" }
       );
-      if (!res.ok) throw new Error("Failed to fetch program registrations");
+      if (!res.ok) throw new Error("Failed to fetch registrations");
       return res.json();
     },
   });
 
-  // 2) Fetch programs (for name mapping)
+  /* ---------- FETCH PROGRAMS ---------- */
   const programQuery = useQuery({
     queryKey: ["foreign", "Program"],
     queryFn: async () => {
@@ -292,7 +540,7 @@ const UpdateProgram_registration = () => {
     staleTime: 5 * 60 * 1000,
   });
 
-  // 3) Fetch students (for name/roll mapping)
+  /* ---------- FETCH STUDENTS ---------- */
   const studentQuery = useQuery({
     queryKey: ["foreign", "Student"],
     queryFn: async () => {
@@ -302,20 +550,27 @@ const UpdateProgram_registration = () => {
     staleTime: 5 * 60 * 1000,
   });
 
-  // 4) Build enriched rowData (program_id -> program_name, student_id -> student_name/roll_no)
+  /* ---------- BUILD ROW DATA ---------- */
   type StudentInfo = { name: string; roll_no: string };
 
   const rowData = useMemo(() => {
-    const json = regQuery.data;
-    const regs: any[] = Array.isArray(json) ? json : json?.resource || [];
+    const regs: any[] = Array.isArray(regQuery.data)
+      ? regQuery.data
+      : regQuery.data?.resource || [];
 
-    const programs: any[] = (programQuery.data as any[]) || [];
-    const students: any[] = (studentQuery.data as any[]) || [];
+    const programs: any[] = programQuery.data || [];
+    const students: any[] = studentQuery.data || [];
 
-    const programMap = new Map<string, string>(
+    const programMap = new Map<
+      string,
+      { name: string; startDate: Date }
+    >(
       programs.map((p: any) => [
         String(p.id),
-        String(p.program_name || p.name || p.id),
+        {
+          name: String(p.program_name || p.name || p.id),
+          startDate: new Date(p.start_date),
+        },
       ])
     );
 
@@ -329,62 +584,49 @@ const UpdateProgram_registration = () => {
       ])
     );
 
+    const today = new Date();
+
     return regs.map((r: any) => {
-      const stu = studentMap.get(String(r.student_id)); // StudentInfo | undefined
+      const stu = studentMap.get(String(r.student_id));
+      const prog = programMap.get(String(r.program_id));
+
+      const courseStarted =
+        prog?.startDate ? today >= prog.startDate : false;
 
       return {
         ...r,
-        program_name: programMap.get(String(r.program_id)) || r.program_id,
+        program_name: prog?.name || r.program_id,
         student_name: stu?.name || r.student_id,
         roll_no: stu?.roll_no || "",
+        courseStarted, // 👈 used by ActionCell
       };
     });
   }, [regQuery.data, programQuery.data, studentQuery.data]);
 
-  // -------------------- DELETE HANDLER --------------------
-  const handleDelete = async (id: any) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to remove this student from this program?"
-    );
-    if (!confirmDelete) return;
+  /* ---------- DROP (UN-ENROL) ---------- */
+  const handleDelete = async (id: string) => {
+    if (!window.confirm("Do you want to un-enrol from this course?")) return;
 
-    try {
-      const payload = { id };
+    const payload = { id };
+    const formData = new FormData();
+    const base64 = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
 
-      const formData = new FormData();
-      const jsonString = JSON.stringify(payload);
-      const base64 = btoa(unescape(encodeURIComponent(jsonString)));
+    formData.append("resource", base64);
+    formData.append("action", "DELETE");
 
-      formData.append("resource", base64);
-      formData.append("action", "DELETE");
+    await authFetch(apiConfig.getResourceUrl("program_registration"), {
+      method: "POST",
+      body: formData,
+    });
 
-      const res = await authFetch(
-        `${apiConfig.getResourceUrl("program_registration")}?`,
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
-
-      if (!res.ok) {
-        throw new Error("Delete failed: " + res.status);
-      }
-
-      // Refresh list from backend
-      await queryClient.invalidateQueries({
-        queryKey: ["resourceData", "program_registration"],
-      });
-
-      alert("Registration deleted successfully.");
-    } catch (err) {
-      console.error("Delete error:", err);
-      alert("Failed to delete registration. Please try again.");
-    }
+    await queryClient.invalidateQueries({
+      queryKey: ["resourceData", "program_registration"],
+    });
   };
 
-  // 5) Column definitions (manual and stable)
-  const colDefs: ColDef[] = useMemo(() => {
-    return [
+  /* ---------- COLUMNS ---------- */
+  const colDefs: ColDef[] = useMemo(
+    () => [
       {
         headerName: "Course",
         field: "program_name",
@@ -408,14 +650,14 @@ const UpdateProgram_registration = () => {
       },
       {
         headerName: "Action",
-        field: "action",
         cellRenderer: ActionCellRenderer,
         sortable: false,
         filter: false,
-        width: 140,
+        width: 180,
       },
-    ];
-  }, []);
+    ],
+    []
+  );
 
   const defaultColDef: ColDef = {
     flex: 1,
@@ -423,11 +665,17 @@ const UpdateProgram_registration = () => {
     editable: false,
   };
 
-  if (regQuery.isLoading || programQuery.isLoading || studentQuery.isLoading) {
+  if (
+    regQuery.isLoading ||
+    programQuery.isLoading ||
+    studentQuery.isLoading
+  ) {
     return <div>Loading...</div>;
   }
 
-  if (regQuery.isError) return <div>Error loading registrations.</div>;
+  if (regQuery.isError) {
+    return <div>Error loading registrations.</div>;
+  }
 
   return (
     <div className="ag-theme-alpine" style={{ height: 500, width: "100%" }}>
@@ -438,7 +686,12 @@ const UpdateProgram_registration = () => {
         pagination
         paginationPageSize={10}
         animateRows
-        context={{ handleDelete }}
+        overlayNoRowsTemplate={`<span style="color:#777;">No enrollments found</span>`}
+        context={{
+          handleDelete,
+          isAdmin,
+          isStudent,
+        }}
       />
     </div>
   );

@@ -752,7 +752,6 @@
 
 // export default CreateProgram;
 
-
 import React, { useState, useEffect, useRef } from "react";
 import apiConfig from "../../config/apiConfig";
 
@@ -1005,7 +1004,9 @@ const CreateProgram = () => {
                     onClick={() =>
                       setSearchQueries((prev) => ({
                         ...prev,
-                        __openAcademicYear: prev.__openAcademicYear ? "" : "open",
+                        __openAcademicYear: prev.__openAcademicYear
+                          ? ""
+                          : "open",
                       }))
                     }
                   >
@@ -1034,10 +1035,7 @@ const CreateProgram = () => {
                         placeholder="Search academic year"
                         value={searchQueries["academic_year_id"] || ""}
                         onChange={(e) =>
-                          handleSearchChange(
-                            "academic_year_id",
-                            e.target.value
-                          )
+                          handleSearchChange("academic_year_id", e.target.value)
                         }
                       />
 
@@ -1068,6 +1066,36 @@ const CreateProgram = () => {
                 </>
               );
             })()}
+          </div>
+
+          {/* Start Date */}
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel}>
+              <span className={styles.required}>*</span> Start Date
+            </label>
+            <input
+              type="date"
+              className={styles.formControl}
+              value={dataToSave.start_date || ""}
+              onChange={(e) =>
+                setDataToSave({ ...dataToSave, start_date: e.target.value })
+              }
+            />
+          </div>
+
+          {/* End Date */}
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel}>
+              <span className={styles.required}>*</span> End Date
+            </label>
+            <input
+              type="date"
+              className={styles.formControl}
+              value={dataToSave.end_date || ""}
+              onChange={(e) =>
+                setDataToSave({ ...dataToSave, end_date: e.target.value })
+              }
+            />
           </div>
 
           {/* Seats */}
@@ -1146,4 +1174,3 @@ const CreateProgram = () => {
 };
 
 export default CreateProgram;
-
