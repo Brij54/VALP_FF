@@ -797,108 +797,758 @@
 
 // export default ProgramEdit;
 
-import React, { useEffect, useRef, useState } from "react";
+// import React, { useEffect, useRef, useState } from "react";
+// import { useParams, useNavigate } from "react-router-dom";
+// import apiConfig from "../../config/apiConfig";
+// import { fetchForeignResource } from "../../apis/resources";
+// import { fetchEnum, getCookie } from "../../apis/enum";
+// import { useQuery, useQueryClient } from "@tanstack/react-query";
+// import {
+//   getUserIdFromJWT,
+//   useProgramViewModel,
+// } from "../viewModels/useProgramViewModel";
+// import Sidebar from "../Utils/SidebarAdmin"; // ✅ SIDEBAR ADDED
+// // import "../Batch_Config.css"; // ✅ SAME UI CSS
+// import styles from "../Styles/CreateCertificate.module.css";
+
+// const ProgramEdit = () => {
+//   const navigate = useNavigate();
+//   const { id }: any = useParams();
+//   const baseUrl = apiConfig.getResourceUrl("Program");
+//   const apiUrl = `${apiConfig.getResourceUrl("Program")}?`;
+//   const metadataUrl = `${apiConfig.getResourceMetaDataUrl("Program")}?`;
+
+//   const [editedRecord, setEditedRecord] = useState<any>({});
+//   const [resMetaData, setResMetaData] = useState([]);
+//   const [showToast, setShowToast] = useState(false);
+//   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+//   const [searchQueries, setSearchQueries] = useState<Record<string, string>>(
+//     {}
+//   );
+
+//   const regex = /^(g_|archived|extra_data)/;
+//   const fetchedResources = useRef(new Set<string>());
+//   const fetchedEnum = useRef(new Set<string>());
+//   const queryClient = useQueryClient();
+
+//   const { appId }: any = useParams<any>();
+
+//   const {
+//     fields,
+//     setFields,
+//     enums,
+//     setEnums,
+//     foreignKeyData,
+//     setForeignKeyData,
+//   } = useProgramViewModel(getUserIdFromJWT(), appId);
+
+//   const fetchDataById = async (id: string) => {
+//     const params = new URLSearchParams({
+//       args: `id:${id}`,
+//       queryId: "GET_BY_ID",
+//     });
+
+//     const url = `${baseUrl}?${params.toString()}`;
+//     const accessToken = getCookie("access_token");
+
+//     const response = await fetch(url, {
+//       headers: { Authorization: `Bearer ${accessToken}` },
+//       credentials: "include",
+//     });
+
+//     if (!response.ok) throw new Error("Network response was not ok");
+//     return response.json();
+//   };
+
+//   const { data: fetchedDataById, isLoading: loadingEditComp } = useQuery({
+//     queryKey: ["getById", id],
+//     queryFn: () => fetchDataById(id),
+//     enabled: !!id,
+//   });
+
+//   useEffect(() => {
+//     if (fetchedDataById?.resource?.length > 0) {
+//       setEditedRecord(
+//         Object.fromEntries(
+//           Object.entries(fetchedDataById.resource[0]).filter(
+//             ([key]) => !regex.test(key)
+//           )
+//         )
+//       );
+//     }
+//   }, [fetchedDataById]);
+
+//   useQuery({
+//     queryKey: ["resMetaData", "programEdit"],
+//     queryFn: async () => {
+//       const res = await fetch(metadataUrl);
+//       const data = await res.json();
+//       setResMetaData(data);
+//       setFields(data[0].fieldValues);
+
+//       for (const field of data[0].fieldValues.filter((f: any) => f.foreign)) {
+//         if (!fetchedResources.current.has(field.foreign)) {
+//           fetchedResources.current.add(field.foreign);
+//           const d = await fetchForeignResource(field.foreign);
+//           setForeignKeyData((prev: any) => ({ ...prev, [field.foreign]: d }));
+//         }
+//       }
+
+//       for (const field of data[0].fieldValues.filter((f: any) => f.isEnum)) {
+//         if (!fetchedEnum.current.has(field.possible_value)) {
+//           fetchedEnum.current.add(field.possible_value);
+//           const d = await fetchEnum(field.possible_value);
+//           setEnums((prev: any) => ({ ...prev, [field.possible_value]: d }));
+//         }
+//       }
+
+//       return data;
+//     },
+//   });
+
+//   const handleEdit = (field: string, value: any) => {
+//     setEditedRecord((prev: any) => ({ ...prev, [field]: value }));
+//   };
+
+//   const handleUpdate = async (e: React.FormEvent) => {
+//     e.preventDefault();
+
+//     const params = new FormData();
+//     const fileKey = Object.keys(editedRecord).find(
+//       (k) => editedRecord[k] instanceof File
+//     );
+
+//     if (fileKey) {
+//       params.append("file", editedRecord[fileKey]);
+//       editedRecord[fileKey] = "";
+//     }
+
+//     params.append(
+//       "resource",
+//       btoa(unescape(encodeURIComponent(JSON.stringify(editedRecord))))
+//     );
+//     params.append("action", "MODIFY");
+
+//     const accessToken = getCookie("access_token");
+
+//     const response = await fetch(apiUrl, {
+//       method: "POST",
+//       headers: { Authorization: `Bearer ${accessToken}` },
+//       credentials: "include",
+//       body: params,
+//     });
+
+//     if (response.ok) {
+//       setShowToast(true);
+//       setTimeout(() => {
+//         navigate("/valpcourses"); // ✅ navigate added
+//       }, 1000);
+//     }
+//   };
+
+//   /* ================= UI ONLY ================= */
+
+//   return (
+//     <div className="page12Container">
+//   {/* ✅ SIDEBAR */}
+//   <Sidebar
+//     sidebarCollapsed={sidebarCollapsed}
+//     toggleSidebar={() => setSidebarCollapsed((prev) => !prev)}
+//     activeSection="dashboard"
+//   />
+
+//   <main className="mainContent">
+//     <header className="contentHeader">
+//       <h1 className="pageTitle">Edit Course</h1>
+//     </header>
+
+//     <div className="contentBody">
+//       <div className="pageFormContainer">
+//         {!loadingEditComp && (
+//           <form onSubmit={handleUpdate}>
+//             <div className={styles.certificateFormWrapper}>
+//               <h2 className={styles.sectionTitle}>Edit Course Information</h2>
+
+//               <div className={styles.formGrid}>
+//                 {/* Course Name */}
+//                 <div className={styles.formGroup}>
+//                   <label className={styles.formLabel}>
+//                     <span className={styles.required}>*</span> Course Name
+//                   </label>
+//                   <input
+//                     type="text"
+//                     className={styles.formControl}
+//                     value={editedRecord.name || ""}
+//                     onChange={(e) => handleEdit("name", e.target.value)}
+//                     required
+//                   />
+//                 </div>
+
+//                 {/* Seats */}
+//                 <div className={styles.formGroup}>
+//                   <label className={styles.formLabel}>
+//                     <span className={styles.required}>*</span> Seats
+//                   </label>
+//                   <input
+//                     type="number"
+//                     className={styles.formControl}
+//                     value={editedRecord.seats || ""}
+//                     onChange={(e) => handleEdit("seats", e.target.value)}
+//                     required
+//                   />
+//                 </div>
+
+//                 {/* Instructor */}
+//                 <div className={styles.formGroup}>
+//                   <label className={styles.formLabel}>
+//                     <span className={styles.required}>*</span> Instructor Name
+//                   </label>
+//                   <input
+//                     type="text"
+//                     className={styles.formControl}
+//                     value={editedRecord.instructor_name || ""}
+//                     onChange={(e) =>
+//                       handleEdit("instructor_name", e.target.value)
+//                     }
+//                     required
+//                   />
+//                 </div>
+
+//                 {/* Term */}
+//                 <div className={styles.formGroup}>
+//                   <label className={styles.formLabel}>
+//                     <span className={styles.required}>*</span> Term Name
+//                   </label>
+//                   <input
+//                     type="text"
+//                     className={styles.formControl}
+//                     value={editedRecord.term_name || ""}
+//                     onChange={(e) => handleEdit("term_name", e.target.value)}
+//                     required
+//                   />
+//                 </div>
+
+//                 {/* Academic Year */}
+//                 <div className={styles.formGroup}>
+//                   <label className={styles.formLabel}>
+//                     <span className={styles.required}>*</span> Academic Year
+//                   </label>
+//                   <select
+//                     className={styles.formControl}
+//                     value={editedRecord.academic_year_id || ""}
+//                     onChange={(e) =>
+//                       handleEdit("academic_year_id", e.target.value)
+//                     }
+//                     required
+//                   >
+//                     <option value="">Select Academic Year</option>
+//                     {(foreignKeyData["Academic_year"] || []).map((y:any) => (
+//                       <option key={y.id} value={y.id}>
+//                         {y.id}
+//                       </option>
+//                     ))}
+//                   </select>
+//                 </div>
+
+//                 {/* Syllabus */}
+//                 <div className={styles.formGroup}>
+//                   <label className={styles.formLabel}>Upload Syllabus</label>
+//                   <input
+//                     type="file"
+//                     className={styles.formControl}
+//                     onChange={(e) =>
+//                       handleEdit("syllabus", e.target.files?.[0] || null)
+//                     }
+//                   />
+//                 </div>
+//               </div>
+
+//               {/* Button */}
+//               <div className={styles.buttonRow}>
+//                 <button type="submit" className={styles.primaryBtn}>
+//                   Update
+//                 </button>
+//               </div>
+//             </div>
+//           </form>
+//         )}
+
+//         {/* Toast */}
+//         {showToast && (
+//           <div className="toast-container position-fixed top-20 start-50 translate-middle p-3">
+//             <div className="toast show">
+//               <div className="toast-header">
+//                 <strong className="me-auto">Success</strong>
+//               </div>
+//               <div className="toast-body text-success text-center">
+//                 Updated Successfully!
+//               </div>
+//             </div>
+//           </div>
+//         )}
+//       </div>
+//     </div>
+//   </main>
+// </div>
+
+//   );
+// };
+
+// export default ProgramEdit;
+
+// import React, { useEffect, useRef, useState, useMemo } from "react";
+// import { useParams, useNavigate } from "react-router-dom";
+// import apiConfig from "../../config/apiConfig";
+// import { fetchForeignResource } from "../../apis/resources";
+// import { fetchEnum, getCookie } from "../../apis/enum";
+// import { useQuery } from "@tanstack/react-query";
+// import {
+//   getUserIdFromJWT,
+//   useProgramViewModel,
+// } from "../viewModels/useProgramViewModel";
+// import Sidebar from "../Utils/SidebarAdmin";
+// import styles from "../Styles/CreateCertificate.module.css";
+// import { LogOut } from "lucide-react";
+// import { logout } from "../../apis/backend";
+
+// const ProgramEdit = () => {
+//   const navigate = useNavigate();
+//   const { id, appId }: any = useParams();
+
+//   const baseUrl = apiConfig.getResourceUrl("Program");
+//   const apiUrl = `${apiConfig.getResourceUrl("Program")}?`;
+//   const metadataUrl = apiConfig.getResourceMetaDataUrl("Program");
+
+//   const [editedRecord, setEditedRecord] = useState<any>({});
+//   const [showToast, setShowToast] = useState(false);
+//   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+//   const [showDropdown, setShowDropdown] = useState(false);
+
+//   const regex = /^(g_|archived|extra_data)/;
+//   const fetchedResources = useRef(new Set<string>());
+//   const fetchedEnum = useRef(new Set<string>());
+
+//   const {
+//     setFields,
+//     setEnums,
+//     foreignKeyData,
+//     setForeignKeyData,
+//   } = useProgramViewModel(getUserIdFromJWT(), appId);
+
+//   /* ================= FETCH PROGRAM ================= */
+
+//   const fetchProgramById = async () => {
+//     const params = new URLSearchParams({
+//       args: `id:${id}`,
+//       queryId: "GET_BY_ID",
+//     });
+
+//     const res = await fetch(`${baseUrl}?${params}`, {
+//       headers: {
+//         Authorization: `Bearer ${getCookie("access_token")}`,
+//       },
+//       credentials: "include",
+//     });
+
+//     if (!res.ok) throw new Error("Failed to fetch program");
+//     return res.json();
+//   };
+
+//   const { data: programData, isLoading } = useQuery({
+//     queryKey: ["programById", id],
+//     queryFn: fetchProgramById,
+//     enabled: !!id,
+//   });
+
+//   /* ================= FETCH ACADEMIC YEARS ================= */
+
+//   const { data: academicYears } = useQuery({
+//     queryKey: ["academicYears"],
+//     queryFn: async () => {
+//       const d: any = await fetchForeignResource("Academic_year");
+//       return Array.isArray(d) ? d : d.resource || [];
+//     },
+//   });
+
+//   const academicYearMap = useMemo(() => {
+//     const map: Record<string, string> = {};
+//     (academicYears || []).forEach((ay: any) => {
+//       map[ay.id] =
+//         ay.academic_name || ay.academicName || ay.name || ay.id;
+//     });
+//     return map;
+//   }, [academicYears]);
+
+//   /* ================= PREFILL FORM ================= */
+
+//   useEffect(() => {
+//     if (programData?.resource?.length) {
+//       const record = programData.resource[0];
+
+//       setEditedRecord(
+//         Object.fromEntries(
+//           Object.entries(record).filter(
+//             ([key]) => !regex.test(key)
+//           )
+//         )
+//       );
+//     }
+//   }, [programData]);
+
+//   /* ================= FETCH METADATA ================= */
+
+//   useQuery({
+//     queryKey: ["programMeta"],
+//     queryFn: async () => {
+//       const res = await fetch(metadataUrl);
+//       const data = await res.json();
+
+//       setFields(data[0].fieldValues);
+
+//       for (const f of data[0].fieldValues.filter((x: any) => x.foreign)) {
+//         if (!fetchedResources.current.has(f.foreign)) {
+//           fetchedResources.current.add(f.foreign);
+//           const d = await fetchForeignResource(f.foreign);
+//           setForeignKeyData((p: any) => ({ ...p, [f.foreign]: d }));
+//         }
+//       }
+
+//       for (const f of data[0].fieldValues.filter((x: any) => x.isEnum)) {
+//         if (!fetchedEnum.current.has(f.possible_value)) {
+//           fetchedEnum.current.add(f.possible_value);
+//           const d = await fetchEnum(f.possible_value);
+//           setEnums((p: any) => ({ ...p, [f.possible_value]: d }));
+//         }
+//       }
+
+//       return data;
+//     },
+//   });
+
+//   const handleEdit = (field: string, value: any) => {
+//     setEditedRecord((prev: any) => ({ ...prev, [field]: value }));
+//   };
+
+//   /* ================= UPDATE ================= */
+
+//   const handleUpdate = async (e: React.FormEvent) => {
+//     e.preventDefault();
+
+//     const params = new FormData();
+//     params.append(
+//       "resource",
+//       btoa(unescape(encodeURIComponent(JSON.stringify(editedRecord))))
+//     );
+//     params.append("action", "MODIFY");
+
+//     const res = await fetch(apiUrl, {
+//       method: "POST",
+//       headers: {
+//         Authorization: `Bearer ${getCookie("access_token")}`,
+//       },
+//       credentials: "include",
+//       body: params,
+//     });
+
+//     if (res.ok) {
+//       setShowToast(true);
+//       setTimeout(() => navigate("/valpcourses"), 1000);
+//     }
+//   };
+
+//   const handleLogout = async () => {
+//       const ok = await logout();
+//       if (ok) {
+//         navigate("/");
+//       }
+//     };
+
+//   /* ================= UI (UNCHANGED) ================= */
+
+//   return (
+//     <div className="page12Container">
+//       <Sidebar
+//         sidebarCollapsed={sidebarCollapsed}
+//         toggleSidebar={() => setSidebarCollapsed((p) => !p)}
+//         activeSection="dashboard"
+//       />
+
+//       <main className="mainContent">
+//         <header className="contentHeader">
+//           <h1 className="pageTitle">Edit Course</h1>
+//         </header>
+
+//         <div className="userProfile" style={{ position: "relative" }}>
+//             <div className="profileCircle"
+//               onClick={() => setShowDropdown((prev) => !prev)}
+//               style={{ cursor: "pointer" }}
+//             >
+//               <span className="profileInitial">A</span>
+//             </div>
+
+//             {showDropdown && (
+//               <div
+//                 style={{
+//                   position: "absolute",
+//                   right: 0,
+//                   top: "45px",
+//                   background: "white",
+//                   borderRadius: "8px",
+//                   boxShadow: "0 2px 10px rgba(0,0,0,0.15)",
+//                   padding: "10px",
+//                   minWidth: "130px",
+//                   zIndex: 100,
+//                 }}
+//               >
+//                 <button
+//                   onClick={handleLogout}
+//                   style={{
+//                     width: "100%",
+//                     background: "none",
+//                     border: "none",
+//                     textAlign: "left",
+//                     padding: "8px",
+//                     cursor: "pointer",
+//                     fontSize: "16px",
+//                   }}
+//                 >
+//                   <LogOut size={16} />
+//                   <span style={{ marginLeft: "8px" }}>Logout</span>
+//                 </button>
+//               </div>
+//             )}
+//           </div>
+
+//         <div className="contentBody">
+//           <div className="pageFormContainer">
+//             {!isLoading && (
+//               <form onSubmit={handleUpdate}>
+//                 <div className={styles.certificateFormWrapper}>
+//                   <h2 className={styles.sectionTitle}>
+//                     Edit Course Information
+//                   </h2>
+
+//                   <div className={styles.formGrid}>
+//                     {/* Name */}
+//                     <input
+//                       className={styles.formControl}
+//                       value={editedRecord.name || ""}
+//                       onChange={(e) =>
+//                         handleEdit("name", e.target.value)
+//                       }
+//                     />
+
+//                     {/* Seats */}
+//                     <input
+//                       type="number"
+//                       className={styles.formControl}
+//                       value={editedRecord.seats || ""}
+//                       onChange={(e) =>
+//                         handleEdit("seats", e.target.value)
+//                       }
+//                     />
+
+//                     {/* Instructor */}
+//                     <input
+//                       className={styles.formControl}
+//                       value={editedRecord.instructor_name || ""}
+//                       onChange={(e) =>
+//                         handleEdit("instructor_name", e.target.value)
+//                       }
+//                     />
+
+//                     {/* Term */}
+//                     <input
+//                       className={styles.formControl}
+//                       value={editedRecord.term_name || ""}
+//                       onChange={(e) =>
+//                         handleEdit("term_name", e.target.value)
+//                       }
+//                     />
+
+//                     {/* Academic Year */}
+//                     <select
+//                       className={styles.formControl}
+//                       value={editedRecord.academic_year_id || ""}
+//                       onChange={(e) =>
+//                         handleEdit("academic_year_id", e.target.value)
+//                       }
+//                     >
+//                       <option value="">Select Academic Year</option>
+//                       {(academicYears || []).map((ay: any) => (
+//                         <option key={ay.id} value={ay.id}>
+//                           {academicYearMap[ay.id]}
+//                         </option>
+//                       ))}
+//                     </select>
+
+//                     {/* Start Date */}
+//                     <input
+//                       type="date"
+//                       className={styles.formControl}
+//                       value={editedRecord.start_date || ""}
+//                       onChange={(e) =>
+//                         handleEdit("start_date", e.target.value)
+//                       }
+//                     />
+
+//                     {/* End Date */}
+//                     <input
+//                       type="date"
+//                       className={styles.formControl}
+//                       value={editedRecord.end_date || ""}
+//                       onChange={(e) =>
+//                         handleEdit("end_date", e.target.value)
+//                       }
+//                     />
+//                   </div>
+
+//                   <div className={styles.buttonRow}>
+//                     <button className={styles.primaryBtn}>
+//                       Update
+//                     </button>
+//                   </div>
+//                 </div>
+//               </form>
+//             )}
+
+//             {showToast && (
+//               <div className="toast-container position-fixed top-20 start-50 translate-middle p-3">
+//                 <div className="toast show">
+//                   <div className="toast-body text-success text-center">
+//                     Updated Successfully!
+//                   </div>
+//                 </div>
+//               </div>
+//             )}
+//           </div>
+//         </div>
+//       </main>
+//     </div>
+//   );
+// };
+
+// export default ProgramEdit;
+
+import React, {
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import apiConfig from "../../config/apiConfig";
 import { fetchForeignResource } from "../../apis/resources";
 import { fetchEnum, getCookie } from "../../apis/enum";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import {
   getUserIdFromJWT,
   useProgramViewModel,
 } from "../viewModels/useProgramViewModel";
-import Sidebar from "../Utils/SidebarAdmin"; // ✅ SIDEBAR ADDED
-// import "../Batch_Config.css"; // ✅ SAME UI CSS
+import Sidebar from "../Utils/SidebarAdmin";
 import styles from "../Styles/CreateCertificate.module.css";
+import { LogOut } from "lucide-react";
+import { logout } from "../../apis/backend";
 
 const ProgramEdit = () => {
   const navigate = useNavigate();
-  const { id }: any = useParams();
+  const { id, appId }: any = useParams();
+
   const baseUrl = apiConfig.getResourceUrl("Program");
   const apiUrl = `${apiConfig.getResourceUrl("Program")}?`;
-  const metadataUrl = `${apiConfig.getResourceMetaDataUrl("Program")}?`;
+  const metadataUrl =
+    apiConfig.getResourceMetaDataUrl("Program");
 
   const [editedRecord, setEditedRecord] = useState<any>({});
-  const [resMetaData, setResMetaData] = useState([]);
   const [showToast, setShowToast] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [searchQueries, setSearchQueries] = useState<Record<string, string>>(
-    {}
-  );
+
+  /* 🔑 PROFILE STATE (SAME AS Batch_Config) */
+  const [showDropdown, setShowDropdown] = useState(false);
 
   const regex = /^(g_|archived|extra_data)/;
   const fetchedResources = useRef(new Set<string>());
   const fetchedEnum = useRef(new Set<string>());
-  const queryClient = useQueryClient();
-
-  const { appId }: any = useParams<any>();
 
   const {
-    fields,
     setFields,
-    enums,
     setEnums,
-    foreignKeyData,
     setForeignKeyData,
   } = useProgramViewModel(getUserIdFromJWT(), appId);
 
-  const fetchDataById = async (id: string) => {
+  /* ================= FETCH PROGRAM ================= */
+
+  const fetchProgramById = async () => {
     const params = new URLSearchParams({
       args: `id:${id}`,
       queryId: "GET_BY_ID",
     });
 
-    const url = `${baseUrl}?${params.toString()}`;
-    const accessToken = getCookie("access_token");
-
-    const response = await fetch(url, {
-      headers: { Authorization: `Bearer ${accessToken}` },
+    const res = await fetch(`${baseUrl}?${params}`, {
+      headers: {
+        Authorization: `Bearer ${getCookie("access_token")}`,
+      },
       credentials: "include",
     });
 
-    if (!response.ok) throw new Error("Network response was not ok");
-    return response.json();
+    if (!res.ok) throw new Error("Failed to fetch program");
+    return res.json();
   };
 
-  const { data: fetchedDataById, isLoading: loadingEditComp } = useQuery({
-    queryKey: ["getById", id],
-    queryFn: () => fetchDataById(id),
+  const { data: programData, isLoading } = useQuery({
+    queryKey: ["programById", id],
+    queryFn: fetchProgramById,
     enabled: !!id,
   });
 
+  /* ================= FETCH ACADEMIC YEARS ================= */
+
+  const { data: academicYears } = useQuery({
+    queryKey: ["academicYears"],
+    queryFn: async () => {
+      const d: any = await fetchForeignResource("Academic_year");
+      return Array.isArray(d) ? d : d.resource || [];
+    },
+  });
+
+  /* ================= PREFILL FORM ================= */
+
   useEffect(() => {
-    if (fetchedDataById?.resource?.length > 0) {
+    if (programData?.resource?.length) {
+      const record = programData.resource[0];
       setEditedRecord(
         Object.fromEntries(
-          Object.entries(fetchedDataById.resource[0]).filter(
+          Object.entries(record).filter(
             ([key]) => !regex.test(key)
           )
         )
       );
     }
-  }, [fetchedDataById]);
+  }, [programData]);
+
+  /* ================= FETCH METADATA ================= */
 
   useQuery({
-    queryKey: ["resMetaData", "programEdit"],
+    queryKey: ["programMeta"],
     queryFn: async () => {
       const res = await fetch(metadataUrl);
       const data = await res.json();
-      setResMetaData(data);
+
       setFields(data[0].fieldValues);
 
-      for (const field of data[0].fieldValues.filter((f: any) => f.foreign)) {
-        if (!fetchedResources.current.has(field.foreign)) {
-          fetchedResources.current.add(field.foreign);
-          const d = await fetchForeignResource(field.foreign);
-          setForeignKeyData((prev: any) => ({ ...prev, [field.foreign]: d }));
+      for (const f of data[0].fieldValues.filter((x: any) => x.foreign)) {
+        if (!fetchedResources.current.has(f.foreign)) {
+          fetchedResources.current.add(f.foreign);
+          const d = await fetchForeignResource(f.foreign);
+          setForeignKeyData((p: any) => ({ ...p, [f.foreign]: d }));
         }
       }
 
-      for (const field of data[0].fieldValues.filter((f: any) => f.isEnum)) {
-        if (!fetchedEnum.current.has(field.possible_value)) {
-          fetchedEnum.current.add(field.possible_value);
-          const d = await fetchEnum(field.possible_value);
-          setEnums((prev: any) => ({ ...prev, [field.possible_value]: d }));
+      for (const f of data[0].fieldValues.filter((x: any) => x.isEnum)) {
+        if (!fetchedEnum.current.has(f.possible_value)) {
+          fetchedEnum.current.add(f.possible_value);
+          const d = await fetchEnum(f.possible_value);
+          setEnums((p: any) => ({ ...p, [f.possible_value]: d }));
         }
       }
 
@@ -906,192 +1556,199 @@ const ProgramEdit = () => {
     },
   });
 
-  const handleEdit = (field: string, value: any) => {
-    setEditedRecord((prev: any) => ({ ...prev, [field]: value }));
-  };
+  const handleEdit = (field: string, value: any) =>
+    setEditedRecord((p: any) => ({ ...p, [field]: value }));
+
+  /* ================= UPDATE ================= */
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const params = new FormData();
-    const fileKey = Object.keys(editedRecord).find(
-      (k) => editedRecord[k] instanceof File
-    );
-
-    if (fileKey) {
-      params.append("file", editedRecord[fileKey]);
-      editedRecord[fileKey] = "";
-    }
-
     params.append(
       "resource",
       btoa(unescape(encodeURIComponent(JSON.stringify(editedRecord))))
     );
     params.append("action", "MODIFY");
 
-    const accessToken = getCookie("access_token");
-
-    const response = await fetch(apiUrl, {
+    const res = await fetch(apiUrl, {
       method: "POST",
-      headers: { Authorization: `Bearer ${accessToken}` },
+      headers: {
+        Authorization: `Bearer ${getCookie("access_token")}`,
+      },
       credentials: "include",
       body: params,
     });
 
-    if (response.ok) {
+    if (res.ok) {
       setShowToast(true);
-      setTimeout(() => {
-        navigate("/valpcourses"); // ✅ navigate added
-      }, 1000);
+      setTimeout(() => navigate("/valpcourses"), 1000);
     }
   };
 
-  /* ================= UI ONLY ================= */
+  /* ================= LOGOUT ================= */
+
+  const handleLogout = async () => {
+    const ok = await logout();
+    if (ok) navigate("/");
+  };
+
+  /* ================= UI ================= */
 
   return (
     <div className="page12Container">
-  {/* ✅ SIDEBAR */}
-  <Sidebar
-    sidebarCollapsed={sidebarCollapsed}
-    toggleSidebar={() => setSidebarCollapsed((prev) => !prev)}
-    activeSection="dashboard"
-  />
+      <Sidebar
+        sidebarCollapsed={sidebarCollapsed}
+        toggleSidebar={() => setSidebarCollapsed((p) => !p)}
+        activeSection="dashboard"
+      />
 
-  <main className="mainContent">
-    <header className="contentHeader">
-      <h1 className="pageTitle">Edit Course</h1>
-    </header>
+      <main
+        className={`mainContent ${sidebarCollapsed ? "sidebarCollapsed" : ""}`}
+      >
+        <header className="contentHeader">
+          <h1 className="pageTitle">Edit Course</h1>
 
-    <div className="contentBody">
-      <div className="pageFormContainer">
-        {!loadingEditComp && (
-          <form onSubmit={handleUpdate}>
-            <div className={styles.certificateFormWrapper}>
-              <h2 className={styles.sectionTitle}>Edit Course Information</h2>
+          {/* ✅ USER PROFILE (EXACT SAME AS Batch_Config) */}
+          <div className="userProfile" style={{ position: "relative" }}>
+            <div
+              className="profileCircle"
+              onClick={() => setShowDropdown((prev) => !prev)}
+              style={{ cursor: "pointer" }}
+            >
+              <span className="profileInitial">A</span>
+            </div>
 
-              <div className={styles.formGrid}>
-                {/* Course Name */}
-                <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>
-                    <span className={styles.required}>*</span> Course Name
-                  </label>
-                  <input
-                    type="text"
-                    className={styles.formControl}
-                    value={editedRecord.name || ""}
-                    onChange={(e) => handleEdit("name", e.target.value)}
-                    required
-                  />
-                </div>
-
-                {/* Seats */}
-                <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>
-                    <span className={styles.required}>*</span> Seats
-                  </label>
-                  <input
-                    type="number"
-                    className={styles.formControl}
-                    value={editedRecord.seats || ""}
-                    onChange={(e) => handleEdit("seats", e.target.value)}
-                    required
-                  />
-                </div>
-
-                {/* Instructor */}
-                <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>
-                    <span className={styles.required}>*</span> Instructor Name
-                  </label>
-                  <input
-                    type="text"
-                    className={styles.formControl}
-                    value={editedRecord.instructor_name || ""}
-                    onChange={(e) =>
-                      handleEdit("instructor_name", e.target.value)
-                    }
-                    required
-                  />
-                </div>
-
-                {/* Term */}
-                <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>
-                    <span className={styles.required}>*</span> Term Name
-                  </label>
-                  <input
-                    type="text"
-                    className={styles.formControl}
-                    value={editedRecord.term_name || ""}
-                    onChange={(e) => handleEdit("term_name", e.target.value)}
-                    required
-                  />
-                </div>
-
-                {/* Academic Year */}
-                <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>
-                    <span className={styles.required}>*</span> Academic Year
-                  </label>
-                  <select
-                    className={styles.formControl}
-                    value={editedRecord.academic_year_id || ""}
-                    onChange={(e) =>
-                      handleEdit("academic_year_id", e.target.value)
-                    }
-                    required
-                  >
-                    <option value="">Select Academic Year</option>
-                    {(foreignKeyData["Academic_year"] || []).map((y:any) => (
-                      <option key={y.id} value={y.id}>
-                        {y.id}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Syllabus */}
-                <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Upload Syllabus</label>
-                  <input
-                    type="file"
-                    className={styles.formControl}
-                    onChange={(e) =>
-                      handleEdit("syllabus", e.target.files?.[0] || null)
-                    }
-                  />
-                </div>
-              </div>
-
-              {/* Button */}
-              <div className={styles.buttonRow}>
-                <button type="submit" className={styles.primaryBtn}>
-                  Update
+            {showDropdown && (
+              <div
+                style={{
+                  position: "absolute",
+                  right: 0,
+                  top: "45px",
+                  background: "white",
+                  borderRadius: "8px",
+                  boxShadow: "0 2px 10px rgba(0,0,0,0.15)",
+                  padding: "10px",
+                  minWidth: "130px",
+                  zIndex: 100,
+                }}
+              >
+                <button
+                  onClick={handleLogout}
+                  style={{
+                    width: "100%",
+                    background: "none",
+                    border: "none",
+                    textAlign: "left",
+                    padding: "8px",
+                    cursor: "pointer",
+                    fontSize: "16px",
+                  }}
+                >
+                  <LogOut size={16} />
+                  <span style={{ marginLeft: "8px" }}>Logout</span>
                 </button>
               </div>
-            </div>
-          </form>
-        )}
-
-        {/* Toast */}
-        {showToast && (
-          <div className="toast-container position-fixed top-20 start-50 translate-middle p-3">
-            <div className="toast show">
-              <div className="toast-header">
-                <strong className="me-auto">Success</strong>
-              </div>
-              <div className="toast-body text-success text-center">
-                Updated Successfully!
-              </div>
-            </div>
+            )}
           </div>
-        )}
-      </div>
-    </div>
-  </main>
-</div>
+        </header>
 
+        <div className="contentBody">
+          <div className="pageFormContainer">
+            {!isLoading && (
+              <form onSubmit={handleUpdate}>
+                <div className={styles.certificateFormWrapper}>
+                  <h2 className={styles.sectionTitle}>
+                    Edit Course Information
+                  </h2>
+
+                  <div className={styles.formGrid}>
+                    <input
+                      className={styles.formControl}
+                      value={editedRecord.name || ""}
+                      onChange={(e) => handleEdit("name", e.target.value)}
+                    />
+
+                    <input
+                      type="number"
+                      className={styles.formControl}
+                      value={editedRecord.seats || ""}
+                      onChange={(e) => handleEdit("seats", e.target.value)}
+                    />
+
+                    <input
+                      className={styles.formControl}
+                      value={editedRecord.instructor_name || ""}
+                      onChange={(e) =>
+                        handleEdit("instructor_name", e.target.value)
+                      }
+                    />
+
+                    <input
+                      className={styles.formControl}
+                      value={editedRecord.term_name || ""}
+                      onChange={(e) => handleEdit("term_name", e.target.value)}
+                    />
+
+                    <select
+                      className={styles.formControl}
+                      value={editedRecord.academic_year_id || ""}
+                      onChange={(e) =>
+                        handleEdit("academic_year_id", e.target.value)
+                      }
+                    >
+                      <option value="">Select Academic Year</option>
+                      {(academicYears || []).map((ay: any) => (
+                        <option key={ay.id} value={ay.id}>
+                          {ay.academic_name || ay.name || ay.id}
+                        </option>
+                      ))}
+                    </select>
+
+                    <input
+                      type="date"
+                      className={styles.formControl}
+                      value={editedRecord.start_date || ""}
+                      onChange={(e) =>
+                        handleEdit("start_date", e.target.value)
+                      }
+                    />
+
+                    <input
+                      type="date"
+                      className={styles.formControl}
+                      value={editedRecord.end_date || ""}
+                      onChange={(e) =>
+                        handleEdit("end_date", e.target.value)
+                      }
+                    />
+                  </div>
+
+                  <div className={styles.buttonRow}>
+                    <button className={styles.primaryBtn}>
+                      Update
+                    </button>
+                  </div>
+                </div>
+              </form>
+            )}
+
+            {showToast && (
+              <div className="toast-container position-fixed top-20 start-50 translate-middle p-3">
+                <div className="toast show">
+                  <div className="toast-body text-success text-center">
+                    Updated Successfully!
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </main>
+    </div>
   );
 };
 
 export default ProgramEdit;
+
+

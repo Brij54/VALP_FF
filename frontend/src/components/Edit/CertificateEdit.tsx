@@ -1,4 +1,3 @@
-
 // import React, { useEffect, useRef, useState } from "react";
 // import { useParams, useNavigate } from "react-router-dom";
 // import apiConfig from "../../config/apiConfig";
@@ -880,8 +879,6 @@
 
 // export default Edit;
 
-
-
 import React, { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import apiConfig from "../../config/apiConfig";
@@ -891,6 +888,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import Sidebar from "../Utils/SidebarAdmin";
 import styles from "../Styles/CreateCertificate.module.css";
+import { LogOut } from "lucide-react";
+import { logout } from "../../apis/backend";
 
 /** ✅ authFetch added inside this file */
 async function authFetch(
@@ -942,6 +941,8 @@ const Edit = () => {
     {}
   );
   const [enums, setEnums] = useState<Record<string, any[]>>({});
+
+  const [showDropdown, setShowDropdown] = useState(false);
 
   const regex = /^(g_|archived|extra_data)/;
   const fetchedResources = useRef(new Set<string>());
@@ -1001,7 +1002,8 @@ const Edit = () => {
         headers: { "Content-Type": "application/json" },
       });
 
-      if (!res.ok) throw new Error(`Failed to fetch metadata: ${res.statusText}`);
+      if (!res.ok)
+        throw new Error(`Failed to fetch metadata: ${res.statusText}`);
 
       const data = await res.json();
 
@@ -1021,7 +1023,11 @@ const Edit = () => {
             queryFn: () => fetchForeignResource(field.foreign),
           });
 
-          await fetchForeignData(field.foreign, field.name, field.foreign_field);
+          await fetchForeignData(
+            field.foreign,
+            field.name,
+            field.foreign_field
+          );
         }
       }
 
@@ -1150,6 +1156,11 @@ const Edit = () => {
     );
   };
 
+  const handleLogout = async () => {
+    const ok = await logout();
+    if (ok) navigate("/");
+  };
+
   return (
     <div className="page12Container">
       <Sidebar
@@ -1161,6 +1172,48 @@ const Edit = () => {
       <main className="mainContent">
         <header className="contentHeader">
           <h1 className="pageTitle">Edit Certificate</h1>
+
+          <div className="userProfile" style={{ position: "relative" }}>
+            <div
+              className="profileCircle"
+              onClick={() => setShowDropdown((prev) => !prev)}
+              style={{ cursor: "pointer" }}
+            >
+              <span className="profileInitial">A</span>
+            </div>
+
+            {showDropdown && (
+              <div
+                style={{
+                  position: "absolute",
+                  right: 0,
+                  top: "45px",
+                  background: "white",
+                  borderRadius: "8px",
+                  boxShadow: "0 2px 10px rgba(0,0,0,0.15)",
+                  padding: "10px",
+                  minWidth: "130px",
+                  zIndex: 100,
+                }}
+              >
+                <button
+                  onClick={handleLogout}
+                  style={{
+                    width: "100%",
+                    background: "none",
+                    border: "none",
+                    textAlign: "left",
+                    padding: "8px",
+                    cursor: "pointer",
+                    fontSize: "16px",
+                  }}
+                >
+                  <LogOut size={16} />
+                  <span style={{ marginLeft: "8px" }}>Logout</span>
+                </button>
+              </div>
+            )}
+          </div>
         </header>
 
         <div className="contentBody">
@@ -1193,21 +1246,31 @@ const Edit = () => {
                           return (
                             <div>
                               {logs.uploaded_at && (
-                                <div><b>Uploaded:</b> {logs.uploaded_at}</div>
+                                <div>
+                                  <b>Uploaded:</b> {logs.uploaded_at}
+                                </div>
                               )}
 
                               {logs.approved_by && (
-                                <div><b>Approved By:</b> {logs.approved_by}</div>
+                                <div>
+                                  <b>Approved By:</b> {logs.approved_by}
+                                </div>
                               )}
                               {logs.approved_date && (
-                                <div><b>Approved Date:</b> {logs.approved_date}</div>
+                                <div>
+                                  <b>Approved Date:</b> {logs.approved_date}
+                                </div>
                               )}
 
                               {logs.rejected_by && (
-                                <div><b>Rejected By:</b> {logs.rejected_by}</div>
+                                <div>
+                                  <b>Rejected By:</b> {logs.rejected_by}
+                                </div>
                               )}
                               {logs.rejected_date && (
-                                <div><b>Rejected Date:</b> {logs.rejected_date}</div>
+                                <div>
+                                  <b>Rejected Date:</b> {logs.rejected_date}
+                                </div>
                               )}
 
                               {!logs.approved_by &&
@@ -1243,7 +1306,8 @@ const Edit = () => {
 
                     <div className={styles.formGroup}>
                       <label className={styles.formLabel}>
-                        <span className={styles.required}>*</span> Course Duration
+                        <span className={styles.required}>*</span> Course
+                        Duration
                       </label>
                       <input
                         type="text"

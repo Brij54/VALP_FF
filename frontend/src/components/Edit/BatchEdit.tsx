@@ -332,7 +332,7 @@
 
 // export default Edit;
 import React, { useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import apiConfig from "../../config/apiConfig";
 import { fetchForeignResource } from "../../apis/resources";
 import { fetchEnum, getCookie } from "../../apis/enum";
@@ -340,6 +340,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import Sidebar from "../Utils/SidebarAdmin";
 import "../Batch_Config.css"; // for UI design
+import { LogOut } from "lucide-react";
+import { logout } from "../../apis/backend";
 
 // ✅ authFetch added here
 async function authFetch(
@@ -392,12 +394,15 @@ const Edit = () => {
   const [searchQueries, setSearchQueries] = useState<Record<string, string>>(
     {}
   );
+
+
+  const [showDropdown, setShowDropdown] = useState(false);
   const [enums, setEnums] = useState<Record<string, any[]>>({});
   const regex = /^(g_|archived|extra_data)/;
   const fetchedResources = useRef(new Set<string>());
   const fetchedEnum = useRef(new Set<string>());
   const queryClient = useQueryClient();
-
+  const navigate = useNavigate();
   const fetchDataById = async (id: string, resourceName: string) => {
     const params = new URLSearchParams({
       args: `id:${id}`,
@@ -583,6 +588,11 @@ const Edit = () => {
     }
   };
 
+    const handleLogout = async () => {
+      const ok = await logout();
+      if (ok) navigate("/");
+    };
+
   return (
     <div className="page12Container">
       <Sidebar
@@ -594,6 +604,48 @@ const Edit = () => {
       <main className="mainContent">
         <header className="contentHeader">
           <h1 className="pageTitle">Edit Batch</h1>
+
+          <div className="userProfile" style={{ position: "relative" }}>
+            <div
+              className="profileCircle"
+              onClick={() => setShowDropdown((prev) => !prev)}
+              style={{ cursor: "pointer" }}
+            >
+              <span className="profileInitial">A</span>
+            </div>
+
+            {showDropdown && (
+              <div
+                style={{
+                  position: "absolute",
+                  right: 0,
+                  top: "45px",
+                  background: "white",
+                  borderRadius: "8px",
+                  boxShadow: "0 2px 10px rgba(0,0,0,0.15)",
+                  padding: "10px",
+                  minWidth: "130px",
+                  zIndex: 100,
+                }}
+              >
+                <button
+                  onClick={handleLogout}
+                  style={{
+                    width: "100%",
+                    background: "none",
+                    border: "none",
+                    textAlign: "left",
+                    padding: "8px",
+                    cursor: "pointer",
+                    fontSize: "16px",
+                  }}
+                >
+                  <LogOut size={16} />
+                  <span style={{ marginLeft: "8px" }}>Logout</span>
+                </button>
+              </div>
+            )}
+          </div>
         </header>
 
         {!loadingEditComp && (

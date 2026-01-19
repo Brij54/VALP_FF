@@ -31,6 +31,13 @@
      "type" : "String"
       },
 
+    "enrollment_date": {
+
+      "name" : "enrollment_date",
+      "required" : "false",
+      "type" : "Date"
+    },
+
 
     "status": {
 

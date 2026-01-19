@@ -39,6 +39,7 @@ import com.rasp.app.service.*;
 	private Long archived_time = null;
 	private String program_id = null;
 	private String student_id = null;
+	private Date enrollment_date = null;
 	private String status = null;
 	private Map<String, Object> extra_data = null;
 
@@ -55,6 +56,7 @@ import com.rasp.app.service.*;
 	public static String FIELD_ARCHIVED_TIME = "archived_time";
 	public static String FIELD_PROGRAM_ID = "program_id";
 	public static String FIELD_STUDENT_ID = "student_id";
+	public static String FIELD_ENROLLMENT_DATE = "enrollment_date";
 	public static String FIELD_STATUS = "status";
 	public static String FIELD_EXTRA_DATA = "extra_data";
 
@@ -121,6 +123,9 @@ import com.rasp.app.service.*;
 		student_idField.setForeign(new Foreign("Student"));
 		metaData.addField(student_idField);
 
+		Field enrollment_dateField = new Field("enrollment_date", "Date");
+		metaData.addField(enrollment_dateField);
+
 		Field statusField = new Field("status", "String");
 		statusField.setEnum(true);
 		statusField.setPossible_value("Status");
@@ -153,6 +158,7 @@ import com.rasp.app.service.*;
 		this.archived_time = obj.archived_time;
 		this.program_id = obj.program_id;
 		this.student_id = obj.student_id;
+		this.enrollment_date = obj.enrollment_date;
 		this.status = obj.status;
 		this.extra_data = obj.extra_data;
 	}
@@ -195,6 +201,8 @@ import com.rasp.app.service.*;
 			map.put("program_id", program_id);
 		if(student_id != null)
 			map.put("student_id", student_id);
+		if(enrollment_date != null)
+			map.put("enrollment_date", enrollment_date);
 		if(status != null)
 			map.put("status", status);
 		if(extra_data != null)
@@ -229,6 +237,8 @@ import com.rasp.app.service.*;
 			map.put("program_id", program_id);
 		if(validateStudent_id(add))
 			map.put("student_id", student_id);
+		if(enrollment_date != null)
+			map.put("enrollment_date", enrollment_date);
 		if(status != null)
 			map.put("status", status);
 		if(extra_data != null)
@@ -255,6 +265,7 @@ import com.rasp.app.service.*;
 		archived_time = (map.get("archived_time") == null ? null : ((Number) map.get("archived_time")).longValue());
 		program_id = (String) map.get("program_id");
 		student_id = (String) map.get("student_id");
+		enrollment_date = (Date) map.get("enrollment_date");
 		status = (String) map.get("status");
 		extra_data = (Map<String, Object>) map.get("extra_data");
 	}
@@ -312,6 +323,10 @@ import com.rasp.app.service.*;
 		Object student_idObj = map.get("student_id");
 		if(student_idObj != null)
 			student_id = student_idObj.toString();
+
+		Object enrollment_dateObj = map.get("enrollment_date");
+		if(enrollment_dateObj != null)
+			enrollment_date = new Date(enrollment_dateObj.toString());
 
 		Object statusObj = map.get("status");
 		if(statusObj != null)
@@ -557,6 +572,18 @@ import com.rasp.app.service.*;
 		if(add && student_id == null)
 			throw new ApplicationException(ExceptionSeverity.ERROR, "Requierd validation Failed[student_id]");
 		return student_id != null;
+	}
+
+	public Date getEnrollment_date() {
+		return enrollment_date;
+	}
+
+	public void setEnrollment_date(Date enrollment_date) {
+		this.enrollment_date = enrollment_date;
+	}
+
+	public void unSetEnrollment_date() {
+		this.enrollment_date = null;
 	}
 
 	public String getStatus() {

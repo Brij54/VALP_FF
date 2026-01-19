@@ -700,6 +700,248 @@
 // export default UpdateProgram_registration;
 
 
+// import React, { useMemo } from "react";
+// import apiConfig from "../../config/apiConfig";
+// import { AllCommunityModule, ModuleRegistry, ColDef } from "ag-grid-community";
+// import { AgGridReact } from "ag-grid-react";
+// import { useQuery, useQueryClient } from "@tanstack/react-query";
+// import { authFetch } from "../../apis/authFetch";
+// import { fetchForeignResource } from "../../apis/resources";
+// import Cookies from "js-cookie";
+// import { jwtDecode } from "jwt-decode";
+
+// ModuleRegistry.registerModules([AllCommunityModule]);
+
+// /* ===================== TOKEN UTILS ===================== */
+
+// const getAccessToken = (): string | null =>
+//   Cookies.get("access_token") || Cookies.get("token") || null;
+
+// const getDecodedToken = (): any => {
+//   const token = getAccessToken();
+//   return token ? jwtDecode(token) : null;
+// };
+
+// const getUserRoles = (): string[] => {
+//   const decoded = getDecodedToken();
+//   const roles =
+//     decoded?.resource_access?.["backend-api"]?.roles || [];
+//   return roles.map((r: string) => r.toUpperCase());
+// };
+
+// const getUserEmailFromToken = (): string | null => {
+//   const decoded = getDecodedToken();
+//   return decoded?.email?.toLowerCase() || null;
+// };
+
+// /* ===================== ACTION CELL ===================== */
+
+// const ActionCellRenderer = (props: any) => {
+//   const { handleDelete, isAdmin } = props.context;
+//   const { id, courseStarted } = props.data;
+
+//   const canDrop = isAdmin || !courseStarted;
+
+//   return (
+//     <button
+//       onClick={() => handleDelete(id)}
+//       disabled={!canDrop}
+//       className="btn btn-danger"
+//       style={{
+//         fontSize: "13px",
+//         padding: "6px 14px",
+//         borderRadius: "8px",
+//         fontWeight: 600,
+//         opacity: canDrop ? 1 : 0.4,
+//         cursor: canDrop ? "pointer" : "not-allowed",
+//       }}
+//       title={
+//         canDrop
+//           ? "Drop course"
+//           : "Course already started. Students cannot drop."
+//       }
+//     >
+//       Drop
+//     </button>
+//   );
+// };
+
+// /* ===================== MAIN COMPONENT ===================== */
+
+// const UpdateProgram_registration = () => {
+//   const queryClient = useQueryClient();
+
+//   const roles = getUserRoles();
+//   const isAdmin = roles.includes("ADMIN");
+//   const isStudent = roles.includes("STUDENT");
+//   const userEmail = getUserEmailFromToken(); // 🔑 FIX
+
+//   /* ---------- FETCH STUDENTS ---------- */
+//   const studentQuery = useQuery({
+//     queryKey: ["foreign", "Student"],
+//     queryFn: async () => {
+//       const data: any = await fetchForeignResource("Student");
+//       return Array.isArray(data) ? data : data.resource || [];
+//     },
+//     staleTime: 5 * 60 * 1000,
+//   });
+
+//   /* ---------- MAP EMAIL → STUDENT ID ---------- */
+//   const myStudentId = useMemo(() => {
+//     if (!userEmail) return null;
+//     const students = studentQuery.data || [];
+//     const match = students.find(
+//       (s: any) => s.email?.toLowerCase() === userEmail
+//     );
+//     return match?.id || null;
+//   }, [studentQuery.data, userEmail]);
+
+//   /* ---------- FETCH REGISTRATIONS ---------- */
+//   const regQuery = useQuery({
+//     queryKey: ["resourceData", "program_registration"],
+//     queryFn: async () => {
+//       const params = new URLSearchParams({ queryId: "GET_ALL" });
+//       const res = await authFetch(
+//         `${apiConfig.getResourceUrl("program_registration")}?${params}`,
+//         { method: "GET" }
+//       );
+//       if (!res.ok) throw new Error("Failed to fetch registrations");
+//       return res.json();
+//     },
+//     enabled: isAdmin || !!myStudentId,
+//   });
+
+//   /* ---------- FETCH PROGRAMS ---------- */
+//   const programQuery = useQuery({
+//     queryKey: ["foreign", "Program"],
+//     queryFn: async () => {
+//       const data: any = await fetchForeignResource("Program");
+//       return Array.isArray(data) ? data : data.resource || [];
+//     },
+//     staleTime: 5 * 60 * 1000,
+//   });
+
+//   /* ---------- BUILD ROW DATA ---------- */
+//   const rowData = useMemo(() => {
+//     const regs: any[] = Array.isArray(regQuery.data)
+//       ? regQuery.data
+//       : regQuery.data?.resource || [];
+
+//     const programs: any[] = programQuery.data || [];
+//     const students: any[] = studentQuery.data || [];
+
+//     const programMap = new Map(
+//       programs.map((p: any) => [
+//         String(p.id),
+//         {
+//           name: p.program_name || p.name || p.id,
+//           startDate: new Date(p.start_date),
+//         },
+//       ])
+//     );
+
+//     const studentMap = new Map(
+//       students.map((s: any) => [
+//         String(s.id),
+//         { name: s.name, roll_no: s.roll_no },
+//       ])
+//     );
+
+//     const today = new Date();
+
+//     let filtered = regs;
+
+//     // 🎯 STUDENT → ONLY OWN RECORDS
+//     if (isStudent && myStudentId) {
+//       filtered = regs.filter(
+//         (r) => String(r.student_id) === String(myStudentId)
+//       );
+//     }
+
+//     return filtered.map((r: any) => {
+//       const prog = programMap.get(String(r.program_id));
+//       const stu = studentMap.get(String(r.student_id));
+
+//       const courseStarted =
+//         prog?.startDate ? today >= prog.startDate : false;
+
+//       return {
+//         ...r,
+//         program_name: prog?.name || r.program_id,
+//         student_name: stu?.name || r.student_id,
+//         roll_no: stu?.roll_no || "",
+//         courseStarted,
+//       };
+//     });
+//   }, [
+//     regQuery.data,
+//     programQuery.data,
+//     studentQuery.data,
+//     isStudent,
+//     myStudentId,
+//   ]);
+
+//   /* ---------- DROP ---------- */
+//   const handleDelete = async (id: string) => {
+//     if (!window.confirm("Do you want to drop this course?")) return;
+
+//     const payload = { id };
+//     const formData = new FormData();
+//     const base64 = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+
+//     formData.append("resource", base64);
+//     formData.append("action", "DELETE");
+
+//     await authFetch(apiConfig.getResourceUrl("program_registration"), {
+//       method: "POST",
+//       body: formData,
+//     });
+
+//     await queryClient.invalidateQueries({
+//       queryKey: ["resourceData", "program_registration"],
+//     });
+//   };
+
+//   /* ---------- COLUMNS ---------- */
+//   const colDefs: ColDef[] = [
+//     { headerName: "Course", field: "program_name", flex: 2 },
+//     { headerName: "Roll No", field: "roll_no", flex: 1 },
+//     { headerName: "Student", field: "student_name", flex: 2 },
+//     {
+//       headerName: "Action",
+//       cellRenderer: ActionCellRenderer,
+//       width: 160,
+//     },
+//   ];
+
+//   if (
+//     regQuery.isLoading ||
+//     programQuery.isLoading ||
+//     studentQuery.isLoading
+//   ) {
+//     return <div>Loading...</div>;
+//   }
+
+//   if (isStudent && !myStudentId) {
+//     return <div>Student mapping not found for this user.</div>;
+//   }
+
+//   return (
+//     <div className="ag-theme-alpine" style={{ height: 500, width: "100%" }}>
+//       <AgGridReact
+//         rowData={rowData}
+//         columnDefs={colDefs}
+//         pagination
+//         paginationPageSize={10}
+//         animateRows
+//         context={{ handleDelete, isAdmin }}
+//       />
+//     </div>
+//   );
+// };
+
+// export default UpdateProgram_registration;
+
 import React, { useMemo } from "react";
 import apiConfig from "../../config/apiConfig";
 import { AllCommunityModule, ModuleRegistry, ColDef } from "ag-grid-community";
@@ -738,9 +980,9 @@ const getUserEmailFromToken = (): string | null => {
 
 const ActionCellRenderer = (props: any) => {
   const { handleDelete, isAdmin } = props.context;
-  const { id, courseStarted } = props.data;
+  const { id, courseEnded } = props.data;
 
-  const canDrop = isAdmin || !courseStarted;
+  const canDrop = isAdmin || !courseEnded;
 
   return (
     <button
@@ -758,7 +1000,7 @@ const ActionCellRenderer = (props: any) => {
       title={
         canDrop
           ? "Drop course"
-          : "Course already started. Students cannot drop."
+          : "Course has ended. Students cannot drop."
       }
     >
       Drop
@@ -774,7 +1016,7 @@ const UpdateProgram_registration = () => {
   const roles = getUserRoles();
   const isAdmin = roles.includes("ADMIN");
   const isStudent = roles.includes("STUDENT");
-  const userEmail = getUserEmailFromToken(); // 🔑 FIX
+  const userEmail = getUserEmailFromToken();
 
   /* ---------- FETCH STUDENTS ---------- */
   const studentQuery = useQuery({
@@ -835,7 +1077,7 @@ const UpdateProgram_registration = () => {
         String(p.id),
         {
           name: p.program_name || p.name || p.id,
-          startDate: new Date(p.start_date),
+          endDate: p.end_date ? new Date(p.end_date) : null,
         },
       ])
     );
@@ -862,15 +1104,15 @@ const UpdateProgram_registration = () => {
       const prog = programMap.get(String(r.program_id));
       const stu = studentMap.get(String(r.student_id));
 
-      const courseStarted =
-        prog?.startDate ? today >= prog.startDate : false;
+      const courseEnded =
+        prog?.endDate ? today > prog.endDate : false;
 
       return {
         ...r,
         program_name: prog?.name || r.program_id,
         student_name: stu?.name || r.student_id,
         roll_no: stu?.roll_no || "",
-        courseStarted,
+        courseEnded,
       };
     });
   }, [
@@ -941,4 +1183,5 @@ const UpdateProgram_registration = () => {
 };
 
 export default UpdateProgram_registration;
+
 

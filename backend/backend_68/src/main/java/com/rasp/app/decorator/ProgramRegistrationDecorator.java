@@ -1,7 +1,9 @@
 package com.rasp.app.decorator;
 
+import com.rasp.app.helper.AcademicYearHelper;
 import com.rasp.app.helper.ProgramHelper;
 import com.rasp.app.helper.ProgramRegistrationHelper;
+import com.rasp.app.resource.AcademicYear;
 import com.rasp.app.resource.Program;
 import com.rasp.app.resource.ProgramRegistration;
 import platform.db.Expression;
@@ -13,9 +15,7 @@ import platform.util.ExceptionSeverity;
 import platform.webservice.BaseService;
 import platform.webservice.ServletContext;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Map;
+import java.util.*;
 
 public class ProgramRegistrationDecorator extends BaseDecorator {
 
@@ -93,6 +93,355 @@ public class ProgramRegistrationDecorator extends BaseDecorator {
 //        // If we reach here → allowed
 //    }
 
+//    public void preAddDecorator(ServletContext ctx, BaseResource _resource)
+//            throws ApplicationException {
+//
+//        ProgramRegistration reg = (ProgramRegistration) _resource;
+//
+//        String programId = reg.getProgram_id();
+//        String studentId = reg.getStudent_id();
+//
+//        if (programId == null || programId.trim().isEmpty()) {
+//            throw new ApplicationException(
+//                    ExceptionSeverity.ERROR,
+//                    "program_id is required"
+//            );
+//        }
+//
+//        if (studentId == null || studentId.trim().isEmpty()) {
+//            throw new ApplicationException(
+//                    ExceptionSeverity.ERROR,
+//                    "student_id is required"
+//            );
+//        }
+//
+//        programId = programId.trim();
+//        studentId = studentId.trim();
+//
+////        // ------------------------------------------------
+////        // 1) Fetch selected program
+////        // ------------------------------------------------
+////        Program selectedProgram =
+////                (Program) ProgramHelper.getInstance().getById(programId);
+////
+////        if (selectedProgram == null) {
+////            throw new ApplicationException(
+////                    ExceptionSeverity.ERROR,
+////                    "Program not found: " + programId
+////            );
+////        }
+////
+////        String selectedAcademicYearId =
+////                selectedProgram.getAcademic_year_id();
+////
+////        if (selectedAcademicYearId == null) {
+////            throw new ApplicationException(
+////                    ExceptionSeverity.ERROR,
+////                    "Academic year not configured for program: " + programId
+////            );
+////        }
+////
+////        // ------------------------------------------------
+////        // 2) Fetch all registrations of this student
+////        // ------------------------------------------------
+////        BaseResource[] studentRegs =
+////                ProgramRegistrationHelper.getInstance()
+////                        .getByExpression(
+////                                new Expression(
+////                                        ProgramRegistration.FIELD_STUDENT_ID,
+////                                        REL_OP.EQ,
+////                                        studentId
+////                                )
+////                        );
+////
+////        if (studentRegs != null) {
+////            for (BaseResource br : studentRegs) {
+////                ProgramRegistration existing =
+////                        (ProgramRegistration) br;
+////
+////                // ignore inactive registrations
+////                boolean inactive =
+////                        "Y".equalsIgnoreCase(existing.getArchived()) ||
+////                                "Y".equalsIgnoreCase(existing.getG_soft_delete());
+////
+////                if (inactive) continue;
+////
+////                // ------------------------------------------------
+////                // 3) Compare academic year
+////                // ------------------------------------------------
+////                Program existingProgram =
+////                        (Program) ProgramHelper.getInstance()
+////                                .getById(existing.getProgram_id());
+////
+////                if (existingProgram == null) continue;
+////
+////                String existingAcademicYearId =
+////                        existingProgram.getAcademic_year_id();
+////
+////                if (selectedAcademicYearId.equals(existingAcademicYearId)) {
+////                    throw new ApplicationException(
+////                            ExceptionSeverity.ERROR,
+////                            "You have already enrolled one course in this academic year."
+////                    );
+////                }
+////            }
+////        }
+//        // ------------------------------------------------
+////// 1) Fetch selected program
+////// ------------------------------------------------
+////        Program selectedProgram =
+////                (Program) ProgramHelper.getInstance().getById(programId);
+////
+////        if (selectedProgram == null) {
+////            throw new ApplicationException(
+////                    ExceptionSeverity.ERROR,
+////                    "Program not found: " + programId
+////            );
+////        }
+////
+////        String selectedAcademicYearId = selectedProgram.getAcademic_year_id();
+////        String selectedTermName = selectedProgram.getTerm_name();
+////
+////        if (selectedAcademicYearId == null) {
+////            throw new ApplicationException(
+////                    ExceptionSeverity.ERROR,
+////                    "Academic year not configured for program: " + programId
+////            );
+////        }
+////
+////        if (selectedTermName == null) {
+////            throw new ApplicationException(
+////                    ExceptionSeverity.ERROR,
+////                    "Term not configured for program: " + programId
+////            );
+////        }
+////
+////// ------------------------------------------------
+////// 2) Fetch ALL registrations of this student
+////// ------------------------------------------------
+////        BaseResource[] studentRegs =
+////                ProgramRegistrationHelper.getInstance()
+////                        .getByExpression(
+////                                new Expression(
+////                                        ProgramRegistration.FIELD_STUDENT_ID,
+////                                        REL_OP.EQ,
+////                                        studentId
+////                                )
+////                        );
+////
+////        if (studentRegs != null) {
+////
+////            for (BaseResource br : studentRegs) {
+////
+////                ProgramRegistration existing =
+////                        (ProgramRegistration) br;
+////
+////                // ------------------------------------------------
+////                // Ignore inactive / deleted registrations
+////                // ------------------------------------------------
+////                boolean inactive =
+////                        "Y".equalsIgnoreCase(existing.getArchived()) ||
+////                                "Y".equalsIgnoreCase(existing.getG_soft_delete());
+////
+////                if (inactive) continue;
+////
+////                // ------------------------------------------------
+////                // Fetch enrolled program
+////                // ------------------------------------------------
+////                Program existingProgram =
+////                        (Program) ProgramHelper.getInstance()
+////                                .getById(existing.getProgram_id());
+////
+////                if (existingProgram == null) continue;
+////
+////                String existingAcademicYearId =
+////                        existingProgram.getAcademic_year_id();
+////                String existingTermName =
+////                        existingProgram.getTerm_name();
+////
+////                if (existingAcademicYearId == null || existingTermName == null) {
+////                    continue;
+////                }
+////
+////                // ------------------------------------------------
+////                // RULE 1: Same Academic Year → NOT allowed
+////                // ------------------------------------------------
+////                if (selectedAcademicYearId.equals(existingAcademicYearId)) {
+////                    throw new ApplicationException(
+////                            ExceptionSeverity.ERROR,
+////                            "You have already enrolled one course in this academic year."
+////                    );
+////                }
+////
+////                // ------------------------------------------------
+////                // RULE 2: Invalid term progression
+////                // Block only: T2 → T1
+////                // ------------------------------------------------
+////                if ("T2".equalsIgnoreCase(existingTermName)
+////                        && "T1".equalsIgnoreCase(selectedTermName)) {
+////
+////                    throw new ApplicationException(
+////                            ExceptionSeverity.ERROR,
+////                            "Invalid academic progression: " +
+////                                    "You cannot enroll in Term 1 after completing Term 2."
+////                    );
+////                }
+////            }
+////        }
+//
+//        // ------------------------------------------------
+//// 1) Fetch selected program
+//// ------------------------------------------------
+//        Program selectedProgram =
+//                (Program) ProgramHelper.getInstance().getById(programId);
+//
+//        if (selectedProgram == null) {
+//            throw new ApplicationException(
+//                    ExceptionSeverity.ERROR,
+//                    "Program not found: " + programId
+//            );
+//        }
+//
+//        String selectedAcademicYearId = selectedProgram.getAcademic_year_id();
+//        String selectedTermName = selectedProgram.getTerm_name();
+//
+//        if (selectedAcademicYearId == null || selectedTermName == null) {
+//            throw new ApplicationException(
+//                    ExceptionSeverity.ERROR,
+//                    "Academic year or term not configured for program."
+//            );
+//        }
+//
+//// 🔑 Fetch academic year VALUE
+//        AcademicYear selectedAY =
+//                (AcademicYear) AcademicYearHelper.getInstance()
+//                        .getById(selectedAcademicYearId);
+//
+//        int selectedStartYear =
+//                getStartYearFromAcademicYear(selectedAY.getAcademic_year());
+//
+//// ------------------------------------------------
+//// 2) Fetch ALL registrations of this student
+//// ------------------------------------------------
+//        BaseResource[] studentRegs =
+//                ProgramRegistrationHelper.getInstance()
+//                        .getByExpression(
+//                                new Expression(
+//                                        ProgramRegistration.FIELD_STUDENT_ID,
+//                                        REL_OP.EQ,
+//                                        studentId
+//                                )
+//                        );
+//
+//        if (studentRegs != null) {
+//
+//            for (BaseResource br : studentRegs) {
+//
+//                ProgramRegistration existing =
+//                        (ProgramRegistration) br;
+//
+//                boolean inactive =
+//                        "Y".equalsIgnoreCase(existing.getArchived()) ||
+//                                "Y".equalsIgnoreCase(existing.getG_soft_delete());
+//
+//                if (inactive) continue;
+//
+//                Program existingProgram =
+//                        (Program) ProgramHelper.getInstance()
+//                                .getById(existing.getProgram_id());
+//
+//                if (existingProgram == null) continue;
+//
+//                String existingAcademicYearId =
+//                        existingProgram.getAcademic_year_id();
+//                String existingTermName =
+//                        existingProgram.getTerm_name();
+//
+//                if (existingAcademicYearId == null || existingTermName == null) {
+//                    continue;
+//                }
+//
+//                AcademicYear existingAY =
+//                        (AcademicYear) AcademicYearHelper.getInstance()
+//                                .getById(existingAcademicYearId);
+//
+//                int existingStartYear =
+//                        getStartYearFromAcademicYear(existingAY.getAcademic_year());
+//
+//                int yearGap = selectedStartYear - existingStartYear;
+//
+//                // =================================================
+//                // RULE 1: SAME ACADEMIC YEAR → NOT ALLOWED
+//                // =================================================
+//                if (yearGap == 0) {
+//                    throw new ApplicationException(
+//                            ExceptionSeverity.ERROR,
+//                            "You have already enrolled one course in this academic year."
+//                    );
+//                }
+//
+//                // =================================================
+//                // RULE 2: NEXT ACADEMIC YEAR → CHECK TERM
+//                // =================================================
+//                if (yearGap == 1) {
+//
+//                    if ("T2".equalsIgnoreCase(existingTermName)
+//                            && "T1".equalsIgnoreCase(selectedTermName)) {
+//
+//                        throw new ApplicationException(
+//                                ExceptionSeverity.ERROR,
+//                                "Invalid academic progression: " +
+//                                        "You cannot enroll in Term 1 immediately after Term 2."
+//                        );
+//                    }
+//                }
+//
+//                // =================================================
+//                // RULE 3: yearGap > 1 → ALWAYS ALLOWED
+//                // =================================================
+//            }
+//        }
+//
+//
+//        // ------------------------------------------------
+//        // 4) (Optional) Seat check (can keep your old logic)
+//        // ------------------------------------------------
+//        Long totalSeats = selectedProgram.getSeats();
+//        if (totalSeats != null && totalSeats > 0) {
+//
+//            BaseResource[] programRegs =
+//                    ProgramRegistrationHelper.getInstance()
+//                            .getByExpression(
+//                                    new Expression(
+//                                            ProgramRegistration.FIELD_PROGRAM_ID,
+//                                            REL_OP.EQ,
+//                                            programId
+//                                    )
+//                            );
+//
+//            long activeCount = 0;
+//            if (programRegs != null) {
+//                for (BaseResource br : programRegs) {
+//                    ProgramRegistration pr = (ProgramRegistration) br;
+//
+//                    boolean inactive =
+//                            "Y".equalsIgnoreCase(pr.getArchived()) ||
+//                                    "Y".equalsIgnoreCase(pr.getG_soft_delete());
+//
+//                    if (!inactive) activeCount++;
+//                }
+//            }
+//
+//            if (activeCount >= totalSeats) {
+//                throw new ApplicationException(
+//                        ExceptionSeverity.ERROR,
+//                        "Registration failed: Program is full (Seats: " + totalSeats + ")"
+//                );
+//            }
+//        }
+//
+//        // ✔ Allowed if reached here
+//    }
     public void preAddDecorator(ServletContext ctx, BaseResource _resource)
             throws ApplicationException {
 
@@ -101,6 +450,9 @@ public class ProgramRegistrationDecorator extends BaseDecorator {
         String programId = reg.getProgram_id();
         String studentId = reg.getStudent_id();
 
+        // ------------------------------------------------
+        // 0) Basic validation
+        // ------------------------------------------------
         if (programId == null || programId.trim().isEmpty()) {
             throw new ApplicationException(
                     ExceptionSeverity.ERROR,
@@ -131,18 +483,30 @@ public class ProgramRegistrationDecorator extends BaseDecorator {
             );
         }
 
-        String selectedAcademicYearId =
-                selectedProgram.getAcademic_year_id();
+        Date today = new Date();
 
-        if (selectedAcademicYearId == null) {
+        // ------------------------------------------------
+        // 2) Registration window check (START / END DATE)
+        // ------------------------------------------------
+        Date startDate = selectedProgram.getStart_date();
+        Date endDate = selectedProgram.getEnd_date();
+
+        if (startDate != null && today.before(startDate)) {
             throw new ApplicationException(
                     ExceptionSeverity.ERROR,
-                    "Academic year not configured for program: " + programId
+                    "Registration has not started for this course."
+            );
+        }
+
+        if (endDate != null && today.after(endDate)) {
+            throw new ApplicationException(
+                    ExceptionSeverity.ERROR,
+                    "Registration period has ended for this course."
             );
         }
 
         // ------------------------------------------------
-        // 2) Fetch all registrations of this student
+        // 3) Fetch ALL registrations of this student
         // ------------------------------------------------
         BaseResource[] studentRegs =
                 ProgramRegistrationHelper.getInstance()
@@ -154,12 +518,14 @@ public class ProgramRegistrationDecorator extends BaseDecorator {
                                 )
                         );
 
+        Long latestCreationTime = null;
+
         if (studentRegs != null) {
             for (BaseResource br : studentRegs) {
+
                 ProgramRegistration existing =
                         (ProgramRegistration) br;
 
-                // ignore inactive registrations
                 boolean inactive =
                         "Y".equalsIgnoreCase(existing.getArchived()) ||
                                 "Y".equalsIgnoreCase(existing.getG_soft_delete());
@@ -167,28 +533,55 @@ public class ProgramRegistrationDecorator extends BaseDecorator {
                 if (inactive) continue;
 
                 // ------------------------------------------------
-                // 3) Compare academic year
+                // 3A) SAME COURSE RE-ENROLLMENT CHECK
                 // ------------------------------------------------
-                Program existingProgram =
-                        (Program) ProgramHelper.getInstance()
-                                .getById(existing.getProgram_id());
-
-                if (existingProgram == null) continue;
-
-                String existingAcademicYearId =
-                        existingProgram.getAcademic_year_id();
-
-                if (selectedAcademicYearId.equals(existingAcademicYearId)) {
+                if (programId.equals(existing.getProgram_id())) {
                     throw new ApplicationException(
                             ExceptionSeverity.ERROR,
-                            "You have already enrolled one course in this academic year."
+                            "You are already enrolled in this course."
                     );
+                }
+
+                // ------------------------------------------------
+                // Track latest enrollment for cooldown
+                // ------------------------------------------------
+                Long creationTime = existing.getG_creation_time();
+                if (creationTime == null) continue;
+
+                if (latestCreationTime == null ||
+                        creationTime > latestCreationTime) {
+                    latestCreationTime = creationTime;
                 }
             }
         }
 
         // ------------------------------------------------
-        // 4) (Optional) Seat check (can keep your old logic)
+        // 4) Enforce 10-month cooldown (GLOBAL)
+        // ------------------------------------------------
+        if (latestCreationTime != null) {
+
+            Calendar lockEnd = Calendar.getInstance();
+            lockEnd.setTimeInMillis(latestCreationTime);
+            lockEnd.add(Calendar.MONTH, 10);
+
+            if (today.before(lockEnd.getTime())) {
+
+                long diffMillis =
+                        lockEnd.getTimeInMillis() - today.getTime();
+                long remainingDays =
+                        diffMillis / (1000 * 60 * 60 * 24);
+
+                throw new ApplicationException(
+                        ExceptionSeverity.ERROR,
+                        "You are already enrolled in a course. "
+                                + "You can register again after "
+                                + remainingDays + " days."
+                );
+            }
+        }
+
+        // ------------------------------------------------
+        // 5) Seat availability check
         // ------------------------------------------------
         Long totalSeats = selectedProgram.getSeats();
         if (totalSeats != null && totalSeats > 0) {
@@ -206,7 +599,8 @@ public class ProgramRegistrationDecorator extends BaseDecorator {
             long activeCount = 0;
             if (programRegs != null) {
                 for (BaseResource br : programRegs) {
-                    ProgramRegistration pr = (ProgramRegistration) br;
+                    ProgramRegistration pr =
+                            (ProgramRegistration) br;
 
                     boolean inactive =
                             "Y".equalsIgnoreCase(pr.getArchived()) ||
@@ -219,13 +613,17 @@ public class ProgramRegistrationDecorator extends BaseDecorator {
             if (activeCount >= totalSeats) {
                 throw new ApplicationException(
                         ExceptionSeverity.ERROR,
-                        "Registration failed: Program is full (Seats: " + totalSeats + ")"
+                        "Registration failed: Program is full (Seats: "
+                                + totalSeats + ")"
                 );
             }
         }
 
         // ✔ Allowed if reached here
     }
+
+
+
 
 
     // ✅ OPTIONAL: If you want a queryId-based “register” endpoint like certificate example

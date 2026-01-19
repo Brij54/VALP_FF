@@ -1405,6 +1405,594 @@
 // export default CreateProgram_registration;
 
 
+// import React, { useEffect, useMemo, useState, useContext } from "react";
+// import apiConfig from "../../config/apiConfig";
+// import { useQuery, useQueryClient } from "@tanstack/react-query";
+// import { fetchForeignResource } from "../../apis/resources";
+// import { LoginContext } from "../../context/LoginContext";
+
+// /* ================= TYPES ================= */
+// type Program = {
+//   id: string;
+//   name?: string;
+//   seats?: number;
+//   academic_year_id?: string;
+// };
+
+// type Student = {
+//   id: string;
+//   name?: string;
+//   roll_no?: string;
+//   email?: string;
+// };
+
+// type ProgramRegistration = {
+//   id: string;
+//   program_id: string;
+//   student_id: string;
+// };
+
+// /* ================= UTILS ================= */
+// const getCookie = (name: string): string | null => {
+//   const value = `; ${document.cookie}`;
+//   const parts = value.split(`; ${name}=`);
+//   if (parts.length === 2) return parts.pop()?.split(";").shift() || null;
+//   return null;
+// };
+
+// /* ================= COMPONENT ================= */
+// const CreateProgram_registration = () => {
+//   const queryClient = useQueryClient();
+//   const { user } = useContext(LoginContext);
+
+//   const userEmail = user?.email_id?.toLowerCase() || "";
+
+//   const [dataToSave, setDataToSave] = useState<{
+//     program_id?: string;
+//     student_id?: string;
+//   }>({});
+
+//   const [toast, setToast] = useState<{
+//     type: "success" | "error";
+//     message: string;
+//   } | null>(null);
+
+//   const apiUrl = apiConfig.getResourceUrl("Program_registration");
+
+//   /* ================= PROGRAMS ================= */
+//   const programQuery = useQuery<Program[]>({
+//     queryKey: ["ProgramList"],
+//     queryFn: async () => {
+//       const data = await fetchForeignResource("Program");
+//       return Array.isArray(data) ? data : data.resource || [];
+//     },
+//   });
+
+//   const programs = programQuery.data || [];
+
+//   /* ================= STUDENT ================= */
+//   const studentQuery = useQuery<Student[]>({
+//     queryKey: ["StudentList"],
+//     queryFn: async () => {
+//       const data = await fetchForeignResource("Student");
+//       return Array.isArray(data) ? data : data.resource || [];
+//     },
+//     enabled: !!userEmail,
+//   });
+
+//   const currentStudent = useMemo(() => {
+//     return (studentQuery.data || []).find(
+//       (s) => (s.email || "").toLowerCase() === userEmail
+//     );
+//   }, [studentQuery.data, userEmail]);
+
+//   useEffect(() => {
+//     if (currentStudent?.id) {
+//       setDataToSave((prev) => ({
+//         ...prev,
+//         student_id: currentStudent.id,
+//       }));
+//     }
+//   }, [currentStudent?.id]);
+
+//   /* ================= REGISTRATIONS ================= */
+//   const regQuery = useQuery<ProgramRegistration[]>({
+//     queryKey: ["ProgramRegistrationList"],
+//     queryFn: async () => {
+//       const data = await fetchForeignResource("program_registration");
+//       return Array.isArray(data) ? data : data.resource || [];
+//     },
+//   });
+
+//   /* ================= ACADEMIC YEAR MAP ================= */
+//   const programAcademicYearMap = useMemo(() => {
+//     const map = new Map<string, string>();
+//     programs.forEach((p) => {
+//       if (p.id && p.academic_year_id) {
+//         map.set(p.id, p.academic_year_id);
+//       }
+//     });
+//     return map;
+//   }, [programs]);
+
+//   /* ================= DUPLICATE CHECK ================= */
+//   const alreadyRegistered = useMemo(() => {
+//     if (!dataToSave.program_id || !currentStudent?.id) return false;
+//     return (regQuery.data || []).some(
+//       (r) =>
+//         r.program_id === dataToSave.program_id &&
+//         r.student_id === currentStudent.id
+//     );
+//   }, [regQuery.data, dataToSave.program_id, currentStudent?.id]);
+
+//   /* ===== SAME ACADEMIC YEAR RULE ===== */
+//   const alreadyEnrolledSameAcademicYear = useMemo(() => {
+//     if (!dataToSave.program_id || !currentStudent?.id) return false;
+
+//     const selectedAY = programAcademicYearMap.get(dataToSave.program_id);
+//     if (!selectedAY) return false;
+
+//     return (regQuery.data || []).some((reg) => {
+//       if (reg.student_id !== currentStudent.id) return false;
+//       return programAcademicYearMap.get(reg.program_id) === selectedAY;
+//     });
+//   }, [
+//     dataToSave.program_id,
+//     currentStudent?.id,
+//     regQuery.data,
+//     programAcademicYearMap,
+//   ]);
+
+//   /* ================= SEATS ================= */
+//   const registrationCountMap = useMemo(() => {
+//     const map = new Map<string, number>();
+//     (regQuery.data || []).forEach((r) => {
+//       map.set(r.program_id, (map.get(r.program_id) || 0) + 1);
+//     });
+//     return map;
+//   }, [regQuery.data]);
+
+//   const selectedProgram = programs.find(
+//     (p) => p.id === dataToSave.program_id
+//   );
+
+//   const selectedTotal = selectedProgram
+//     ? Number(selectedProgram.seats ?? 0)
+//     : null;
+
+//   const selectedAvailable =
+//     selectedProgram && selectedTotal !== null
+//       ? Math.max(
+//           0,
+//           selectedTotal -
+//             (registrationCountMap.get(selectedProgram.id) || 0)
+//         )
+//       : null;
+
+//   /* ================= DROPDOWN ================= */
+//   const ProgramDropdown = ({
+//     label,
+//     field,
+//   }: {
+//     label: string;
+//     field: "program_id";
+//   }) => (
+//     <select
+//       className="form-control mb-3"
+//       value={dataToSave[field] || ""}
+//       onChange={(e) =>
+//         setDataToSave({ ...dataToSave, [field]: e.target.value })
+//       }
+//     >
+//       <option value="">Select {label}</option>
+//       {programs.map((p) => (
+//         <option key={p.id} value={p.id}>
+//           {p.name}
+//         </option>
+//       ))}
+//     </select>
+//   );
+
+//   /* ================= SUBMIT ================= */
+//   const handleCreate = async () => {
+//     if (!dataToSave.program_id) {
+//       setToast({ type: "error", message: "Please select a course." });
+//       return;
+//     }
+
+//     if (alreadyRegistered) {
+//       setToast({
+//         type: "error",
+//         message: "You are already registered for this course.",
+//       });
+//       return;
+//     }
+
+//     if (alreadyEnrolledSameAcademicYear) {
+//       setToast({
+//         type: "error",
+//         message:
+//           "You have already enrolled one course in this academic year.",
+//       });
+//       return;
+//     }
+
+//     if (selectedAvailable !== null && selectedAvailable <= 0) {
+//       setToast({
+//         type: "error",
+//         message: "Registration failed: Course is full.",
+//       });
+//       return;
+//     }
+
+//     const params = new FormData();
+//     params.append(
+//       "resource",
+//       btoa(
+//         JSON.stringify({
+//           program_id: dataToSave.program_id,
+//           student_id: currentStudent?.id,
+//         })
+//       )
+//     );
+
+//     const res = await fetch(apiUrl, {
+//       method: "POST",
+//       headers: { Authorization: `Bearer ${getCookie("access_token")}` },
+//       credentials: "include",
+//       body: params,
+//     });
+
+//     const json = await res.json();
+
+//     if (!res.ok || json?.errCode === -1) {
+//       setToast({
+//         type: "error",
+//         message: json?.message || "Registration failed",
+//       });
+//       return;
+//     }
+
+//     setToast({ type: "success", message: "Registered successfully!" });
+//     setDataToSave({});
+
+//     queryClient.invalidateQueries({ queryKey: ["ProgramRegistrationList"] });
+//     queryClient.invalidateQueries({ queryKey: ["ProgramList"] });
+//   };
+
+//   /* ================= UI ================= */
+//   return (
+//     <div className="d-flex justify-content-center align-items-start mt-5">
+//       <form
+//         style={{
+//           width: "100%",
+//           maxWidth: "550px",
+//           backgroundColor: "#fff",
+//           borderRadius: "12px",
+//           padding: "30px",
+//           boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+//         }}
+//       >
+//         <h3 className="text-center mb-4">Course Registration</h3>
+
+//         <ProgramDropdown label="Course" field="program_id" />
+
+//         {selectedAvailable !== null && (
+//           <div className="alert alert-info">
+//             Seats available: {selectedAvailable}/{selectedTotal}
+//           </div>
+//         )}
+
+//         <input
+//           disabled
+//           className="form-control mb-3"
+//           value={`Auto selected (${currentStudent?.roll_no || ""})`}
+//         />
+
+//         <button
+//           type="button"
+//           className="btn btn-primary w-100"
+//           onClick={handleCreate}
+//         >
+//           Submit
+//         </button>
+
+//         {toast && (
+//           <div
+//             className={`alert mt-3 alert-${
+//               toast.type === "success" ? "success" : "danger"
+//             }`}
+//           >
+//             {toast.message}
+//           </div>
+//         )}
+//       </form>
+//     </div>
+//   );
+// };
+
+// export default CreateProgram_registration;
+
+
+
+// import React, { useEffect, useMemo, useState, useContext } from "react";
+// import apiConfig from "../../config/apiConfig";
+// import { useQuery, useQueryClient } from "@tanstack/react-query";
+// import { fetchForeignResource } from "../../apis/resources";
+// import { LoginContext } from "../../context/LoginContext";
+
+// /* ================= TYPES ================= */
+// type Program = {
+//   id: string;
+//   name?: string;
+//   seats?: number;
+//   academic_year_id?: string;
+//   term_name?: string; // T1 / T2
+// };
+
+// type Student = {
+//   id: string;
+//   name?: string;
+//   roll_no?: string;
+//   email?: string;
+// };
+
+// type ProgramRegistration = {
+//   id: string;
+//   program_id: string;
+//   student_id: string;
+// };
+
+// /* ================= UTILS ================= */
+// const getCookie = (name: string): string | null => {
+//   const value = `; ${document.cookie}`;
+//   const parts = value.split(`; ${name}=`);
+//   if (parts.length === 2) return parts.pop()?.split(";").shift() || null;
+//   return null;
+// };
+
+// /* ================= COMPONENT ================= */
+// const CreateProgram_registration = () => {
+//   const queryClient = useQueryClient();
+//   const { user } = useContext(LoginContext);
+
+//   const userEmail = user?.email_id?.toLowerCase() || "";
+
+//   const [dataToSave, setDataToSave] = useState<{
+//     program_id?: string;
+//     student_id?: string;
+//   }>({});
+
+//   const [toast, setToast] = useState<{
+//     type: "success" | "error";
+//     message: string;
+//   } | null>(null);
+
+//   const apiUrl = apiConfig.getResourceUrl("Program_registration");
+
+//   /* ================= PROGRAMS ================= */
+//   const programQuery = useQuery<Program[]>({
+//     queryKey: ["ProgramList"],
+//     queryFn: async () => {
+//       const data = await fetchForeignResource("Program");
+//       return Array.isArray(data) ? data : data.resource || [];
+//     },
+//   });
+
+//   const programs = programQuery.data || [];
+
+//   /* ================= STUDENT ================= */
+//   const studentQuery = useQuery<Student[]>({
+//     queryKey: ["StudentList"],
+//     queryFn: async () => {
+//       const data = await fetchForeignResource("Student");
+//       return Array.isArray(data) ? data : data.resource || [];
+//     },
+//     enabled: !!userEmail,
+//   });
+
+//   const currentStudent = useMemo(() => {
+//     return (studentQuery.data || []).find(
+//       (s) => (s.email || "").toLowerCase() === userEmail
+//     );
+//   }, [studentQuery.data, userEmail]);
+
+//   useEffect(() => {
+//     if (currentStudent?.id) {
+//       setDataToSave((prev) => ({
+//         ...prev,
+//         student_id: currentStudent.id,
+//       }));
+//     }
+//   }, [currentStudent?.id]);
+
+//   /* ================= REGISTRATIONS ================= */
+//   const regQuery = useQuery<ProgramRegistration[]>({
+//     queryKey: ["ProgramRegistrationList"],
+//     queryFn: async () => {
+//       const data = await fetchForeignResource("program_registration");
+//       return Array.isArray(data) ? data : data.resource || [];
+//     },
+//   });
+
+//   /* ================= STUDENT ENROLLMENTS ================= */
+//   const studentRegs = useMemo(() => {
+//     if (!currentStudent?.id) return [];
+//     return (regQuery.data || []).filter(
+//       (r) => r.student_id === currentStudent.id
+//     );
+//   }, [regQuery.data, currentStudent?.id]);
+
+//   /* ================= CORE VALIDATION ================= */
+//   const isProgramAllowed = (program: Program) => {
+//     if (!program.academic_year_id || !program.term_name) return true;
+
+//     for (const reg of studentRegs) {
+//       const enrolledProgram = programs.find(
+//         (p) => p.id === reg.program_id
+//       );
+//       if (!enrolledProgram) continue;
+
+//       // ❌ Same Academic Year
+//       if (
+//         enrolledProgram.academic_year_id ===
+//         program.academic_year_id
+//       ) {
+//         return false;
+//       }
+
+//       // ❌ T2 → T1
+//       if (
+//         enrolledProgram.term_name === "T2" &&
+//         program.term_name === "T1"
+//       ) {
+//         return false;
+//       }
+//     }
+
+//     return true; // ✅ allowed
+//   };
+
+//   /* ================= SEATS ================= */
+//   const registrationCountMap = useMemo(() => {
+//     const map = new Map<string, number>();
+//     (regQuery.data || []).forEach((r) => {
+//       map.set(r.program_id, (map.get(r.program_id) || 0) + 1);
+//     });
+//     return map;
+//   }, [regQuery.data]);
+
+//   const selectedProgram = programs.find(
+//     (p) => p.id === dataToSave.program_id
+//   );
+
+//   const selectedTotal = selectedProgram
+//     ? Number(selectedProgram.seats ?? 0)
+//     : null;
+
+//   const selectedAvailable =
+//     selectedProgram && selectedTotal !== null
+//       ? Math.max(
+//           0,
+//           selectedTotal -
+//             (registrationCountMap.get(selectedProgram.id) || 0)
+//         )
+//       : null;
+
+//   /* ================= SUBMIT ================= */
+//   const handleCreate = async () => {
+//     if (!dataToSave.program_id) {
+//       setToast({ type: "error", message: "Please select a course." });
+//       return;
+//     }
+
+//     const params = new FormData();
+//     params.append(
+//       "resource",
+//       btoa(
+//         JSON.stringify({
+//           program_id: dataToSave.program_id,
+//           student_id: currentStudent?.id,
+//         })
+//       )
+//     );
+
+//     const res = await fetch(apiUrl, {
+//       method: "POST",
+//       headers: { Authorization: `Bearer ${getCookie("access_token")}` },
+//       credentials: "include",
+//       body: params,
+//     });
+
+//     const json = await res.json();
+
+//     if (!res.ok || json?.errCode === -1) {
+//       setToast({
+//         type: "error",
+//         message: json?.message || "Registration failed",
+//       });
+//       return;
+//     }
+
+//     setToast({ type: "success", message: "Registered successfully!" });
+//     setDataToSave({});
+
+//     queryClient.invalidateQueries({ queryKey: ["ProgramRegistrationList"] });
+//     queryClient.invalidateQueries({ queryKey: ["ProgramList"] });
+//   };
+
+//   /* ================= UI ================= */
+//   return (
+//     <div className="d-flex justify-content-center align-items-start mt-5">
+//       <form
+//         style={{
+//           width: "100%",
+//           maxWidth: "550px",
+//           backgroundColor: "#fff",
+//           borderRadius: "12px",
+//           padding: "30px",
+//           boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+//         }}
+//       >
+//         <h3 className="text-center mb-4">Course Registration</h3>
+
+//         <select
+//           className="form-control mb-3"
+//           value={dataToSave.program_id || ""}
+//           onChange={(e) =>
+//             setDataToSave({ ...dataToSave, program_id: e.target.value })
+//           }
+//         >
+//           <option value="">Select Course</option>
+
+//           {programs.map((p) => {
+//             const disabled = !isProgramAllowed(p);
+
+//             return (
+//               <option key={p.id} value={p.id} disabled={disabled}>
+//                 {p.name} ({p.term_name})
+//                 {disabled ? " ❌ Not allowed" : ""}
+//               </option>
+//             );
+//           })}
+//         </select>
+
+//         {selectedAvailable !== null && (
+//           <div className="alert alert-info">
+//             Seats available: {selectedAvailable}/{selectedTotal}
+//           </div>
+//         )}
+
+//         <input
+//           disabled
+//           className="form-control mb-3"
+//           value={`Auto selected (${currentStudent?.roll_no || ""})`}
+//         />
+
+//         <button
+//           type="button"
+//           className="btn btn-primary w-100"
+//           onClick={handleCreate}
+//         >
+//           Submit
+//         </button>
+
+//         {toast && (
+//           <div
+//             className={`alert mt-3 alert-${
+//               toast.type === "success" ? "success" : "danger"
+//             }`}
+//           >
+//             {toast.message}
+//           </div>
+//         )}
+//       </form>
+//     </div>
+//   );
+// };
+
+// export default CreateProgram_registration;
+
 import React, { useEffect, useMemo, useState, useContext } from "react";
 import apiConfig from "../../config/apiConfig";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -1417,6 +2005,9 @@ type Program = {
   name?: string;
   seats?: number;
   academic_year_id?: string;
+  term_name?: string;
+  start_date?: string;
+  end_date?: string;
 };
 
 type Student = {
@@ -1430,6 +2021,7 @@ type ProgramRegistration = {
   id: string;
   program_id: string;
   student_id: string;
+  g_creation_time?: number;
 };
 
 /* ================= UTILS ================= */
@@ -1504,44 +2096,52 @@ const CreateProgram_registration = () => {
     },
   });
 
-  /* ================= ACADEMIC YEAR MAP ================= */
-  const programAcademicYearMap = useMemo(() => {
-    const map = new Map<string, string>();
-    programs.forEach((p) => {
-      if (p.id && p.academic_year_id) {
-        map.set(p.id, p.academic_year_id);
-      }
-    });
-    return map;
-  }, [programs]);
-
-  /* ================= DUPLICATE CHECK ================= */
-  const alreadyRegistered = useMemo(() => {
-    if (!dataToSave.program_id || !currentStudent?.id) return false;
-    return (regQuery.data || []).some(
-      (r) =>
-        r.program_id === dataToSave.program_id &&
-        r.student_id === currentStudent.id
+  /* ================= STUDENT REGISTRATIONS ================= */
+  const studentRegs = useMemo(() => {
+    if (!currentStudent?.id) return [];
+    return (regQuery.data || []).filter(
+      (r) => r.student_id === currentStudent.id
     );
-  }, [regQuery.data, dataToSave.program_id, currentStudent?.id]);
+  }, [regQuery.data, currentStudent?.id]);
 
-  /* ===== SAME ACADEMIC YEAR RULE ===== */
-  const alreadyEnrolledSameAcademicYear = useMemo(() => {
-    if (!dataToSave.program_id || !currentStudent?.id) return false;
+  /* ================= LATEST ENROLLMENT ================= */
+  const latestEnrollment = useMemo(() => {
+    if (!studentRegs.length) return null;
 
-    const selectedAY = programAcademicYearMap.get(dataToSave.program_id);
-    if (!selectedAY) return false;
+    return studentRegs
+      .filter((r) => typeof r.g_creation_time === "number")
+      .sort(
+        (a, b) =>
+          (b.g_creation_time ?? 0) - (a.g_creation_time ?? 0)
+      )[0];
+  }, [studentRegs]);
 
-    return (regQuery.data || []).some((reg) => {
-      if (reg.student_id !== currentStudent.id) return false;
-      return programAcademicYearMap.get(reg.program_id) === selectedAY;
-    });
-  }, [
-    dataToSave.program_id,
-    currentStudent?.id,
-    regQuery.data,
-    programAcademicYearMap,
-  ]);
+  /* ================= CORE VALIDATION ================= */
+  const isProgramAllowed = (program: Program) => {
+    const now = new Date();
+
+    // 1️⃣ Registration window check
+    if (program.start_date) {
+      const start = new Date(program.start_date);
+      if (now < start) return false;
+    }
+
+    if (program.end_date) {
+      const end = new Date(program.end_date);
+      if (now > end) return false;
+    }
+
+    // 2️⃣ 10-month cooldown check
+    if (latestEnrollment?.g_creation_time) {
+      const enrolled = new Date(latestEnrollment.g_creation_time);
+      const lockEnd = new Date(enrolled);
+      lockEnd.setMonth(lockEnd.getMonth() + 10);
+
+      if (now < lockEnd) return false;
+    }
+
+    return true;
+  };
 
   /* ================= SEATS ================= */
   const registrationCountMap = useMemo(() => {
@@ -1569,59 +2169,10 @@ const CreateProgram_registration = () => {
         )
       : null;
 
-  /* ================= DROPDOWN ================= */
-  const ProgramDropdown = ({
-    label,
-    field,
-  }: {
-    label: string;
-    field: "program_id";
-  }) => (
-    <select
-      className="form-control mb-3"
-      value={dataToSave[field] || ""}
-      onChange={(e) =>
-        setDataToSave({ ...dataToSave, [field]: e.target.value })
-      }
-    >
-      <option value="">Select {label}</option>
-      {programs.map((p) => (
-        <option key={p.id} value={p.id}>
-          {p.name}
-        </option>
-      ))}
-    </select>
-  );
-
   /* ================= SUBMIT ================= */
   const handleCreate = async () => {
     if (!dataToSave.program_id) {
       setToast({ type: "error", message: "Please select a course." });
-      return;
-    }
-
-    if (alreadyRegistered) {
-      setToast({
-        type: "error",
-        message: "You are already registered for this course.",
-      });
-      return;
-    }
-
-    if (alreadyEnrolledSameAcademicYear) {
-      setToast({
-        type: "error",
-        message:
-          "You have already enrolled one course in this academic year.",
-      });
-      return;
-    }
-
-    if (selectedAvailable !== null && selectedAvailable <= 0) {
-      setToast({
-        type: "error",
-        message: "Registration failed: Course is full.",
-      });
       return;
     }
 
@@ -1660,7 +2211,7 @@ const CreateProgram_registration = () => {
     queryClient.invalidateQueries({ queryKey: ["ProgramList"] });
   };
 
-  /* ================= UI ================= */
+  /* ================= UI (UNCHANGED) ================= */
   return (
     <div className="d-flex justify-content-center align-items-start mt-5">
       <form
@@ -1675,7 +2226,26 @@ const CreateProgram_registration = () => {
       >
         <h3 className="text-center mb-4">Course Registration</h3>
 
-        <ProgramDropdown label="Course" field="program_id" />
+        <select
+          className="form-control mb-3"
+          value={dataToSave.program_id || ""}
+          onChange={(e) =>
+            setDataToSave({ ...dataToSave, program_id: e.target.value })
+          }
+        >
+          <option value="">Select Course</option>
+
+          {programs.map((p) => {
+            const disabled = !isProgramAllowed(p);
+
+            return (
+              <option key={p.id} value={p.id} disabled={disabled}>
+                {p.name} ({p.term_name})
+                {disabled ? " ❌ Not allowed" : ""}
+              </option>
+            );
+          })}
+        </select>
 
         {selectedAvailable !== null && (
           <div className="alert alert-info">
