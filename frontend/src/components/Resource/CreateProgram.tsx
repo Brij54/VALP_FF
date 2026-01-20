@@ -772,6 +772,14 @@ const getCookie = (name: string): string | null => {
   return null;
 };
 
+// Date utils (YYYY-MM-DD)
+const isValidDateRange = (start?: string, end?: string) => {
+  if (!start || !end) return true; // validate only when both exist
+  const s = new Date(start).getTime();
+  const e = new Date(end).getTime();
+  return s <= e; // allow same date; change to s < e for strict
+};
+
 const CreateProgram = () => {
   const [resMetaData, setResMetaData] = useState<resourceMetaData[]>([]);
   const [fields, setFields] = useState<any[]>([]);
@@ -785,6 +793,9 @@ const CreateProgram = () => {
     {}
   );
   const [enums, setEnums] = useState<Record<string, any[]>>({});
+
+  // ✅ Date validation UI
+  const [dateError, setDateError] = useState<string>("");
 
   const apiUrl = apiConfig.getResourceUrl("Program");
   const metadataUrl = apiConfig.getResourceMetaDataUrl("Program");
@@ -894,6 +905,23 @@ const CreateProgram = () => {
   // Create
   // -----------------------------
   const handleCreate = async () => {
+    // ✅ validate date range before API call
+    const start = dataToSave?.start_date;
+    const end = dataToSave?.end_date;
+
+    if (start && end && !isValidDateRange(start, end)) {
+      setDateError("Start date must be before (or same as) End date.");
+      return;
+    }
+
+    // optional required check
+    if (!start || !end) {
+      setDateError("Start date and End date are required.");
+      return;
+    }
+
+    setDateError("");
+
     const accessToken = getCookie("access_token");
 
     if (!accessToken) {
@@ -906,9 +934,12 @@ const CreateProgram = () => {
       (key) => dataToSave[key] instanceof File
     );
 
+    // NOTE: avoid mutating state object directly
+    const payload = { ...dataToSave };
+
     if (selectedFile.length > 0) {
-      params.append("file", dataToSave[selectedFile[0]]);
-      dataToSave[selectedFile[0]] = "";
+      params.append("file", payload[selectedFile[0]]);
+      payload[selectedFile[0]] = "";
 
       params.append("description", "my description");
       params.append("appId", "hostel_management_system");
@@ -917,7 +948,7 @@ const CreateProgram = () => {
       params.append("tags", "t1,t2,attend");
     }
 
-    params.append("resource", btoa(JSON.stringify(dataToSave)));
+    params.append("resource", btoa(JSON.stringify(payload)));
 
     const response = await fetch(apiUrl, {
       method: "POST",
@@ -937,6 +968,15 @@ const CreateProgram = () => {
 
   const handleSearchChange = (fieldName: string, value: string) => {
     setSearchQueries((prev) => ({ ...prev, [fieldName]: value }));
+  };
+
+  // helpers to validate & show error live
+  const validateDatesLive = (nextStart?: string, nextEnd?: string) => {
+    if (nextStart && nextEnd && !isValidDateRange(nextStart, nextEnd)) {
+      setDateError("Start date must be before (or same as) End date.");
+    } else {
+      setDateError("");
+    }
   };
 
   // -----------------------------
@@ -984,7 +1024,7 @@ const CreateProgram = () => {
 
             {(() => {
               const options = foreignKeyData["Academic_year"] || [];
-              console.log("options", options);
+
               const filteredOptions = options.filter((option: any) =>
                 (option.academic_name || option.id)
                   ?.toLowerCase()
@@ -992,7 +1032,6 @@ const CreateProgram = () => {
                     (searchQueries["academic_year_id"] || "").toLowerCase()
                   )
               );
-              console.log("foreign key data:", foreignKeyData);
 
               const selected = options.find(
                 (item: any) => item.id === dataToSave["academic_year_id"]
@@ -1016,7 +1055,7 @@ const CreateProgram = () => {
                       ? selected.academic_name || selected.id
                       : "Select Academic Year"}
                   </div>
-                  
+
                   {searchQueries.__openAcademicYear && (
                     <div
                       style={{
@@ -1032,17 +1071,18 @@ const CreateProgram = () => {
                         padding: 8,
                       }}
                     >
-                      
                       <input
                         className="form-control mb-2"
                         placeholder="Search academic year"
-                        value={searchQueries["academic_name"] || ""}
+                        value={searchQueries["academic_year_id"] || ""}
                         onChange={(e) =>
-                          handleSearchChange("academic_year_id", e.target.value)
+                          handleSearchChange(
+                            "academic_year_id",
+                            e.target.value
+                          )
                         }
                       />
                       {filteredOptions.length > 0 ? (
-                  
                         filteredOptions.map((option: any) => (
                           <div
                             key={option.id}
@@ -1065,9 +1105,7 @@ const CreateProgram = () => {
                         <div className="text-muted">No options available</div>
                       )}
                     </div>
-
                   )}
-                  
                 </>
               );
             })()}
@@ -1082,9 +1120,13 @@ const CreateProgram = () => {
               type="date"
               className={styles.formControl}
               value={dataToSave.start_date || ""}
-              onChange={(e) =>
-                setDataToSave({ ...dataToSave, start_date: e.target.value })
-              }
+              onChange={(e) => {
+                const start = e.target.value;
+                const end = dataToSave.end_date;
+                const next = { ...dataToSave, start_date: start };
+                setDataToSave(next);
+                validateDatesLive(start, end);
+              }}
             />
           </div>
 
@@ -1097,11 +1139,29 @@ const CreateProgram = () => {
               type="date"
               className={styles.formControl}
               value={dataToSave.end_date || ""}
-              onChange={(e) =>
-                setDataToSave({ ...dataToSave, end_date: e.target.value })
-              }
+              onChange={(e) => {
+                const end = e.target.value;
+                const start = dataToSave.start_date;
+                const next = { ...dataToSave, end_date: end };
+                setDataToSave(next);
+                validateDatesLive(start, end);
+              }}
             />
           </div>
+
+          {/* ✅ Date Error Message */}
+          {dateError && (
+            <div
+              style={{
+                gridColumn: "1 / -1",
+                color: "#dc3545",
+                fontSize: 13,
+                marginTop: -6,
+              }}
+            >
+              {dateError}
+            </div>
+          )}
 
           {/* Seats */}
           <div className={styles.formGroup}>
@@ -1152,7 +1212,12 @@ const CreateProgram = () => {
         </div>
 
         <div className={styles.buttonRow}>
-          <button className={styles.primaryBtn} onClick={handleCreate}>
+          <button
+            className={styles.primaryBtn}
+            onClick={handleCreate}
+            disabled={!!dateError}
+            title={dateError ? dateError : "Submit"}
+          >
             Submit
           </button>
         </div>
