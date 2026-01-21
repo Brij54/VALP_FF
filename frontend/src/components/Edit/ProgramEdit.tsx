@@ -1431,11 +1431,327 @@
 
 // export default ProgramEdit;
 
-import React, {
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+// import React, {
+//   useEffect,
+//   useRef,
+//   useState,
+// } from "react";
+// import { useParams, useNavigate } from "react-router-dom";
+// import apiConfig from "../../config/apiConfig";
+// import { fetchForeignResource } from "../../apis/resources";
+// import { fetchEnum, getCookie } from "../../apis/enum";
+// import { useQuery } from "@tanstack/react-query";
+// import {
+//   getUserIdFromJWT,
+//   useProgramViewModel,
+// } from "../viewModels/useProgramViewModel";
+// import Sidebar from "../Utils/SidebarAdmin";
+// import styles from "../Styles/CreateCertificate.module.css";
+// import { LogOut } from "lucide-react";
+// import { logout } from "../../apis/backend";
+
+// const ProgramEdit = () => {
+//   const navigate = useNavigate();
+//   const { id, appId }: any = useParams();
+
+//   const baseUrl = apiConfig.getResourceUrl("Program");
+//   const apiUrl = `${apiConfig.getResourceUrl("Program")}?`;
+//   const metadataUrl =
+//     apiConfig.getResourceMetaDataUrl("Program");
+
+//   const [editedRecord, setEditedRecord] = useState<any>({});
+//   const [showToast, setShowToast] = useState(false);
+//   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+//   /* 🔑 PROFILE STATE (SAME AS Batch_Config) */
+//   const [showDropdown, setShowDropdown] = useState(false);
+
+//   const regex = /^(g_|archived|extra_data)/;
+//   const fetchedResources = useRef(new Set<string>());
+//   const fetchedEnum = useRef(new Set<string>());
+
+//   const {
+//     setFields,
+//     setEnums,
+//     setForeignKeyData,
+//   } = useProgramViewModel(getUserIdFromJWT(), appId);
+
+//   /* ================= FETCH PROGRAM ================= */
+
+//   const fetchProgramById = async () => {
+//     const params = new URLSearchParams({
+//       args: `id:${id}`,
+//       queryId: "GET_BY_ID",
+//     });
+
+//     const res = await fetch(`${baseUrl}?${params}`, {
+//       headers: {
+//         Authorization: `Bearer ${getCookie("access_token")}`,
+//       },
+//       credentials: "include",
+//     });
+
+//     if (!res.ok) throw new Error("Failed to fetch program");
+//     return res.json();
+//   };
+
+//   const { data: programData, isLoading } = useQuery({
+//     queryKey: ["programById", id],
+//     queryFn: fetchProgramById,
+//     enabled: !!id,
+//   });
+
+//   /* ================= FETCH ACADEMIC YEARS ================= */
+
+//   const { data: academicYears } = useQuery({
+//     queryKey: ["academicYears"],
+//     queryFn: async () => {
+//       const d: any = await fetchForeignResource("Academic_year");
+//       return Array.isArray(d) ? d : d.resource || [];
+//     },
+//   });
+
+//   /* ================= PREFILL FORM ================= */
+
+//   useEffect(() => {
+//     if (programData?.resource?.length) {
+//       const record = programData.resource[0];
+//       setEditedRecord(
+//         Object.fromEntries(
+//           Object.entries(record).filter(
+//             ([key]) => !regex.test(key)
+//           )
+//         )
+//       );
+//     }
+//   }, [programData]);
+
+//   /* ================= FETCH METADATA ================= */
+
+//   useQuery({
+//     queryKey: ["programMeta"],
+//     queryFn: async () => {
+//       const res = await fetch(metadataUrl);
+//       const data = await res.json();
+
+//       setFields(data[0].fieldValues);
+
+//       for (const f of data[0].fieldValues.filter((x: any) => x.foreign)) {
+//         if (!fetchedResources.current.has(f.foreign)) {
+//           fetchedResources.current.add(f.foreign);
+//           const d = await fetchForeignResource(f.foreign);
+//           setForeignKeyData((p: any) => ({ ...p, [f.foreign]: d }));
+//         }
+//       }
+
+//       for (const f of data[0].fieldValues.filter((x: any) => x.isEnum)) {
+//         if (!fetchedEnum.current.has(f.possible_value)) {
+//           fetchedEnum.current.add(f.possible_value);
+//           const d = await fetchEnum(f.possible_value);
+//           setEnums((p: any) => ({ ...p, [f.possible_value]: d }));
+//         }
+//       }
+
+//       return data;
+//     },
+//   });
+
+//   const handleEdit = (field: string, value: any) =>
+//     setEditedRecord((p: any) => ({ ...p, [field]: value }));
+
+//   /* ================= UPDATE ================= */
+
+//   const handleUpdate = async (e: React.FormEvent) => {
+//     e.preventDefault();
+
+//     const params = new FormData();
+//     params.append(
+//       "resource",
+//       btoa(unescape(encodeURIComponent(JSON.stringify(editedRecord))))
+//     );
+//     params.append("action", "MODIFY");
+
+//     const res = await fetch(apiUrl, {
+//       method: "POST",
+//       headers: {
+//         Authorization: `Bearer ${getCookie("access_token")}`,
+//       },
+//       credentials: "include",
+//       body: params,
+//     });
+
+//     if (res.ok) {
+//       setShowToast(true);
+//       setTimeout(() => navigate("/valpcourses"), 1000);
+//     }
+//   };
+
+//   /* ================= LOGOUT ================= */
+
+//   const handleLogout = async () => {
+//     const ok = await logout();
+//     if (ok) navigate("/");
+//   };
+
+//   /* ================= UI ================= */
+
+//   return (
+//     <div className="page12Container">
+//       <Sidebar
+//         sidebarCollapsed={sidebarCollapsed}
+//         toggleSidebar={() => setSidebarCollapsed((p) => !p)}
+//         activeSection="dashboard"
+//       />
+
+//       <main
+//         className={`mainContent ${sidebarCollapsed ? "sidebarCollapsed" : ""}`}
+//       >
+//         <header className="contentHeader">
+//           <h1 className="pageTitle">Edit Course</h1>
+
+//           {/* ✅ USER PROFILE (EXACT SAME AS Batch_Config) */}
+//           <div className="userProfile" style={{ position: "relative" }}>
+//             <div
+//               className="profileCircle"
+//               onClick={() => setShowDropdown((prev) => !prev)}
+//               style={{ cursor: "pointer" }}
+//             >
+//               <span className="profileInitial">A</span>
+//             </div>
+
+//             {showDropdown && (
+//               <div
+//                 style={{
+//                   position: "absolute",
+//                   right: 0,
+//                   top: "45px",
+//                   background: "white",
+//                   borderRadius: "8px",
+//                   boxShadow: "0 2px 10px rgba(0,0,0,0.15)",
+//                   padding: "10px",
+//                   minWidth: "130px",
+//                   zIndex: 100,
+//                 }}
+//               >
+//                 <button
+//                   onClick={handleLogout}
+//                   style={{
+//                     width: "100%",
+//                     background: "none",
+//                     border: "none",
+//                     textAlign: "left",
+//                     padding: "8px",
+//                     cursor: "pointer",
+//                     fontSize: "16px",
+//                   }}
+//                 >
+//                   <LogOut size={16} />
+//                   <span style={{ marginLeft: "8px" }}>Logout</span>
+//                 </button>
+//               </div>
+//             )}
+//           </div>
+//         </header>
+
+//         <div className="contentBody">
+//           <div className="pageFormContainer">
+//             {!isLoading && (
+//               <form onSubmit={handleUpdate}>
+//                 <div className={styles.certificateFormWrapper}>
+//                   <h2 className={styles.sectionTitle}>
+//                     Edit Course Information
+//                   </h2>
+
+//                   <div className={styles.formGrid}>
+//                     <input
+//                       className={styles.formControl}
+//                       value={editedRecord.name || ""}
+//                       onChange={(e) => handleEdit("name", e.target.value)}
+//                     />
+
+//                     <input
+//                       type="number"
+//                       className={styles.formControl}
+//                       value={editedRecord.seats || ""}
+//                       onChange={(e) => handleEdit("seats", e.target.value)}
+//                     />
+
+//                     <input
+//                       className={styles.formControl}
+//                       value={editedRecord.instructor_name || ""}
+//                       onChange={(e) =>
+//                         handleEdit("instructor_name", e.target.value)
+//                       }
+//                     />
+
+//                     <input
+//                       className={styles.formControl}
+//                       value={editedRecord.term_name || ""}
+//                       onChange={(e) => handleEdit("term_name", e.target.value)}
+//                     />
+
+//                     <select
+//                       className={styles.formControl}
+//                       value={editedRecord.academic_year_id || ""}
+//                       onChange={(e) =>
+//                         handleEdit("academic_year_id", e.target.value)
+//                       }
+//                     >
+//                       <option value="">Select Academic Year</option>
+//                       {(academicYears || []).map((ay: any) => (
+//                         <option key={ay.id} value={ay.id}>
+//                           {ay.academic_name || ay.name || ay.id}
+//                         </option>
+//                       ))}
+//                     </select>
+
+//                     <input
+//                       type="date"
+//                       className={styles.formControl}
+//                       value={editedRecord.start_date || ""}
+//                       onChange={(e) =>
+//                         handleEdit("start_date", e.target.value)
+//                       }
+//                     />
+
+//                     <input
+//                       type="date"
+//                       className={styles.formControl}
+//                       value={editedRecord.end_date || ""}
+//                       onChange={(e) =>
+//                         handleEdit("end_date", e.target.value)
+//                       }
+//                     />
+//                   </div>
+
+//                   <div className={styles.buttonRow}>
+//                     <button className={styles.primaryBtn}>
+//                       Update
+//                     </button>
+//                   </div>
+//                 </div>
+//               </form>
+//             )}
+
+//             {showToast && (
+//               <div className="toast-container position-fixed top-20 start-50 translate-middle p-3">
+//                 <div className="toast show">
+//                   <div className="toast-body text-success text-center">
+//                     Updated Successfully!
+//                   </div>
+//                 </div>
+//               </div>
+//             )}
+//           </div>
+//         </div>
+//       </main>
+//     </div>
+//   );
+// };
+
+// export default ProgramEdit;
+
+import React, { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import apiConfig from "../../config/apiConfig";
 import { fetchForeignResource } from "../../apis/resources";
@@ -1450,20 +1766,31 @@ import styles from "../Styles/CreateCertificate.module.css";
 import { LogOut } from "lucide-react";
 import { logout } from "../../apis/backend";
 
+/* ================= DATE UTILS (FROM CREATE PROGRAM) ================= */
+
+const isValidDateRange = (start?: string, end?: string) => {
+  if (!start || !end) return true;
+  const s = new Date(start).getTime();
+  const e = new Date(end).getTime();
+  return s <= e;
+};
+
 const ProgramEdit = () => {
   const navigate = useNavigate();
   const { id, appId }: any = useParams();
 
   const baseUrl = apiConfig.getResourceUrl("Program");
   const apiUrl = `${apiConfig.getResourceUrl("Program")}?`;
-  const metadataUrl =
-    apiConfig.getResourceMetaDataUrl("Program");
+  const metadataUrl = apiConfig.getResourceMetaDataUrl("Program");
 
   const [editedRecord, setEditedRecord] = useState<any>({});
   const [showToast, setShowToast] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
-  /* 🔑 PROFILE STATE (SAME AS Batch_Config) */
+  /* ✅ DATE VALIDATION STATE */
+  const [dateError, setDateError] = useState<string>("");
+
+  /* 🔑 PROFILE STATE */
   const [showDropdown, setShowDropdown] = useState(false);
 
   const regex = /^(g_|archived|extra_data)/;
@@ -1518,9 +1845,7 @@ const ProgramEdit = () => {
       const record = programData.resource[0];
       setEditedRecord(
         Object.fromEntries(
-          Object.entries(record).filter(
-            ([key]) => !regex.test(key)
-          )
+          Object.entries(record).filter(([key]) => !regex.test(key))
         )
       );
     }
@@ -1556,13 +1881,43 @@ const ProgramEdit = () => {
     },
   });
 
-  const handleEdit = (field: string, value: any) =>
-    setEditedRecord((p: any) => ({ ...p, [field]: value }));
+  /* ================= HELPERS ================= */
+
+  const handleEdit = (field: string, value: any) => {
+    const next = { ...editedRecord, [field]: value };
+    setEditedRecord(next);
+
+    if (field === "start_date" || field === "end_date") {
+      const start = field === "start_date" ? value : next.start_date;
+      const end = field === "end_date" ? value : next.end_date;
+
+      if (start && end && !isValidDateRange(start, end)) {
+        setDateError("Start date must be before (or same as) End date.");
+      } else {
+        setDateError("");
+      }
+    }
+  };
 
   /* ================= UPDATE ================= */
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const start = editedRecord.start_date;
+    const end = editedRecord.end_date;
+
+    if (!start || !end) {
+      setDateError("Start date and End date are required.");
+      return;
+    }
+
+    if (!isValidDateRange(start, end)) {
+      setDateError("Start date must be before (or same as) End date.");
+      return;
+    }
+
+    setDateError("");
 
     const params = new FormData();
     params.append(
@@ -1609,44 +1964,18 @@ const ProgramEdit = () => {
         <header className="contentHeader">
           <h1 className="pageTitle">Edit Course</h1>
 
-          {/* ✅ USER PROFILE (EXACT SAME AS Batch_Config) */}
           <div className="userProfile" style={{ position: "relative" }}>
             <div
               className="profileCircle"
               onClick={() => setShowDropdown((prev) => !prev)}
-              style={{ cursor: "pointer" }}
             >
               <span className="profileInitial">A</span>
             </div>
 
             {showDropdown && (
-              <div
-                style={{
-                  position: "absolute",
-                  right: 0,
-                  top: "45px",
-                  background: "white",
-                  borderRadius: "8px",
-                  boxShadow: "0 2px 10px rgba(0,0,0,0.15)",
-                  padding: "10px",
-                  minWidth: "130px",
-                  zIndex: 100,
-                }}
-              >
-                <button
-                  onClick={handleLogout}
-                  style={{
-                    width: "100%",
-                    background: "none",
-                    border: "none",
-                    textAlign: "left",
-                    padding: "8px",
-                    cursor: "pointer",
-                    fontSize: "16px",
-                  }}
-                >
-                  <LogOut size={16} />
-                  <span style={{ marginLeft: "8px" }}>Logout</span>
+              <div className="profileDropdown">
+                <button onClick={handleLogout}>
+                  <LogOut size={16} /> Logout
                 </button>
               </div>
             )}
@@ -1687,7 +2016,9 @@ const ProgramEdit = () => {
                     <input
                       className={styles.formControl}
                       value={editedRecord.term_name || ""}
-                      onChange={(e) => handleEdit("term_name", e.target.value)}
+                      onChange={(e) =>
+                        handleEdit("term_name", e.target.value)
+                      }
                     />
 
                     <select
@@ -1724,8 +2055,24 @@ const ProgramEdit = () => {
                     />
                   </div>
 
+                  {dateError && (
+                    <div
+                      style={{
+                        color: "#dc3545",
+                        fontSize: 13,
+                        marginTop: 8,
+                      }}
+                    >
+                      {dateError}
+                    </div>
+                  )}
+
                   <div className={styles.buttonRow}>
-                    <button className={styles.primaryBtn}>
+                    <button
+                      className={styles.primaryBtn}
+                      disabled={!!dateError}
+                      title={dateError || "Update"}
+                    >
                       Update
                     </button>
                   </div>
@@ -1750,5 +2097,6 @@ const ProgramEdit = () => {
 };
 
 export default ProgramEdit;
+
 
 

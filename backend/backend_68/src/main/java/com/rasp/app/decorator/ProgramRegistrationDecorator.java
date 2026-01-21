@@ -488,8 +488,8 @@ public class ProgramRegistrationDecorator extends BaseDecorator {
         // ------------------------------------------------
         // 2) Registration window check (START / END DATE)
         // ------------------------------------------------
-        Date startDate = selectedProgram.getStart_date();
-        Date endDate = selectedProgram.getEnd_date();
+        Date startDate = selectedProgram.getRegistration_start_date();
+        Date endDate = selectedProgram.getRegistration_end_date();
 
         if (startDate != null && today.before(startDate)) {
             throw new ApplicationException(

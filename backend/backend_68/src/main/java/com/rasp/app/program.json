@@ -48,18 +48,32 @@
       },
       "type" : "String"
     },
-    "start_date": {
+    "registration_start_date": {
 
-      "name" : "start_date",
+      "name" : "registration_start_date",
       "required" : "true",
       "type" : "Date"
     },
-    "end_date": {
+    "registration_end_date": {
 
-      "name" : "end_date",
+      "name" : "registration_end_date",
       "required" : "true",
       "type" : "Date"
     },
+
+    "course_start_date": {
+
+      "name" : "course_start_date",
+      "required" : "true",
+      "type" : "Date"
+    },
+    "course_end_date": {
+
+      "name" : "course_end_date",
+      "required" : "true",
+      "type" : "Date"
+    },
+
     "syllabus": {
 
      "name" : "syllabus",

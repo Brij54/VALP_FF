@@ -31,10 +31,10 @@ public class Registry {
 				 ServiceManager.getInstance().register(new StudentService());
 				 ServiceManager.getInstance().register(new TestService());
 				 ServiceManager.getInstance().register(new UsersService());
-            DecoratorManager.getInstance().register(new StudentDecorator());
-            DecoratorManager.getInstance().register(new CertificateDecorator());
-            DecoratorManager.getInstance().register(new BatchDecorator());
             DecoratorManager.getInstance().register(new ProgramRegistrationDecorator());
             DecoratorManager.getInstance().register(new ProgramDecorator());
+            DecoratorManager.getInstance().register(new BatchDecorator());
+            DecoratorManager.getInstance().register(new StudentDecorator());
+            DecoratorManager.getInstance().register(new CertificateDecorator());
 		}
 }
