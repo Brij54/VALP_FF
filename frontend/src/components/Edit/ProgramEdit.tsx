@@ -1751,7 +1751,7 @@
 
 // export default ProgramEdit;
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import apiConfig from "../../config/apiConfig";
 import { fetchForeignResource } from "../../apis/resources";
@@ -1766,13 +1766,63 @@ import styles from "../Styles/CreateCertificate.module.css";
 import { LogOut } from "lucide-react";
 import { logout } from "../../apis/backend";
 
-/* ================= DATE UTILS (FROM CREATE PROGRAM) ================= */
+/* ================= UTILS ================= */
+
+const regex = /^(g_|archived|extra_data)/;
+
+const prettify = (s: string) =>
+  (s || "")
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
 
 const isValidDateRange = (start?: string, end?: string) => {
   if (!start || !end) return true;
-  const s = new Date(start).getTime();
-  const e = new Date(end).getTime();
-  return s <= e;
+  return new Date(start).getTime() <= new Date(end).getTime();
+};
+
+/**
+ * Validates both old date fields (start_date/end_date)
+ * and new date fields (registration/course date pairs) if present.
+ */
+const validateProgramDates = (rec: any) => {
+  // old
+  const start = rec.start_date;
+  const end = rec.end_date;
+
+  // new
+  const regStart = rec.registration_start_date;
+  const regEnd = rec.registration_end_date;
+  const courseStart = rec.course_start_date;
+  const courseEnd = rec.course_end_date;
+
+  if (start || end) {
+    if (!start || !end) return "Start date and End date are required.";
+    if (!isValidDateRange(start, end))
+      return "Start date must be before (or same as) End date.";
+  }
+
+  if (regStart || regEnd) {
+    if (!regStart || !regEnd)
+      return "Registration start date and end date are required.";
+    if (!isValidDateRange(regStart, regEnd))
+      return "Registration start date must be before registration end date.";
+  }
+
+  if (courseStart || courseEnd) {
+    if (!courseStart || !courseEnd)
+      return "Course start date and end date are required.";
+    if (!isValidDateRange(courseStart, courseEnd))
+      return "Course start date must be before course end date.";
+  }
+
+  // Optional rule
+  if (regEnd && courseStart) {
+    if (new Date(regEnd).getTime() > new Date(courseStart).getTime()) {
+      return "Registration must end before the course starts.";
+    }
+  }
+
+  return "";
 };
 
 const ProgramEdit = () => {
@@ -1786,22 +1836,26 @@ const ProgramEdit = () => {
   const [editedRecord, setEditedRecord] = useState<any>({});
   const [showToast, setShowToast] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-
-  /* ✅ DATE VALIDATION STATE */
   const [dateError, setDateError] = useState<string>("");
 
-  /* 🔑 PROFILE STATE */
   const [showDropdown, setShowDropdown] = useState(false);
 
-  const regex = /^(g_|archived|extra_data)/;
+  const [metaFields, setMetaFields] = useState<any[]>([]);
+
   const fetchedResources = useRef(new Set<string>());
   const fetchedEnum = useRef(new Set<string>());
 
-  const {
-    setFields,
-    setEnums,
-    setForeignKeyData,
-  } = useProgramViewModel(getUserIdFromJWT(), appId);
+  // ✅ local data for rendering foreign/enums (NO DUPLICATES)
+  const [foreignKeyDataLocal, setForeignKeyDataLocal] = useState<
+    Record<string, any[]>
+  >({});
+  const [enumDataLocal, setEnumDataLocal] = useState<Record<string, any[]>>({});
+
+  // keep your view model setters (safe to keep)
+  const { setFields, setEnums, setForeignKeyData } = useProgramViewModel(
+    getUserIdFromJWT(),
+    appId
+  );
 
   /* ================= FETCH PROGRAM ================= */
 
@@ -1812,9 +1866,7 @@ const ProgramEdit = () => {
     });
 
     const res = await fetch(`${baseUrl}?${params}`, {
-      headers: {
-        Authorization: `Bearer ${getCookie("access_token")}`,
-      },
+      headers: { Authorization: `Bearer ${getCookie("access_token")}` },
       credentials: "include",
     });
 
@@ -1828,26 +1880,20 @@ const ProgramEdit = () => {
     enabled: !!id,
   });
 
-  /* ================= FETCH ACADEMIC YEARS ================= */
-
-  const { data: academicYears } = useQuery({
-    queryKey: ["academicYears"],
-    queryFn: async () => {
-      const d: any = await fetchForeignResource("Academic_year");
-      return Array.isArray(d) ? d : d.resource || [];
-    },
-  });
-
   /* ================= PREFILL FORM ================= */
 
   useEffect(() => {
     if (programData?.resource?.length) {
       const record = programData.resource[0];
-      setEditedRecord(
-        Object.fromEntries(
-          Object.entries(record).filter(([key]) => !regex.test(key))
-        )
+
+      const cleaned = Object.fromEntries(
+        Object.entries(record).filter(([k]) => !regex.test(k))
       );
+
+      setEditedRecord(cleaned);
+
+      const err = validateProgramDates(cleaned);
+      setDateError(err);
     }
   }, [programData]);
 
@@ -1857,45 +1903,63 @@ const ProgramEdit = () => {
     queryKey: ["programMeta"],
     queryFn: async () => {
       const res = await fetch(metadataUrl);
+      if (!res.ok) throw new Error("Failed to fetch metadata");
       const data = await res.json();
 
-      setFields(data[0].fieldValues);
+      const fvs = data?.[0]?.fieldValues || [];
+      setFields(fvs);
+      setMetaFields(fvs);
 
-      for (const f of data[0].fieldValues.filter((x: any) => x.foreign)) {
-        if (!fetchedResources.current.has(f.foreign)) {
-          fetchedResources.current.add(f.foreign);
-          const d = await fetchForeignResource(f.foreign);
-          setForeignKeyData((p: any) => ({ ...p, [f.foreign]: d }));
+      // foreign keys
+      for (const f of fvs.filter((x: any) => x.foreign)) {
+        const foreignRes =
+          typeof f.foreign === "string"
+            ? f.foreign
+            : f.foreign?.resource || f.foreign?.name;
+
+        if (!foreignRes) continue;
+
+        if (!fetchedResources.current.has(foreignRes)) {
+          fetchedResources.current.add(foreignRes);
+
+          const d: any = await fetchForeignResource(foreignRes);
+          const rows = Array.isArray(d) ? d : d.resource || [];
+
+          setForeignKeyData((p: any) => ({ ...p, [foreignRes]: rows }));
+          setForeignKeyDataLocal((p) => ({ ...p, [foreignRes]: rows }));
         }
       }
 
-      for (const f of data[0].fieldValues.filter((x: any) => x.isEnum)) {
-        if (!fetchedEnum.current.has(f.possible_value)) {
-          fetchedEnum.current.add(f.possible_value);
-          const d = await fetchEnum(f.possible_value);
-          setEnums((p: any) => ({ ...p, [f.possible_value]: d }));
+      // enums
+      for (const f of fvs.filter((x: any) => x.isEnum)) {
+        const enumName = f.possible_value;
+        if (!enumName) continue;
+
+        if (!fetchedEnum.current.has(enumName)) {
+          fetchedEnum.current.add(enumName);
+
+          const d: any = await fetchEnum(enumName);
+
+          setEnums((p: any) => ({ ...p, [enumName]: d }));
+          setEnumDataLocal((p) => ({ ...p, [enumName]: d }));
         }
       }
 
       return data;
     },
+    enabled: !!id,
   });
 
-  /* ================= HELPERS ================= */
+  /* ================= EDIT HANDLER ================= */
 
   const handleEdit = (field: string, value: any) => {
     const next = { ...editedRecord, [field]: value };
     setEditedRecord(next);
 
-    if (field === "start_date" || field === "end_date") {
-      const start = field === "start_date" ? value : next.start_date;
-      const end = field === "end_date" ? value : next.end_date;
-
-      if (start && end && !isValidDateRange(start, end)) {
-        setDateError("Start date must be before (or same as) End date.");
-      } else {
-        setDateError("");
-      }
+    // Validate whenever date fields change
+    if (field.includes("date") || field === "start_date" || field === "end_date") {
+      const err = validateProgramDates(next);
+      setDateError(err);
     }
   };
 
@@ -1904,33 +1968,34 @@ const ProgramEdit = () => {
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const start = editedRecord.start_date;
-    const end = editedRecord.end_date;
-
-    if (!start || !end) {
-      setDateError("Start date and End date are required.");
+    const err = validateProgramDates(editedRecord);
+    if (err) {
+      setDateError(err);
       return;
     }
-
-    if (!isValidDateRange(start, end)) {
-      setDateError("Start date must be before (or same as) End date.");
-      return;
-    }
-
     setDateError("");
 
     const params = new FormData();
+    const payload = { ...editedRecord };
+
+    // attach first file field if present
+    const fileField = metaFields.find(
+      (f) => f?.is_file === true || f?.is_file === "true"
+    );
+    if (fileField && payload[fileField.name] instanceof File) {
+      params.append("file", payload[fileField.name]);
+      payload[fileField.name] = "";
+    }
+
     params.append(
       "resource",
-      btoa(unescape(encodeURIComponent(JSON.stringify(editedRecord))))
+      btoa(unescape(encodeURIComponent(JSON.stringify(payload))))
     );
     params.append("action", "MODIFY");
 
     const res = await fetch(apiUrl, {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${getCookie("access_token")}`,
-      },
+      headers: { Authorization: `Bearer ${getCookie("access_token")}` },
       credentials: "include",
       body: params,
     });
@@ -1946,6 +2011,149 @@ const ProgramEdit = () => {
   const handleLogout = async () => {
     const ok = await logout();
     if (ok) navigate("/");
+  };
+
+  /* ================= VISIBLE FIELDS ================= */
+
+  const visibleFields = useMemo(() => {
+    // edit everything except: id + status + system keys
+    return (metaFields || [])
+      .filter((f: any) => f?.name && !regex.test(f.name))
+      .filter((f: any) => f.name !== "id")
+      .filter((f: any) => f.name !== "status");
+  }, [metaFields]);
+
+  /* ================= FIELD RENDERER ================= */
+
+  const renderInputForField = (f: any) => {
+    const name = f.name as string;
+    if (name === "status") return null;
+
+    const type = String(f.type || "").toLowerCase();
+    const isFile = f.is_file === true || f.is_file === "true";
+    const isEnum = f.isEnum === true || f.isEnum === "true";
+    const hasForeign = !!f.foreign;
+
+    const foreignRes =
+      typeof f.foreign === "string"
+        ? f.foreign
+        : f.foreign?.resource || f.foreign?.name;
+
+    // FILE
+    if (isFile) {
+      return (
+        <div key={name} className={styles.formGroup}>
+          <label className={styles.formLabel}>{prettify(name)}</label>
+          <input
+            type="file"
+            className={styles.formControl}
+            onChange={(e) =>
+              handleEdit(name, e.target.files?.[0] ? e.target.files[0] : null)
+            }
+          />
+        </div>
+      );
+    }
+
+    // DATE
+    if (type === "date") {
+      return (
+        <div key={name} className={styles.formGroup}>
+          <label className={styles.formLabel}>{prettify(name)}</label>
+          <input
+            type="date"
+            className={styles.formControl}
+            value={editedRecord[name] || ""}
+            onChange={(e) => handleEdit(name, e.target.value)}
+          />
+        </div>
+      );
+    }
+
+    // ENUM
+    if (isEnum) {
+      const options = enumDataLocal[f.possible_value] || [];
+      return (
+        <div key={name} className={styles.formGroup}>
+          <label className={styles.formLabel}>{prettify(name)}</label>
+          <select
+            className={styles.formControl}
+            value={editedRecord[name] || ""}
+            onChange={(e) => handleEdit(name, e.target.value)}
+          >
+            <option value="">Select {prettify(name)}</option>
+            {options.map((opt: any, idx: number) => {
+              const val = opt?.value ?? opt?.name ?? opt?.id ?? String(opt);
+              const label = opt?.label ?? opt?.name ?? opt?.value ?? String(opt);
+              return (
+                <option key={`${val}-${idx}`} value={val}>
+                  {label}
+                </option>
+              );
+            })}
+          </select>
+        </div>
+      );
+    }
+
+    // FOREIGN KEY
+    if (hasForeign && foreignRes) {
+      const rows = foreignKeyDataLocal[foreignRes] || [];
+      const labelOf = (row: any) =>
+        row?.academic_name || row?.name || row?.title || row?.code || row?.id;
+
+      return (
+        <div key={name} className={styles.formGroup}>
+          <label className={styles.formLabel}>{prettify(name)}</label>
+          <select
+            className={styles.formControl}
+            value={editedRecord[name] || ""}
+            onChange={(e) => handleEdit(name, e.target.value)}
+          >
+            <option value="">Select {prettify(name)}</option>
+            {rows.map((r: any) => (
+              <option key={r.id} value={r.id}>
+                {labelOf(r)}
+              </option>
+            ))}
+          </select>
+        </div>
+      );
+    }
+
+    // NUMBER
+    if (
+      type === "long" ||
+      type === "int" ||
+      type === "integer" ||
+      type === "double" ||
+      type === "float" ||
+      type === "number"
+    ) {
+      return (
+        <div key={name} className={styles.formGroup}>
+          <label className={styles.formLabel}>{prettify(name)}</label>
+          <input
+            type="number"
+            className={styles.formControl}
+            value={editedRecord[name] ?? ""}
+            onChange={(e) => handleEdit(name, e.target.value)}
+          />
+        </div>
+      );
+    }
+
+    // DEFAULT TEXT
+    return (
+      <div key={name} className={styles.formGroup}>
+        <label className={styles.formLabel}>{prettify(name)}</label>
+        <input
+          className={styles.formControl}
+          value={editedRecord[name] ?? ""}
+          onChange={(e) => handleEdit(name, e.target.value)}
+        />
+      </div>
+    );
   };
 
   /* ================= UI ================= */
@@ -1984,85 +2192,19 @@ const ProgramEdit = () => {
 
         <div className="contentBody">
           <div className="pageFormContainer">
-            {!isLoading && (
+            {isLoading ? (
+              <div>Loading...</div>
+            ) : (
               <form onSubmit={handleUpdate}>
                 <div className={styles.certificateFormWrapper}>
-                  <h2 className={styles.sectionTitle}>
-                    Edit Course Information
-                  </h2>
+                  <h2 className={styles.sectionTitle}>Edit Course Information</h2>
 
                   <div className={styles.formGrid}>
-                    <input
-                      className={styles.formControl}
-                      value={editedRecord.name || ""}
-                      onChange={(e) => handleEdit("name", e.target.value)}
-                    />
-
-                    <input
-                      type="number"
-                      className={styles.formControl}
-                      value={editedRecord.seats || ""}
-                      onChange={(e) => handleEdit("seats", e.target.value)}
-                    />
-
-                    <input
-                      className={styles.formControl}
-                      value={editedRecord.instructor_name || ""}
-                      onChange={(e) =>
-                        handleEdit("instructor_name", e.target.value)
-                      }
-                    />
-
-                    <input
-                      className={styles.formControl}
-                      value={editedRecord.term_name || ""}
-                      onChange={(e) =>
-                        handleEdit("term_name", e.target.value)
-                      }
-                    />
-
-                    <select
-                      className={styles.formControl}
-                      value={editedRecord.academic_year_id || ""}
-                      onChange={(e) =>
-                        handleEdit("academic_year_id", e.target.value)
-                      }
-                    >
-                      <option value="">Select Academic Year</option>
-                      {(academicYears || []).map((ay: any) => (
-                        <option key={ay.id} value={ay.id}>
-                          {ay.academic_name || ay.name || ay.id}
-                        </option>
-                      ))}
-                    </select>
-
-                    <input
-                      type="date"
-                      className={styles.formControl}
-                      value={editedRecord.start_date || ""}
-                      onChange={(e) =>
-                        handleEdit("start_date", e.target.value)
-                      }
-                    />
-
-                    <input
-                      type="date"
-                      className={styles.formControl}
-                      value={editedRecord.end_date || ""}
-                      onChange={(e) =>
-                        handleEdit("end_date", e.target.value)
-                      }
-                    />
+                    {visibleFields.map((f: any) => renderInputForField(f))}
                   </div>
 
                   {dateError && (
-                    <div
-                      style={{
-                        color: "#dc3545",
-                        fontSize: 13,
-                        marginTop: 8,
-                      }}
-                    >
+                    <div style={{ color: "#dc3545", fontSize: 13, marginTop: 8 }}>
                       {dateError}
                     </div>
                   )}
@@ -2097,6 +2239,3 @@ const ProgramEdit = () => {
 };
 
 export default ProgramEdit;
-
-
-

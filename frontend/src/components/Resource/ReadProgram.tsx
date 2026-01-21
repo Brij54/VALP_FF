@@ -1143,6 +1143,260 @@
 // export default ReadProgram;
 
 
+// import React, { useMemo } from "react";
+// import apiConfig from "../../config/apiConfig";
+// import { AllCommunityModule, ModuleRegistry, ColDef } from "ag-grid-community";
+// import { AgGridReact } from "ag-grid-react";
+// import { useQuery } from "@tanstack/react-query";
+// import { authFetch } from "../../apis/authFetch";
+// import { fetchForeignResource } from "../../apis/resources";
+
+// ModuleRegistry.registerModules([AllCommunityModule]);
+
+// // -------------------- TYPES --------------------
+// type Program = {
+//   id: string;
+//   name?: string;
+//   seats?: number;
+//   instructor_name?: string;
+//   syllabus?: string;
+//   term_name?: string;
+//   academic_year_id?: string;
+//   start_date?: string;
+//   end_date?: string;
+// };
+
+// type ProgramRegistration = {
+//   id: string;
+//   program_id: string;
+//   student_id: string;
+// };
+
+// // -------------------- DATE FORMATTER --------------------
+// const formatDate = (value?: string) => {
+//   if (!value) return "-";
+//   const d = new Date(value);
+//   if (isNaN(d.getTime())) return "-";
+//   return d.toLocaleDateString("en-IN", {
+//     day: "2-digit",
+//     month: "short",
+//     year: "numeric",
+//   });
+// };
+
+// const ReadProgram = () => {
+//   // -------------------- FETCH PROGRAMS --------------------
+//   const programQuery = useQuery({
+//     queryKey: ["ProgramList"],
+//     queryFn: async () => {
+//       const params = new URLSearchParams({ queryId: "GET_ALL" });
+//       const res = await authFetch(
+//         `${apiConfig.getResourceUrl("program")}?${params.toString()}`,
+//         { method: "GET", headers: { "Content-Type": "application/json" } }
+//       );
+//       if (!res.ok) throw new Error("Failed to load programs");
+//       const json = await res.json();
+//       return (json.resource || []) as Program[];
+//     },
+//   });
+
+//   // -------------------- FETCH REGISTRATIONS --------------------
+//   const regQuery = useQuery({
+//     queryKey: ["ProgramRegistrationList"],
+//     queryFn: async () => {
+//       const params = new URLSearchParams({ queryId: "GET_ALL" });
+//       const res = await authFetch(
+//         `${apiConfig.getResourceUrl("program_registration")}?${params.toString()}`,
+//         { method: "GET", headers: { "Content-Type": "application/json" } }
+//       );
+//       if (!res.ok) throw new Error("Failed to load registrations");
+//       const json = await res.json();
+//       return (json.resource || []) as ProgramRegistration[];
+//     },
+//     refetchInterval: 5000,
+//   });
+
+//   // -------------------- FETCH ACADEMIC YEARS (KEY FIX) --------------------
+//   const academicYearQuery = useQuery({
+//     queryKey: ["foreign", "Academic_year"],
+//     queryFn: async () => {
+//       const data: any = await fetchForeignResource("Academic_year");
+//       return Array.isArray(data) ? data : data.resource || [];
+//     },
+//   });
+
+//   // -------------------- BUILD ACADEMIC YEAR MAP --------------------
+//   const academicYearMap = useMemo(() => {
+//     const map = new Map<string, string>();
+//     (academicYearQuery.data || []).forEach((ay: any) => {
+//       map.set(
+//         ay.id,
+//         ay.academic_name || ay.academic_year || ay.id
+//       );
+//     });
+//     return map;
+//   }, [academicYearQuery.data]);
+
+//   // -------------------- COMPUTE ROW DATA --------------------
+//   const rowData = useMemo(() => {
+//     const programs = programQuery.data || [];
+//     const regs = regQuery.data || [];
+
+//     const filledMap = new Map<string, number>();
+//     regs.forEach((r) =>
+//       filledMap.set(r.program_id, (filledMap.get(r.program_id) || 0) + 1)
+//     );
+
+//     return programs.map((p) => {
+//       const total = Number(p.seats ?? 0);
+//       const filled = filledMap.get(p.id) || 0;
+//       const available = Math.max(0, total - filled);
+
+//       return {
+//         ...p,
+//         academic_year_name:
+//           academicYearMap.get(p.academic_year_id || "") ||
+//           p.academic_year_id ||
+//           "-",
+//         filled_seats: filled,
+//         available_seats: available,
+//       };
+//     });
+//   }, [programQuery.data, regQuery.data, academicYearMap]);
+
+//   // -------------------- COLUMN DEFINITIONS --------------------
+//   const colDefs = useMemo<ColDef[]>(() => [
+//     {
+//       headerName: "Name",
+//       field: "name",
+//       sortable: true,
+//       filter: true,
+//     },
+//     {
+//       headerName: "Term Name",
+//       field: "term_name",
+//       sortable: true,
+//       filter: true,
+//       width: 140,
+//     },
+//     {
+//       headerName: "Academic Year",
+//       field: "academic_year_name", // ✅ FIXED
+//       sortable: true,
+//       filter: true,
+//       width: 180,
+//     },
+//     {
+//       headerName: "Start Date",
+//       field: "start_date",
+//       sortable: true,
+//       filter: true,
+//       width: 140,
+//       valueFormatter: (p) => formatDate(p.value),
+//     },
+//     {
+//       headerName: "End Date",
+//       field: "end_date",
+//       sortable: true,
+//       filter: true,
+//       width: 140,
+//       valueFormatter: (p) => formatDate(p.value),
+//     },
+//     {
+//       headerName: "Seats",
+//       field: "seats",
+//       sortable: true,
+//       filter: true,
+//       width: 110,
+//     },
+//     {
+//       headerName: "Filled Seats",
+//       field: "filled_seats",
+//       sortable: true,
+//       filter: true,
+//       width: 130,
+//     },
+//     {
+//       headerName: "Available Seats",
+//       field: "available_seats",
+//       sortable: true,
+//       filter: true,
+//       width: 160,
+//       cellRenderer: (p: any) => {
+//         const available = Number(p.value ?? 0);
+//         const total = Number(p.data?.seats ?? 0);
+//         const isFull = available <= 0;
+
+//         return (
+//           <span
+//             style={{
+//               fontWeight: 700,
+//               padding: "4px 10px",
+//               borderRadius: 10,
+//               background: isFull ? "#ffe5e5" : "#e8f5e9",
+//               color: isFull ? "#b71c1c" : "#1b5e20",
+//             }}
+//           >
+//             {isFull ? "FULL" : `${available}/${total}`}
+//           </span>
+//         );
+//       },
+//     },
+//     {
+//       headerName: "Instructor Name",
+//       field: "instructor_name",
+//       sortable: true,
+//       filter: true,
+//     },
+//     {
+//       headerName: "Syllabus",
+//       field: "syllabus",
+//       sortable: true,
+//       filter: true,
+//     },
+//   ], []);
+
+//   const defaultColDef: ColDef = {
+//     flex: 1,
+//     minWidth: 140,
+//     resizable: true,
+//     editable: false,
+//   };
+
+//   // -------------------- UI STATES --------------------
+//   if (
+//     programQuery.isLoading ||
+//     regQuery.isLoading ||
+//     academicYearQuery.isLoading
+//   ) {
+//     return <div>Loading...</div>;
+//   }
+
+//   if (
+//     programQuery.isError ||
+//     regQuery.isError ||
+//     academicYearQuery.isError
+//   ) {
+//     return <div>Error loading data</div>;
+//   }
+
+//   // -------------------- RENDER --------------------
+//   return (
+//     <div className="ag-theme-alpine" style={{ height: 420, width: "100%" }}>
+//       <AgGridReact
+//         rowData={rowData}
+//         columnDefs={colDefs}
+//         defaultColDef={defaultColDef}
+//         pagination
+//         paginationPageSize={10}
+//         animateRows
+//       />
+//     </div>
+//   );
+// };
+
+// export default ReadProgram;
+
 import React, { useMemo } from "react";
 import apiConfig from "../../config/apiConfig";
 import { AllCommunityModule, ModuleRegistry, ColDef } from "ag-grid-community";
@@ -1162,8 +1416,12 @@ type Program = {
   syllabus?: string;
   term_name?: string;
   academic_year_id?: string;
-  start_date?: string;
-  end_date?: string;
+
+  // ✅ new fields
+  registration_start_date?: string;
+  registration_end_date?: string;
+  course_start_date?: string;
+  course_end_date?: string;
 };
 
 type ProgramRegistration = {
@@ -1182,6 +1440,22 @@ const formatDate = (value?: string) => {
     month: "short",
     year: "numeric",
   });
+};
+
+// ✅ STATUS LOGIC (same as your reference)
+const getCourseStatus = (
+  courseStart?: string,
+  courseEnd?: string
+): "UPCOMING" | "ONGOING" | "COMPLETED" | "" => {
+  if (!courseStart || !courseEnd) return "";
+
+  const today = new Date().setHours(0, 0, 0, 0);
+  const start = new Date(courseStart).setHours(0, 0, 0, 0);
+  const end = new Date(courseEnd).setHours(0, 0, 0, 0);
+
+  if (today < start) return "UPCOMING";
+  if (today > end) return "COMPLETED";
+  return "ONGOING";
 };
 
 const ReadProgram = () => {
@@ -1216,7 +1490,7 @@ const ReadProgram = () => {
     refetchInterval: 5000,
   });
 
-  // -------------------- FETCH ACADEMIC YEARS (KEY FIX) --------------------
+  // -------------------- FETCH ACADEMIC YEARS --------------------
   const academicYearQuery = useQuery({
     queryKey: ["foreign", "Academic_year"],
     queryFn: async () => {
@@ -1229,10 +1503,7 @@ const ReadProgram = () => {
   const academicYearMap = useMemo(() => {
     const map = new Map<string, string>();
     (academicYearQuery.data || []).forEach((ay: any) => {
-      map.set(
-        ay.id,
-        ay.academic_name || ay.academic_year || ay.id
-      );
+      map.set(ay.id, ay.academic_name || ay.academic_year || ay.id);
     });
     return map;
   }, [academicYearQuery.data]);
@@ -1260,101 +1531,158 @@ const ReadProgram = () => {
           "-",
         filled_seats: filled,
         available_seats: available,
+
+        // ✅ derived status for grid filtering/sorting too
+        status: getCourseStatus(p.course_start_date, p.course_end_date),
       };
     });
   }, [programQuery.data, regQuery.data, academicYearMap]);
 
   // -------------------- COLUMN DEFINITIONS --------------------
-  const colDefs = useMemo<ColDef[]>(() => [
-    {
-      headerName: "Name",
-      field: "name",
-      sortable: true,
-      filter: true,
-    },
-    {
-      headerName: "Term Name",
-      field: "term_name",
-      sortable: true,
-      filter: true,
-      width: 140,
-    },
-    {
-      headerName: "Academic Year",
-      field: "academic_year_name", // ✅ FIXED
-      sortable: true,
-      filter: true,
-      width: 180,
-    },
-    {
-      headerName: "Start Date",
-      field: "start_date",
-      sortable: true,
-      filter: true,
-      width: 140,
-      valueFormatter: (p) => formatDate(p.value),
-    },
-    {
-      headerName: "End Date",
-      field: "end_date",
-      sortable: true,
-      filter: true,
-      width: 140,
-      valueFormatter: (p) => formatDate(p.value),
-    },
-    {
-      headerName: "Seats",
-      field: "seats",
-      sortable: true,
-      filter: true,
-      width: 110,
-    },
-    {
-      headerName: "Filled Seats",
-      field: "filled_seats",
-      sortable: true,
-      filter: true,
-      width: 130,
-    },
-    {
-      headerName: "Available Seats",
-      field: "available_seats",
-      sortable: true,
-      filter: true,
-      width: 160,
-      cellRenderer: (p: any) => {
-        const available = Number(p.value ?? 0);
-        const total = Number(p.data?.seats ?? 0);
-        const isFull = available <= 0;
-
-        return (
-          <span
-            style={{
-              fontWeight: 700,
-              padding: "4px 10px",
-              borderRadius: 10,
-              background: isFull ? "#ffe5e5" : "#e8f5e9",
-              color: isFull ? "#b71c1c" : "#1b5e20",
-            }}
-          >
-            {isFull ? "FULL" : `${available}/${total}`}
-          </span>
-        );
+  const colDefs = useMemo<ColDef[]>(
+    () => [
+      { headerName: "Name", field: "name", sortable: true, filter: true },
+      {
+        headerName: "Term Name",
+        field: "term_name",
+        sortable: true,
+        filter: true,
+        width: 140,
       },
-    },
-    {
-      headerName: "Instructor Name",
-      field: "instructor_name",
-      sortable: true,
-      filter: true,
-    },
-    {
-      headerName: "Syllabus",
-      field: "syllabus",
-      sortable: true,
-      filter: true,
-    },
-  ], []);
+      {
+        headerName: "Academic Year",
+        field: "academic_year_name",
+        sortable: true,
+        filter: true,
+        width: 180,
+      },
+
+      // ✅ Registration window
+      {
+        headerName: "Reg. Start Date",
+        field: "registration_start_date",
+        sortable: true,
+        filter: true,
+        width: 160,
+        valueFormatter: (p) => formatDate(p.value),
+      },
+      {
+        headerName: "Reg. End Date",
+        field: "registration_end_date",
+        sortable: true,
+        filter: true,
+        width: 160,
+        valueFormatter: (p) => formatDate(p.value),
+      },
+
+      // ✅ Course duration
+      {
+        headerName: "Course Start Date",
+        field: "course_start_date",
+        sortable: true,
+        filter: true,
+        width: 170,
+        valueFormatter: (p) => formatDate(p.value),
+      },
+      {
+        headerName: "Course End Date",
+        field: "course_end_date",
+        sortable: true,
+        filter: true,
+        width: 170,
+        valueFormatter: (p) => formatDate(p.value),
+      },
+
+      // ✅ NEW: Status column
+      {
+        headerName: "Status",
+        field: "status",
+        sortable: true,
+        filter: true,
+        width: 130,
+        cellRenderer: (params: any) => {
+          const status =
+            params.value as "UPCOMING" | "ONGOING" | "COMPLETED" | "";
+
+          let bg = "#e7f1ff";
+          let color = "#0d6efd"; // upcoming default
+          if (status === "ONGOING") {
+            bg = "#e8f5e9";
+            color = "#1b5e20";
+          }
+          if (status === "COMPLETED") {
+            bg = "#ffebee";
+            color = "#b71c1c";
+          }
+
+          return (
+            <span
+              style={{
+                fontWeight: 700,
+                padding: "4px 10px",
+                borderRadius: 10,
+                background: bg,
+                color,
+                display: "inline-block",
+                minWidth: 95,
+                textAlign: "center",
+              }}
+            >
+              {status || "-"}
+            </span>
+          );
+        },
+      },
+
+      { headerName: "Seats", field: "seats", sortable: true, filter: true, width: 110 },
+      {
+        headerName: "Filled Seats",
+        field: "filled_seats",
+        sortable: true,
+        filter: true,
+        width: 130,
+      },
+      {
+        headerName: "Available Seats",
+        field: "available_seats",
+        sortable: true,
+        filter: true,
+        width: 160,
+        cellRenderer: (p: any) => {
+          const available = Number(p.value ?? 0);
+          const total = Number(p.data?.seats ?? 0);
+          const isFull = available <= 0;
+
+          return (
+            <span
+              style={{
+                fontWeight: 700,
+                padding: "4px 10px",
+                borderRadius: 10,
+                background: isFull ? "#ffe5e5" : "#e8f5e9",
+                color: isFull ? "#b71c1c" : "#1b5e20",
+              }}
+            >
+              {isFull ? "FULL" : `${available}/${total}`}
+            </span>
+          );
+        },
+      },
+      {
+        headerName: "Instructor Name",
+        field: "instructor_name",
+        sortable: true,
+        filter: true,
+      },
+      {
+        headerName: "Syllabus",
+        field: "syllabus",
+        sortable: true,
+        filter: true,
+      },
+    ],
+    []
+  );
 
   const defaultColDef: ColDef = {
     flex: 1,
@@ -1372,17 +1700,13 @@ const ReadProgram = () => {
     return <div>Loading...</div>;
   }
 
-  if (
-    programQuery.isError ||
-    regQuery.isError ||
-    academicYearQuery.isError
-  ) {
+  if (programQuery.isError || regQuery.isError || academicYearQuery.isError) {
     return <div>Error loading data</div>;
   }
 
   // -------------------- RENDER --------------------
   return (
-    <div className="ag-theme-alpine" style={{ height: 420, width: "100%" }}>
+    <div className="ag-theme-alpine" style={{ height: 520, width: "100%" }}>
       <AgGridReact
         rowData={rowData}
         columnDefs={colDefs}
@@ -1396,5 +1720,4 @@ const ReadProgram = () => {
 };
 
 export default ReadProgram;
-
 
